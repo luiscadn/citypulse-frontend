@@ -9,8 +9,11 @@ import { SESSION_COOKIE } from "@/shared/infrastructure/session/session-constant
  * como única protección de los datos.
  */
 
-/** Rutas que se ven sin iniciar sesión */
-const PUBLIC_ROUTES = ["/", "/login", "/register"];
+/**
+ * Rutas que se ven sin iniciar sesión. "/" NO está: sin sesión, la raíz lleva
+ * al login. Si el listado público de eventos termina en "/", hay que agregarla.
+ */
+const PUBLIC_ROUTES = ["/login", "/register", "/ui"];
 /** Rutas que no tienen sentido con sesión abierta */
 const GUEST_ONLY_ROUTES = ["/login", "/register"];
 
@@ -21,7 +24,8 @@ export function proxy(request: NextRequest) {
 
   if (!session && !PUBLIC_ROUTES.includes(pathname)) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("from", `${pathname}${search}`);
+    // ?from= para volver a donde iba después del login (no hace falta si iba a "/")
+    if (pathname !== "/") loginUrl.searchParams.set("from", `${pathname}${search}`);
     const response = NextResponse.redirect(loginUrl);
     // Token vencido o corrupto: se borra para no arrastrarlo
     if (token) response.cookies.delete(SESSION_COOKIE);
