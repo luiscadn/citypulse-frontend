@@ -16,8 +16,9 @@ export class HttpUserRepository implements UserRepository {
   constructor(private readonly http: HttpClient) {}
 
   async findAll(): Promise<User[]> {
-    const dtos = await this.http.get<UserDto[]>('/users');
-    return dtos.map(toUser);
+    // GET /users responde paginado: { data, total, page, limit, lastPage }
+    const page = await this.http.get<{ data: UserDto[] }>('/users?limit=100');
+    return page.data.map(toUser);
   }
 
   async findById(id: number): Promise<User> {

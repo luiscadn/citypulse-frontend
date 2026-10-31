@@ -4,8 +4,8 @@ import { HttpError, type HttpClient } from './http-client';
 export class FetchHttpClient implements HttpClient {
   constructor(
     private readonly baseUrl: string,
-    /** Devuelve el JWT actual (o null). Lo provee la feature de auth. */
-    private readonly getToken: () => string | null = () => null,
+    /** Devuelve el JWT actual (o null). En el servidor lo lee de la cookie de sesión. */
+    private readonly getToken: () => string | null | Promise<string | null> = () => null,
   ) {}
 
   get<T>(path: string) { return this.request<T>('GET', path); }
@@ -14,7 +14,7 @@ export class FetchHttpClient implements HttpClient {
   async delete(path: string) { await this.request<void>('DELETE', path); }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
-    const token = this.getToken();
+    const token = await this.getToken();
     const res = await fetch(`${this.baseUrl}${path}`, {
       method,
       headers: {
