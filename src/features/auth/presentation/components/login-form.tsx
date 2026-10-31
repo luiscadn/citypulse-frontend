@@ -2,12 +2,9 @@
 
 import { useActionState, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Alert, Button, TextField } from "@/shared/presentation/components";
 import { loginAction } from "../actions/auth.actions";
 import { initialLoginState } from "../actions/login-form-state";
-
-const inputClass =
-  "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 " +
-  "focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-300";
 
 export function LoginForm() {
   const [state, formAction, pending] = useActionState(loginAction, initialLoginState);
@@ -19,71 +16,63 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
 
   return (
-    <form action={formAction} className="flex w-full flex-col gap-4">
+    <form action={formAction} className="flex w-full flex-col gap-5">
       <input type="hidden" name="from" value={from} />
       <input type="hidden" name="step" value={state.step} />
 
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Correo
-        <input
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          readOnly={askCode}
-          className={inputClass}
-        />
-      </label>
+      {state.error && <Alert tone="danger">{state.error}</Alert>}
+
+      {askCode && (
+        <Alert tone="info" title="Verificación en dos pasos">
+          Escribe el código de 6 dígitos de tu app autenticadora.
+        </Alert>
+      )}
+
+      <TextField
+        label="Correo electrónico"
+        name="email"
+        type="email"
+        autoComplete="email"
+        placeholder="nombre@correo.com"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        readOnly={askCode}
+      />
 
       {askCode ? (
         // En el paso 2FA la contraseña ya se escribió: viaja oculta con el formulario
         <input type="hidden" name="password" value={password} />
       ) : (
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Contraseña
-          <input
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={inputClass}
-          />
-        </label>
+        <TextField
+          label="Contraseña"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
       )}
 
       {askCode && (
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Código de verificación (2FA)
-          <input
-            name="twoFactorCode"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            pattern="\d{6}"
-            maxLength={6}
-            required
-            autoFocus
-            className={inputClass}
-          />
-        </label>
+        <TextField
+          label="Código de verificación"
+          name="twoFactorCode"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          pattern="\d{6}"
+          maxLength={6}
+          placeholder="123456"
+          required
+          autoFocus
+          className="[&_input]:tracking-[0.4em]"
+        />
       )}
 
-      {state.error && (
-        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
-          {state.error}
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900"
-      >
+      <Button type="submit" size="lg" loading={pending} className="mt-2 w-full">
         {pending ? "Entrando…" : askCode ? "Verificar código" : "Iniciar sesión"}
-      </button>
+      </Button>
     </form>
   );
 }
