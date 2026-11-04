@@ -6,7 +6,7 @@ import { LogoutUseCase } from "./logout.use-case";
 import { InvalidCredentialsError } from "../../domain/errors/auth-errors";
 
 describe("LoginUseCase", () => {
-  const authRepository = { login: vi.fn() } satisfies AuthRepository;
+  const authRepository = { login: vi.fn(), register: vi.fn() } satisfies AuthRepository;
   const sessionStore = { save: vi.fn(), clear: vi.fn() } satisfies SessionStore;
   const useCase = new LoginUseCase(authRepository, sessionStore);
 

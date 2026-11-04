@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ButtonLink } from "@/shared/presentation/components";
 import { getCurrentUser } from "../../infrastructure/session/get-current-user";
 import { LogoutButton } from "./logout-button";
@@ -19,15 +20,21 @@ export async function SessionMenu() {
 
   return (
     <div className="flex items-center gap-3">
-      <span className="flex items-center gap-2">
+      <Link
+        href="/profile"
+        aria-label="Mi perfil"
+        className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring"
+      >
         <span
           aria-hidden
           className="grid size-8 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary-strong uppercase"
         >
           {user.email.charAt(0)}
         </span>
-        <span className="hidden text-sm font-medium text-ink sm:inline">{user.email}</span>
-      </span>
+        <span className="hidden text-sm font-medium text-ink hover:text-primary-strong sm:inline">
+          {user.email}
+        </span>
+      </Link>
       <LogoutButton />
     </div>
   );
