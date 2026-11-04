@@ -30,8 +30,9 @@ export class InvitationEventNotFoundError extends DomainError {
   }
 }
 
-export class InvitationTargetNotFriendError extends DomainError {
-  constructor(message = "Solo puedes invitar a tus amigos") {
+/** El backend responde 403 igual si no son amigos o si no tengo acceso a un evento privado. */
+export class InvitationNotAllowedError extends DomainError {
+  constructor(message = "Solo puedes invitar a tus amigos a eventos a los que tienes acceso") {
     super(message);
   }
 }
