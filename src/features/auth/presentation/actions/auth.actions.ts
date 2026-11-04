@@ -3,15 +3,16 @@
 import { redirect } from "next/navigation";
 import { DomainError } from "@/shared/domain/errors/domain-error";
 import { HttpError } from "@/shared/infrastructure/http-client";
+import { backendMessage } from "@/shared/presentation/action-error";
 import { authContainer } from "../../di/auth.container";
+import {
+  EmailAlreadyRegisteredError,
+  InvalidRegistrationError,
+  UsernameAlreadyRegisteredError,
+} from "../../domain/errors/auth-errors";
+import { validateRegistration } from "../../domain/rules/registration";
 import type { LoginFormState } from "./login-form-state";
-
-/** message del backend NestJS: string o lista de errores de validación */
-function backendMessage(body: unknown): string {
-  const message = (body as { message?: string | string[] } | null)?.message;
-  if (Array.isArray(message)) return message.join(". ");
-  return message ?? "Datos inválidos";
-}
+import type { RegisterFormState } from "./register-form-state";
 
 /** Solo se permite volver a rutas internas (evita redirecciones abiertas a otro sitio) */
 function safeRedirectPath(value: FormDataEntryValue | null): string {
@@ -55,6 +56,46 @@ export async function loginAction(
 
   // redirect() lanza una excepción especial: debe ir fuera del try/catch
   redirect(safeRedirectPath(formData.get("from")));
+}
+
+export async function registerAction(
+  _prev: RegisterFormState,
+  formData: FormData,
+): Promise<RegisterFormState> {
+  const values = {
+    fullName: String(formData.get("fullName") ?? "").trim(),
+    username: String(formData.get("username") ?? "").trim(),
+    email: String(formData.get("email") ?? "").trim(),
+  };
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+  const errors = validateRegistration({ ...values, password });
+  if (!errors.password && password !== confirmPassword) {
+    errors.confirmPassword = "Las contraseñas no coinciden";
+  }
+  if (Object.keys(errors).length > 0) return { values, errors };
+
+  let signedIn = false;
+  try {
+    ({ signedIn } = await authContainer.registerUseCase.execute({ ...values, password }));
+  } catch (error) {
+    if (error instanceof InvalidRegistrationError) return { values, errors: error.errors };
+    if (error instanceof EmailAlreadyRegisteredError) {
+      return { values, errors: { email: error.message } };
+    }
+    if (error instanceof UsernameAlreadyRegisteredError) {
+      return { values, errors: { username: error.message } };
+    }
+    if (error instanceof DomainError) return { values, errors: {}, error: error.message };
+    if (error instanceof HttpError && error.status === 400) {
+      return { values, errors: {}, error: backendMessage(error.body) };
+    }
+    return { values, errors: {}, error: "No se pudo conectar con el servidor. Intenta de nuevo." };
+  }
+
+  // Cuenta creada. Si el inicio de sesión automático falló, que entre desde /login.
+  redirect(signedIn ? "/" : "/login");
 }
 
 export async function logoutAction(): Promise<void> {
