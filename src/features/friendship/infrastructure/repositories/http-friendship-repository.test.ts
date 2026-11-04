@@ -12,9 +12,9 @@ import { HttpFriendshipRepository } from "./http-friendship-repository";
 const http = { get: vi.fn(), post: vi.fn(), patch: vi.fn(), delete: vi.fn() };
 const repository = new HttpFriendshipRepository(http);
 
-// El backend manda la entidad User completa: la UI solo debe recibir estos campos
-const ana = { id: 7, username: "ana", fullName: "Ana Pérez", email: "ana@test.com" };
-const anaDto = { ...ana, isActive: true, twoFactorEnabled: false, createdAt: "2026-10-01T00:00:00Z" };
+// GET /friendships manda la entidad User completa: la UI solo debe recibir estos campos
+const ana = { id: 7, username: "ana", fullName: "Ana Pérez" };
+const anaDto = { ...ana, email: "ana@test.com", isActive: true, createdAt: "2026-10-01T00:00:00Z" };
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -35,18 +35,20 @@ describe("getOverview", () => {
   });
 });
 
-describe("findUser", () => {
-  it("consulta el usuario y lo recorta", async () => {
-    http.get.mockResolvedValue(anaDto);
+describe("searchUsers", () => {
+  it("mapea la página de resultados", async () => {
+    http.get.mockResolvedValue({ data: [ana], total: 25, page: 1, limit: 10, lastPage: 3 });
 
-    await expect(repository.findUser(7)).resolves.toEqual(ana);
-    expect(http.get).toHaveBeenCalledWith("/users/7");
+    await expect(repository.searchUsers("ana")).resolves.toEqual({ candidates: [ana], total: 25 });
+    expect(http.get).toHaveBeenCalledWith("/users/search?q=ana&limit=10");
   });
 
-  it("traduce el 404", async () => {
-    http.get.mockRejectedValue(new HttpError(404, {}));
+  it("codifica el texto para que no altere la URL", async () => {
+    http.get.mockResolvedValue({ data: [], total: 0 });
 
-    await expect(repository.findUser(7)).rejects.toBeInstanceOf(FriendTargetNotFoundError);
+    await repository.searchUsers("a&limit=1 é");
+
+    expect(http.get).toHaveBeenCalledWith("/users/search?q=a%26limit%3D1+%C3%A9&limit=10");
   });
 });
 

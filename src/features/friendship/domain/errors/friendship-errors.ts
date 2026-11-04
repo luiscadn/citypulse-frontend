@@ -1,7 +1,13 @@
 import { DomainError } from "@/shared/domain/errors/domain-error";
 
+export class FriendSearchTooShortError extends DomainError {
+  constructor(message = "Escribe al menos 2 letras para buscar") {
+    super(message);
+  }
+}
+
 export class InvalidFriendTargetError extends DomainError {
-  constructor(message = "Escribe un ID de usuario válido") {
+  constructor(message = "Este usuario no es válido") {
     super(message);
   }
 }
@@ -13,7 +19,7 @@ export class SelfFriendRequestError extends DomainError {
 }
 
 export class FriendTargetNotFoundError extends DomainError {
-  constructor(message = "No encontramos un usuario con ese ID") {
+  constructor(message = "Este usuario ya no existe") {
     super(message);
   }
 }

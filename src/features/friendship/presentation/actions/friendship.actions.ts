@@ -12,6 +12,13 @@ function isAnswer(value: FormDataEntryValue | null): value is FriendRequestAnswe
   return value === "ACEPTADA" || value === "RECHAZADA";
 }
 
+function toErrorState(error: unknown): FriendshipActionState {
+  if (error instanceof DomainError) {
+    return { error: error.message };
+  }
+  return { error: "No se pudo conectar con el servidor. Intenta de nuevo." };
+}
+
 export async function respondFriendRequestAction(
   _prev: FriendshipActionState,
   formData: FormData,
@@ -29,10 +36,27 @@ export async function respondFriendRequestAction(
   try {
     await friendshipContainer.respondFriendRequestUseCase.execute(requestId, answer);
   } catch (error) {
-    if (error instanceof DomainError) {
-      return { error: error.message };
-    }
-    return { error: "No se pudo conectar con el servidor. Intenta de nuevo." };
+    return toErrorState(error);
+  }
+
+  refresh();
+  return {};
+}
+
+export async function sendFriendRequestAction(
+  _prev: FriendshipActionState,
+  formData: FormData,
+): Promise<FriendshipActionState> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  try {
+    await friendshipContainer.sendFriendRequestUseCase.execute(
+      user.id,
+      Number(formData.get("targetUserId")),
+    );
+  } catch (error) {
+    return toErrorState(error);
   }
 
   refresh();

@@ -3,8 +3,11 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { friendshipContainer } from "../../di/friendship.container";
-import { FriendRequestAlreadyAnsweredError } from "../../domain/errors/friendship-errors";
-import { respondFriendRequestAction } from "./friendship.actions";
+import {
+  FriendRequestAlreadyAnsweredError,
+  FriendRequestAlreadyExistsError,
+} from "../../domain/errors/friendship-errors";
+import { respondFriendRequestAction, sendFriendRequestAction } from "./friendship.actions";
 
 vi.mock("next/cache", () => ({ refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({
@@ -17,10 +20,14 @@ vi.mock("@/features/auth/infrastructure/session/get-current-user", () => ({
   getCurrentUser: vi.fn(),
 }));
 vi.mock("../../di/friendship.container", () => ({
-  friendshipContainer: { respondFriendRequestUseCase: { execute: vi.fn() } },
+  friendshipContainer: {
+    respondFriendRequestUseCase: { execute: vi.fn() },
+    sendFriendRequestUseCase: { execute: vi.fn() },
+  },
 }));
 
 const respond = vi.mocked(friendshipContainer.respondFriendRequestUseCase.execute);
+const send = vi.mocked(friendshipContainer.sendFriendRequestUseCase.execute);
 
 function form(values: Record<string, string>): FormData {
   const data = new FormData();
@@ -82,5 +89,40 @@ describe("respondFriendRequestAction", () => {
     const state = await respondFriendRequestAction({}, form({ requestId: "12", answer: "RECHAZADA" }));
 
     expect(state.error).toBe("No se pudo conectar con el servidor. Intenta de nuevo.");
+  });
+});
+
+describe("sendFriendRequestAction", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getCurrentUser).mockResolvedValue({ id: 1, email: "ana@test.com", roles: [] });
+  });
+
+  it("envía la solicitud como el usuario de la sesión y refresca la página", async () => {
+    send.mockResolvedValue(undefined);
+
+    const state = await sendFriendRequestAction({}, form({ targetUserId: "7" }));
+
+    expect(state).toEqual({});
+    expect(send).toHaveBeenCalledWith(1, 7);
+    expect(refresh).toHaveBeenCalled();
+  });
+
+  it("manda al login si no hay sesión", async () => {
+    vi.mocked(getCurrentUser).mockResolvedValue(null);
+
+    await expect(sendFriendRequestAction({}, form({ targetUserId: "7" }))).rejects.toThrow("REDIRECT");
+
+    expect(redirect).toHaveBeenCalledWith("/login");
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("muestra el mensaje de los errores de dominio", async () => {
+    send.mockRejectedValue(new FriendRequestAlreadyExistsError());
+
+    const state = await sendFriendRequestAction({}, form({ targetUserId: "7" }));
+
+    expect(state.error).toBe("Ya existe una solicitud de amistad con este usuario");
+    expect(refresh).not.toHaveBeenCalled();
   });
 });

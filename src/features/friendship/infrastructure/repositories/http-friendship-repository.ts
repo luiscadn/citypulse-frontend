@@ -1,9 +1,9 @@
 import { HttpError, type HttpClient } from "@/shared/infrastructure/http-client";
 import type { FriendshipRepository } from "../../application/repositories/friendship-repository";
 import type {
+  FriendCandidateSearch,
   FriendRequestAnswer,
   FriendshipOverview,
-  FriendUser,
 } from "../../domain/entities/friendship";
 import {
   FriendRequestAlreadyAnsweredError,
@@ -12,8 +12,11 @@ import {
   FriendRequestNotFoundError,
   FriendTargetNotFoundError,
 } from "../../domain/errors/friendship-errors";
-import type { FriendshipSummaryDto, FriendUserDto } from "../dtos/friendship.dto";
-import { toFriendshipOverview, toFriendUser } from "../mappers/friendship.mapper";
+import type { FriendshipSummaryDto, UserSearchPageDto } from "../dtos/friendship.dto";
+import { toFriendCandidateSearch, toFriendshipOverview } from "../mappers/friendship.mapper";
+
+/** Una búsqueda muestra pocos resultados: si hay más, se le pide a la persona que la precise. */
+const SEARCH_LIMIT = 10;
 
 export class HttpFriendshipRepository implements FriendshipRepository {
   constructor(private readonly http: HttpClient) {}
@@ -23,16 +26,10 @@ export class HttpFriendshipRepository implements FriendshipRepository {
     return toFriendshipOverview(dto);
   }
 
-  async findUser(userId: number): Promise<FriendUser> {
-    try {
-      const dto = await this.http.get<FriendUserDto>(`/users/${userId}`);
-      return toFriendUser(dto);
-    } catch (error) {
-      if (error instanceof HttpError && error.status === 404) {
-        throw new FriendTargetNotFoundError();
-      }
-      throw error;
-    }
+  async searchUsers(text: string): Promise<FriendCandidateSearch> {
+    const params = new URLSearchParams({ q: text, limit: String(SEARCH_LIMIT) });
+    const dto = await this.http.get<UserSearchPageDto>(`/users/search?${params}`);
+    return toFriendCandidateSearch(dto);
   }
 
   async sendRequest(toUserId: number): Promise<void> {

@@ -1,22 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  FriendSearchTooShortError,
   InvalidFriendTargetError,
   SelfFriendRequestError,
 } from "../../domain/errors/friendship-errors";
 import type { FriendshipRepository } from "../repositories/friendship-repository";
-import { FindFriendCandidateUseCase } from "./find-friend-candidate.use-case";
 import { GetFriendshipOverviewUseCase } from "./get-friendship-overview.use-case";
 import { RespondFriendRequestUseCase } from "./respond-friend-request.use-case";
+import { SearchFriendCandidatesUseCase } from "./search-friend-candidates.use-case";
 import { SendFriendRequestUseCase } from "./send-friend-request.use-case";
 
 const repository = {
   getOverview: vi.fn(),
-  findUser: vi.fn(),
+  searchUsers: vi.fn(),
   sendRequest: vi.fn(),
   respond: vi.fn(),
 } satisfies FriendshipRepository;
 
-const ana = { id: 7, username: "ana", fullName: "Ana Pérez", email: "ana@test.com" };
+const ana = { id: 7, username: "ana", fullName: "Ana Pérez" };
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -29,24 +30,20 @@ describe("GetFriendshipOverviewUseCase", () => {
   });
 });
 
-describe("FindFriendCandidateUseCase", () => {
-  const useCase = new FindFriendCandidateUseCase(repository);
+describe("SearchFriendCandidatesUseCase", () => {
+  const useCase = new SearchFriendCandidatesUseCase(repository);
 
-  it("busca al usuario cuando el ID es válido", async () => {
-    repository.findUser.mockResolvedValue(ana);
+  it("busca con el texto sin espacios alrededor", async () => {
+    const search = { candidates: [ana], total: 1 };
+    repository.searchUsers.mockResolvedValue(search);
 
-    await expect(useCase.execute(1, 7)).resolves.toEqual(ana);
-    expect(repository.findUser).toHaveBeenCalledWith(7);
+    await expect(useCase.execute("  ana ")).resolves.toEqual(search);
+    expect(repository.searchUsers).toHaveBeenCalledWith("ana");
   });
 
-  it.each([0, -3, 1.5, Number.NaN])("rechaza el ID %s sin llamar al backend", async (id) => {
-    await expect(useCase.execute(1, id)).rejects.toBeInstanceOf(InvalidFriendTargetError);
-    expect(repository.findUser).not.toHaveBeenCalled();
-  });
-
-  it("no deja buscarse a uno mismo", async () => {
-    await expect(useCase.execute(7, 7)).rejects.toBeInstanceOf(SelfFriendRequestError);
-    expect(repository.findUser).not.toHaveBeenCalled();
+  it.each(["", "a", "   a  "])("rechaza el texto %j sin llamar al backend", async (text) => {
+    await expect(useCase.execute(text)).rejects.toBeInstanceOf(FriendSearchTooShortError);
+    expect(repository.searchUsers).not.toHaveBeenCalled();
   });
 });
 
@@ -66,8 +63,8 @@ describe("SendFriendRequestUseCase", () => {
     expect(repository.sendRequest).not.toHaveBeenCalled();
   });
 
-  it("no envía la solicitud con un ID inválido", async () => {
-    await expect(useCase.execute(1, 0)).rejects.toBeInstanceOf(InvalidFriendTargetError);
+  it.each([0, -3, 1.5, Number.NaN])("no envía la solicitud con el ID %s", async (id) => {
+    await expect(useCase.execute(1, id)).rejects.toBeInstanceOf(InvalidFriendTargetError);
     expect(repository.sendRequest).not.toHaveBeenCalled();
   });
 });

@@ -60,7 +60,7 @@ export async function FriendshipOverview() {
       ) : (
         <EmptyState
           title="Todavía no tienes amigos"
-          description="Cuando alguien acepte tu solicitud, aparecerá aquí."
+          description="Busca a alguien arriba y envíale una solicitud. Cuando la acepte, aparecerá aquí."
         />
       )}
     </div>
