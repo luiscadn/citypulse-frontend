@@ -2,20 +2,24 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { SessionMenu } from "@/features/auth/presentation/components/session-menu";
 import { BrandMark, Container, ThemeToggle } from "@/shared/presentation/components";
+import { AppNav } from "./_components/app-nav";
 
-/** Layout de las páginas de la app: encabezado con logo, tema y sesión. */
+/** Layout de las páginas de la app: encabezado con logo, secciones, tema y sesión. */
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur">
         <Container className="flex h-16 items-center justify-between gap-4">
-          <Link
-            href="/"
-            className="rounded-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring"
-            aria-label="CityPulse, inicio"
-          >
-            <BrandMark />
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/"
+              className="rounded-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring"
+              aria-label="CityPulse, inicio"
+            >
+              <BrandMark />
+            </Link>
+            <AppNav className="hidden md:block" />
+          </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
             {/* Lee la cookie de sesión: va en Suspense para no bloquear el resto de la página */}
@@ -23,6 +27,10 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
               <SessionMenu />
             </Suspense>
           </div>
+        </Container>
+        {/* En pantallas pequeñas no caben junto al logo: van en una segunda fila */}
+        <Container className="pb-2 md:hidden">
+          <AppNav />
         </Container>
       </header>
       <div className="flex flex-1 flex-col">{children}</div>
