@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { SessionMenu } from "@/features/auth/presentation/components/session-menu";
 import { BrandMark, Container, ThemeToggle } from "@/shared/presentation/components";
-import { AppNav } from "./_components/app-nav";
+import { AppNav, AppNavFallback } from "./_components/app-nav";
 
 /** Layout de las páginas de la app: encabezado con logo, secciones, tema y sesión. */
 export default function AppLayout({ children }: LayoutProps<"/">) {
@@ -18,7 +18,10 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             >
               <BrandMark />
             </Link>
-            <AppNav className="hidden md:block" />
+            {/* usePathname() suspende en rutas con parámetros: sin Suspense, `next build` falla */}
+            <Suspense fallback={<AppNavFallback className="hidden md:block" />}>
+              <AppNav className="hidden md:block" />
+            </Suspense>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -30,7 +33,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
         </Container>
         {/* En pantallas pequeñas no caben junto al logo: van en una segunda fila */}
         <Container className="pb-2 md:hidden">
-          <AppNav />
+          <Suspense fallback={<AppNavFallback />}>
+            <AppNav />
+          </Suspense>
         </Container>
       </header>
       <div className="flex flex-1 flex-col">{children}</div>
