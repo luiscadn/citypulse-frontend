@@ -1,28 +1,57 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { Alert, Card, CardBody, CardHeader, EmptyState } from "@/shared/presentation/components";
+import { ChevronRightIcon } from "@/shared/presentation/components/icons";
+import { cn } from "@/shared/presentation/cn";
 import { zoneContainer } from "../../di/zone.container";
 import type { Zone } from "../../domain/entities/zone";
 import { canManageZones } from "../../domain/rules/zone-permissions";
 import { ZoneForm } from "./zone-form";
 
-function ZoneCard({ zone, parentName }: { zone: Zone; parentName?: string }) {
+/**
+ * Ordena las zonas como árbol: cada zona padre seguida de sus zonas hijas, con su nivel.
+ * Una zona cuyo padre no está en la lista se trata como raíz.
+ */
+function asTree(zones: readonly Zone[]): { zone: Zone; depth: number }[] {
+  const ids = new Set(zones.map((zone) => zone.id));
+  const childrenOf = (parentId: number | null) =>
+    zones.filter((zone) => (zone.parentId !== null && ids.has(zone.parentId) ? zone.parentId : null) === parentId);
+
+  const result: { zone: Zone; depth: number }[] = [];
+  const visit = (parentId: number | null, depth: number) => {
+    for (const zone of childrenOf(parentId)) {
+      result.push({ zone, depth });
+      visit(zone.id, depth + 1);
+    }
+  };
+  visit(null, 0);
+  return result;
+}
+
+function ZoneRow({ zone, depth }: { zone: Zone; depth: number }) {
   return (
     <li>
       <Link
         href={`/zones/${zone.id}`}
-        className="flex h-full flex-col gap-1 rounded-lg border border-line bg-surface px-5 py-4 transition-colors hover:border-primary hover:bg-primary-soft/40 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring"
+        className="group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-neutral-soft focus-visible:bg-neutral-soft focus-visible:outline-none"
       >
-        {parentName && <span className="text-xs font-semibold text-primary-strong">{parentName}</span>}
-        <span className="text-base font-semibold text-ink">{zone.name}</span>
-        <span className="text-sm text-ink-muted">{zone.description ?? "Sin descripción"}</span>
+        {/* La sangría muestra que la zona está dentro de la de arriba */}
+        <div
+          className={cn("min-w-0 flex-1", depth > 0 && "border-l border-line-strong pl-4")}
+          style={{ marginLeft: `${Math.max(depth - 1, 0) * 1.5}rem` }}
+        >
+          <p className="truncate font-semibold text-ink">{zone.name}</p>
+          <p className="truncate text-sm text-ink-muted">{zone.description ?? "Sin descripción"}</p>
+        </div>
+        <ChevronRightIcon className="text-ink-muted transition-transform group-hover:translate-x-0.5" />
       </Link>
     </li>
   );
 }
 
 /**
- * Listado de zonas. Al ADMIN además le muestra el formulario para crear una.
+ * Listado de zonas como árbol (zona padre y sus zonas hijas). Al ADMIN además le
+ * muestra el formulario para crear una.
  * Lee la cookie de sesión: con Cache Components debe ir dentro de <Suspense>.
  */
 export async function ZoneList() {
@@ -32,24 +61,24 @@ export async function ZoneList() {
   ]);
 
   if (!zones) {
-    return <Alert tone="danger">No pudimos cargar las zonas. Intenta de nuevo más tarde.</Alert>;
+    return <Alert tone="danger">No pudimos cargar las zonas. Recarga la página en un momento.</Alert>;
   }
 
   const isAdmin = canManageZones(user);
-  const nameById = new Map(zones.map((zone) => [zone.id, zone.name]));
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
       {zones.length > 0 ? (
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {zones.map((zone) => (
-            <ZoneCard
-              key={zone.id}
-              zone={zone}
-              parentName={zone.parentId ? nameById.get(zone.parentId) : undefined}
-            />
-          ))}
-        </ul>
+        <section aria-labelledby="zones-heading" className="flex flex-col gap-3">
+          <h2 id="zones-heading" className="text-sm text-ink-muted">
+            <span className="tabular-nums">{zones.length}</span> {zones.length === 1 ? "zona" : "zonas"}
+          </h2>
+          <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
+            {asTree(zones).map(({ zone, depth }) => (
+              <ZoneRow key={zone.id} zone={zone} depth={depth} />
+            ))}
+          </ul>
+        </section>
       ) : (
         <EmptyState
           title="Todavía no hay zonas"
@@ -62,8 +91,8 @@ export async function ZoneList() {
       )}
 
       {isAdmin && (
-        <Card>
-          <CardHeader title="Nueva zona" description="Solo los administradores pueden crearlas." />
+        <Card className="lg:sticky lg:top-24">
+          <CardHeader title="Nueva zona" description="Barrio, comuna o sector de la ciudad." />
           <CardBody>
             <ZoneForm parentOptions={zones} />
           </CardBody>

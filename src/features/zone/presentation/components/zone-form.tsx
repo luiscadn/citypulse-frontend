@@ -38,7 +38,8 @@ export function ZoneForm({ zone, parentOptions }: { zone?: Zone; parentOptions: 
         name="name"
         required
         maxLength={ZONE_NAME_MAX_LENGTH}
-        placeholder="San Antonio"
+        placeholder="Ej.: San Antonio…"
+        autoComplete="off"
         defaultValue={state.values.name}
         error={state.errors.name}
       />
@@ -47,7 +48,7 @@ export function ZoneForm({ zone, parentOptions }: { zone?: Zone; parentOptions: 
         name="description"
         rows={3}
         maxLength={ZONE_DESCRIPTION_MAX_LENGTH}
-        placeholder="Barrio turístico, comuna 3"
+        placeholder="Ej.: Barrio turístico de la comuna 3…"
         hint="Opcional."
         defaultValue={state.values.description}
         error={state.errors.description}
