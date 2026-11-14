@@ -8,16 +8,15 @@ import { cn } from "@/shared/presentation/cn";
 const LINKS = [
   { href: "/friends", label: "Amigos" },
   { href: "/invitations", label: "Invitaciones" },
+  { href: "/zones", label: "Zonas" },
 ] as const;
 
-function isActive(pathname: string, href: string): boolean {
+function isActive(pathname: string | null, href: string): boolean {
+  if (!pathname) return false;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Enlaces del encabezado; marca la sección en la que está la persona. */
-export function AppNav({ className }: { className?: string }) {
-  const pathname = usePathname();
-
+function NavLinks({ pathname, className }: { pathname: string | null; className?: string }) {
   return (
     <nav aria-label="Secciones" className={className}>
       <ul className="flex items-center gap-1">
@@ -44,4 +43,18 @@ export function AppNav({ className }: { className?: string }) {
       </ul>
     </nav>
   );
+}
+
+/** Enlaces del encabezado; marca la sección en la que está la persona. */
+export function AppNav({ className }: { className?: string }) {
+  return <NavLinks pathname={usePathname()} className={className} />;
+}
+
+/**
+ * Los mismos enlaces sin marcar la sección activa. Es el fallback del <Suspense> de AppNav:
+ * en rutas con parámetros (/zones/[id]) la ruta no se conoce al prerenderizar y
+ * usePathname() suspende; sin Suspense, `next build` falla.
+ */
+export function AppNavFallback({ className }: { className?: string }) {
+  return <NavLinks pathname={null} className={className} />;
 }
