@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
-import { Alert, Card, CardBody, CardHeader, PageHeader } from "@/shared/presentation/components";
+import { Alert, ButtonLink, Card, CardBody, CardHeader, PageHeader } from "@/shared/presentation/components";
 import { formatDateTime } from "@/shared/presentation/formatters/date";
 import { zoneContainer } from "../../di/zone.container";
 import type { Zone } from "../../domain/entities/zone";
@@ -40,7 +40,12 @@ export async function ZoneDetail({ zoneId }: { zoneId: Promise<string> }) {
         description={zone.description ?? "Sin descripción"}
         className="pb-0"
       />
-      <p className="text-sm text-ink-muted">Registrada el {formatDateTime(zone.createdAt)}</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-ink-muted">Registrada el {formatDateTime(zone.createdAt)}</p>
+        <ButtonLink href={`/venues?zoneId=${zone.id}`} variant="secondary" size="sm">
+          Ver lugares de esta zona
+        </ButtonLink>
+      </div>
 
       {children.length > 0 && (
         <Card>
