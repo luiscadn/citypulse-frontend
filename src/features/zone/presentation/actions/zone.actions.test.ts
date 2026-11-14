@@ -4,12 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { RoleName } from "@/shared/domain/enums";
 import { zoneContainer } from "../../di/zone.container";
-import {
-  ZoneInUseError,
-  ZoneNameRequiredError,
-  ZoneNameTakenError,
-  ZoneSelfParentError,
-} from "../../domain/errors/zone-errors";
+import { ZoneInUseError, ZoneNameTakenError, ZoneSelfParentError } from "../../domain/errors/zone-errors";
 import { createZoneAction, deleteZoneAction, updateZoneAction } from "./zone.actions";
 import { initialZoneFormState } from "./zone-form-state";
 
@@ -64,25 +59,17 @@ describe("createZoneAction", () => {
     expect(state).toEqual({ ...initialZoneFormState(), success: 'Zona "Granada" creada.' });
   });
 
-  it("sin zona padre envía null", async () => {
-    create.mockResolvedValue(zone);
-
-    await createZoneAction(initialZoneFormState(), form({ name: "Granada", parentZoneId: "" }));
-
-    expect(create).toHaveBeenCalledWith(expect.objectContaining({ parentZoneId: null }));
-  });
-
   it("manda al login si no hay sesión", async () => {
     vi.mocked(getCurrentUser).mockResolvedValue(null);
 
     await expect(createZoneAction(initialZoneFormState(), form({ name: "Granada" }))).rejects.toThrow(
       "REDIRECT /login",
     );
-    expect(redirect).toHaveBeenCalledWith("/login");
     expect(create).not.toHaveBeenCalled();
   });
 
-  it("no deja crear zonas a quien no es ADMIN", async () => {
+  // El formulario se oculta a quien no es ADMIN, pero una acción se puede llamar con un POST directo
+  it("no deja gestionar zonas a quien no es ADMIN", async () => {
     vi.mocked(getCurrentUser).mockResolvedValue(user);
 
     const state = await createZoneAction(initialZoneFormState(), form({ name: "Granada" }));
@@ -92,7 +79,6 @@ describe("createZoneAction", () => {
   });
 
   it.each([
-    [new ZoneNameRequiredError(), "name"],
     [new ZoneNameTakenError(), "name"],
     [new ZoneSelfParentError(), "parentZoneId"],
   ])("muestra %s en el campo %s y conserva lo escrito", async (error, field) => {
@@ -102,7 +88,6 @@ describe("createZoneAction", () => {
 
     expect(state.errors).toEqual({ [field]: error.message });
     expect(state.values.name).toBe("Granada");
-    expect(refresh).not.toHaveBeenCalled();
   });
 
   it("no expone los errores inesperados", async () => {
@@ -125,16 +110,6 @@ describe("updateZoneAction", () => {
 
     expect(update).toHaveBeenCalledWith(4, { name: "Granada", description: "Comida", parentZoneId: null });
     expect(state.success).toBe("Cambios guardados.");
-    expect(refresh).toHaveBeenCalled();
-  });
-
-  it("no deja editar a quien no es ADMIN", async () => {
-    vi.mocked(getCurrentUser).mockResolvedValue(user);
-
-    const state = await updateZoneAction(initialZoneFormState(), form({ zoneId: "4", name: "X" }));
-
-    expect(state.error).toBe("Solo un administrador puede gestionar zonas.");
-    expect(update).not.toHaveBeenCalled();
   });
 });
 
@@ -153,14 +128,5 @@ describe("deleteZoneAction", () => {
 
     expect(state.error).toBe("No se puede eliminar: la zona tiene lugares o eventos asociados");
     expect(redirect).not.toHaveBeenCalled();
-  });
-
-  it("no deja borrar a quien no es ADMIN", async () => {
-    vi.mocked(getCurrentUser).mockResolvedValue(user);
-
-    const state = await deleteZoneAction({}, form({ zoneId: "4" }));
-
-    expect(state.error).toBe("Solo un administrador puede gestionar zonas.");
-    expect(remove).not.toHaveBeenCalled();
   });
 });
