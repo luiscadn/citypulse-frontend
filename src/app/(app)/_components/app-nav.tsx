@@ -8,6 +8,7 @@ import { cn } from "@/shared/presentation/cn";
 const LINKS = [
   { href: "/friends", label: "Amigos" },
   { href: "/invitations", label: "Invitaciones" },
+  { href: "/zones", label: "Zonas" },
 ] as const;
 
 function isActive(pathname: string, href: string): boolean {
