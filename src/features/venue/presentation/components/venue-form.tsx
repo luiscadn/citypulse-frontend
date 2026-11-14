@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
+import type { Place } from "@/features/maps/domain/entities/place";
+import { PlaceSearch } from "@/features/maps/presentation/components/place-search";
 import type { Zone } from "@/features/zone/domain/entities/zone";
 import { Alert, Button, SelectField, TextareaField, TextField } from "@/shared/presentation/components";
 import type { Venue } from "../../domain/entities/venue";
@@ -41,8 +43,20 @@ export function VenueForm({
     ),
   );
 
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Los campos no son controlados (defaultValue): se llenan directo en el formulario
+  function fillFromPlace(place: Place) {
+    const setField = (name: string, value: string) => {
+      const field = formRef.current?.elements.namedItem(name);
+      if (field instanceof HTMLInputElement) field.value = value;
+    };
+    setField("name", place.name.slice(0, VENUE_NAME_MAX_LENGTH));
+    setField("address", place.address.slice(0, VENUE_ADDRESS_MAX_LENGTH));
+  }
+
   return (
-    <form action={formAction} className="flex flex-col gap-5" noValidate>
+    <form ref={formRef} action={formAction} className="flex flex-col gap-5" noValidate>
       {state.error && <Alert tone="danger">{state.error}</Alert>}
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {editing && <input type="hidden" name="venueId" value={venue.id} />}
@@ -51,6 +65,8 @@ export function VenueForm({
           Si cambias el nombre, la dirección o la zona, el lugar vuelve a quedar pendiente de verificación.
         </Alert>
       )}
+
+      <PlaceSearch onPick={fillFromPlace} />
 
       <TextField
         label="Nombre"

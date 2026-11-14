@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { zoneContainer } from "@/features/zone/di/zone.container";
+import { googleMapsSearchUrl } from "@/features/maps/domain/rules/maps-links";
 import { Alert, Card, CardBody, CardHeader, PageHeader } from "@/shared/presentation/components";
 import { formatDateTime } from "@/shared/presentation/formatters/date";
 import { venueContainer } from "../../di/venue.container";
@@ -54,6 +55,16 @@ export async function VenueDetail({ venueId }: { venueId: Promise<string> }) {
             <div>
               <dt className="font-semibold text-ink-muted">Dirección</dt>
               <dd className="text-ink">{venue.address ?? "Sin dirección"}</dd>
+              <dd>
+                <a
+                  href={googleMapsSearchUrl(venue)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-semibold text-primary-strong hover:underline"
+                >
+                  Ver en Google Maps ↗
+                </a>
+              </dd>
             </div>
             <div>
               <dt className="font-semibold text-ink-muted">Dueño</dt>
