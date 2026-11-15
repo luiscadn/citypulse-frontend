@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
-import { Alert, Card, CardBody, CardHeader, EmptyState } from "@/shared/presentation/components";
+import { Card, CardBody, CardHeader, EmptyState } from "@/shared/presentation/components";
 import { ChevronRightIcon } from "@/shared/presentation/components/icons";
 import { cn } from "@/shared/presentation/cn";
 import { zoneContainer } from "../../di/zone.container";
@@ -57,12 +57,8 @@ function ZoneRow({ zone, depth }: { zone: Zone; depth: number }) {
 export async function ZoneList() {
   const [user, zones] = await Promise.all([
     getCurrentUser(),
-    zoneContainer.listZonesUseCase.execute().catch(() => null),
+    zoneContainer.listZonesUseCase.execute(),
   ]);
-
-  if (!zones) {
-    return <Alert tone="danger">No pudimos cargar las zonas. Recarga la página en un momento.</Alert>;
-  }
 
   const isAdmin = canManageZones(user);
 

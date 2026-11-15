@@ -1,0 +1,147 @@
+# ─────────────────────────────────────────────────────────────────────
+#  CI del frontend: calidad (lint, tipos, unitarias, build) y E2E con Playwright
+#  contra el backend real. El job de E2E elige el backend así:
+#    1. Si existe el secreto BACKEND_REPO_TOKEN, levanta el backend aquí mismo
+#       con una base de datos de prueba (el repositorio del backend es privado).
+#    2. Si no, y existe la variable E2E_API_URL, prueba contra el backend desplegado.
+#    3. Si no hay ninguno de los dos, omite las E2E con un aviso (se corren en local).
+# ─────────────────────────────────────────────────────────────────────
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  calidad:
+    name: Lint, tipos, unitarias y build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npx vitest run
+      - run: npm run build
+
+  e2e:
+    name: E2E (Playwright)
+    needs: calidad
+    runs-on: ubuntu-24.04
+
+    # Base de datos solo para este job
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: citypulse_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+
+    env:
+      # Backend
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: citypulse_test
+      DB_SYNCHRONIZE: 'false'
+      DB_LOGGING: 'false'
+      JWT_EXPIRES_IN: 1d
+      TOTP_ISSUER: CityPulse
+      PORT: 3001
+      CORS_ORIGIN: http://localhost:3000
+      # Frontend
+      API_URL: http://localhost:3001
+      # Solo dice si el secreto existe; el token no queda en el entorno
+      TIENE_TOKEN_BACKEND: ${{ secrets.BACKEND_REPO_TOKEN != '' }}
+      API_DESPLEGADA: ${{ vars.E2E_API_URL }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Elegir contra qué backend probar
+        id: backend
+        run: |
+          if [ "$TIENE_TOKEN_BACKEND" = "true" ]; then
+            echo "modo=local" >> "$GITHUB_OUTPUT"
+          elif [ -n "$API_DESPLEGADA" ]; then
+            echo "modo=desplegado" >> "$GITHUB_OUTPUT"
+            echo "API_URL=$API_DESPLEGADA" >> "$GITHUB_ENV"
+            echo "::notice::E2E contra el backend desplegado ($API_DESPLEGADA)"
+          else
+            echo "modo=ninguno" >> "$GITHUB_OUTPUT"
+            echo "::notice::E2E omitidas: falta el secreto BACKEND_REPO_TOKEN o la variable E2E_API_URL. Córrelas en local con npm run test:e2e"
+          fi
+
+      # En el plan gratis de Render el servicio se duerme: se despierta antes de probar
+      - name: Despertar el backend desplegado
+        if: steps.backend.outputs.modo == 'desplegado'
+        run: curl -fsS --retry 12 --retry-delay 10 --retry-all-errors -o /dev/null "$API_URL/api/docs"
+
+      # El backend está en otro repositorio privado de la organización:
+      # BACKEND_REPO_TOKEN es un token con permiso de lectura sobre él.
+      - uses: actions/checkout@v5
+        if: steps.backend.outputs.modo == 'local'
+        with:
+          repository: ICESI-CI3/icesi-2026b-nestjs-taller-group-6
+          ref: main
+          token: ${{ secrets.BACKEND_REPO_TOKEN }}
+          path: backend
+
+      - uses: actions/setup-node@v5
+        if: steps.backend.outputs.modo != 'ninguno'
+        with:
+          node-version: 24
+          cache: npm
+
+      # Un secreto distinto en cada corrida: solo firma los tokens de esta prueba
+      - name: Generar JWT_SECRET de prueba
+        if: steps.backend.outputs.modo == 'local'
+        run: echo "JWT_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
+      - name: Cargar esquema y datos de prueba
+        if: steps.backend.outputs.modo == 'local'
+        run: psql -h localhost -U postgres -d citypulse_test -v ON_ERROR_STOP=1 -f backend/p2pevent/db/init.sql
+        env:
+          PGPASSWORD: postgres
+
+      - name: Levantar el backend
+        if: steps.backend.outputs.modo == 'local'
+        working-directory: backend/p2pevent
+        run: |
+          npm ci
+          npm run build
+          npm run start:prod > backend.log 2>&1 &
+          npx wait-on http://localhost:3001/api/docs --timeout 60000
+
+      - run: npm ci
+        if: steps.backend.outputs.modo != 'ninguno'
+      - run: npx playwright install --with-deps chromium
+        if: steps.backend.outputs.modo != 'ninguno'
+
+      # playwright.config.ts compila y arranca el frontend (CI=true)
+      - run: npm run test:e2e
+        if: steps.backend.outputs.modo != 'ninguno'
+
+      - name: Ver logs del backend
+        if: failure() && steps.backend.outputs.modo == 'local'
+        run: cat backend/p2pevent/backend.log
+
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          if-no-files-found: ignore

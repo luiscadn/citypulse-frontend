@@ -21,15 +21,13 @@ export async function MyVenues() {
   }
 
   const [venues, zones] = await Promise.all([
-    venueContainer.listMyVenuesUseCase.execute().catch(() => null),
+    venueContainer.listMyVenuesUseCase.execute(),
     zoneContainer.listZonesUseCase.execute().catch(() => []),
   ]);
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
-      {!venues ? (
-        <Alert tone="danger">No pudimos cargar tus lugares. Recarga la página en un momento.</Alert>
-      ) : venues.length > 0 ? (
+      {venues.length > 0 ? (
         <VenueRows>
           {venues.map((venue) => (
             <VenueRow key={venue.id} venue={venue} />

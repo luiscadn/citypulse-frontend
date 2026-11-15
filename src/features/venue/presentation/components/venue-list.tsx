@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { zoneContainer } from "@/features/zone/di/zone.container";
-import { Alert, ButtonLink, Card, CardBody, EmptyState } from "@/shared/presentation/components";
+import { ButtonLink, Card, CardBody, EmptyState } from "@/shared/presentation/components";
 import { venueContainer } from "../../di/venue.container";
 import { parseVenueFilters } from "../../domain/rules/venue-input";
 import { canRegisterVenues, canVerifyVenues } from "../../domain/rules/venue-permissions";
@@ -26,7 +26,7 @@ export async function VenueList({ searchParams }: { searchParams: PageProps<"/ve
   const [user, zones, page] = await Promise.all([
     getCurrentUser(),
     zoneContainer.listZonesUseCase.execute().catch(() => []),
-    venueContainer.listVenuesUseCase.execute(filters).catch(() => null),
+    venueContainer.listVenuesUseCase.execute(filters),
   ]);
 
   const isOwner = canRegisterVenues(user);
@@ -52,9 +52,7 @@ export async function VenueList({ searchParams }: { searchParams: PageProps<"/ve
         </CardBody>
       </Card>
 
-      {!page ? (
-        <Alert tone="danger">No pudimos cargar los lugares. Recarga la página en un momento.</Alert>
-      ) : page.venues.length === 0 ? (
+      {page.venues.length === 0 ? (
         <EmptyState
           title={filtered ? "Ningún lugar coincide con los filtros" : "Todavía no hay lugares"}
           description={
