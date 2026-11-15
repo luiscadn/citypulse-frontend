@@ -1,13 +1,18 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { SessionMenu } from "@/features/auth/presentation/components/session-menu";
+import { SessionProvider } from "@/features/auth/presentation/context/session-context";
 import { BrandMark, Container, ThemeToggle } from "@/shared/presentation/components";
 import { AppNav, AppNavFallback } from "./_components/app-nav";
 
 /** Layout de las páginas de la app: encabezado con logo, secciones, tema y sesión. */
 export default function AppLayout({ children }: LayoutProps<"/">) {
+  // Sin await: la sesión se resuelve dentro de los <Suspense> de quien la usa (useSession)
+  const sessionPromise = getCurrentUser();
+
   return (
-    <>
+    <SessionProvider sessionPromise={sessionPromise}>
       <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur">
         <Container className="flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-6">
@@ -25,7 +30,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            {/* Lee la cookie de sesión: va en Suspense para no bloquear el resto de la página */}
+            {/* Espera la sesión: va en Suspense para no bloquear el resto de la página */}
             <Suspense>
               <SessionMenu />
             </Suspense>
@@ -39,6 +44,6 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
         </Container>
       </header>
       <div className="flex flex-1 flex-col">{children}</div>
-    </>
+    </SessionProvider>
   );
 }
