@@ -31,7 +31,8 @@ export async function VenueDetail({ venueId }: { venueId: Promise<string> }) {
     venue = await venueContainer.getVenueUseCase.execute(id);
   } catch (error) {
     if (error instanceof VenueNotFoundError) notFound();
-    return <Alert tone="danger">No pudimos cargar el lugar. Recarga la página en un momento.</Alert>;
+    // Cualquier otro fallo lo muestra error.tsx
+    throw error;
   }
 
   const user = await getCurrentUser();

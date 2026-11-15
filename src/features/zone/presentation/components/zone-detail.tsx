@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
-import { Alert, ButtonLink, Card, CardBody, CardFooter, CardHeader, PageHeader } from "@/shared/presentation/components";
+import { ButtonLink, Card, CardBody, CardFooter, CardHeader, PageHeader } from "@/shared/presentation/components";
 import { Breadcrumbs, type Crumb } from "@/shared/presentation/components/breadcrumbs";
 import { ChevronRightIcon } from "@/shared/presentation/components/icons";
 import { formatDateTime } from "@/shared/presentation/formatters/date";
@@ -29,7 +29,8 @@ export async function ZoneDetail({ zoneId }: { zoneId: Promise<string> }) {
     ]);
   } catch (error) {
     if (error instanceof ZoneNotFoundError) notFound();
-    return <Alert tone="danger">No pudimos cargar la zona. Recarga la página en un momento.</Alert>;
+    // Cualquier otro fallo lo muestra error.tsx
+    throw error;
   }
 
   const isAdmin = canManageZones(await getCurrentUser());
