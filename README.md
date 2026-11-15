@@ -9,8 +9,10 @@ Aplicación para reportar, verificar y difundir eventos urbanos de Cali. Este re
 | | URL |
 |---|---|
 | Frontend | _pendiente_ |
-| Backend (API) | _pendiente_ |
-| Documentación de la API (Swagger) | _pendiente_ (`/api/docs` del backend) |
+| Backend (API) | https://citypulse-api-lrs2.onrender.com |
+| Documentación de la API (Swagger) | https://citypulse-api-lrs2.onrender.com/api/docs |
+
+El backend está en el plan gratis de Render: si lleva un rato sin uso, la primera petición tarda cerca de un minuto en despertarlo.
 
 ## Tecnologías
 
@@ -117,7 +119,7 @@ presentation/    Server Actions y componentes
   2. E2E contra el backend real. El job elige el backend así:
      - Con el secreto `BACKEND_REPO_TOKEN` (lectura sobre el repositorio del backend, que es privado), lo levanta en el mismo job con PostgreSQL y `db/init.sql`.
      - Si no, con la variable del repositorio `E2E_API_URL`, prueba contra el backend desplegado.
-     - Sin ninguno de los dos, omite las E2E y deja un aviso. Los permisos de la organización no dejan crear el token, así que hoy se usa `E2E_API_URL` o se corren en local.
+     - Sin ninguno de los dos, omite las E2E y deja un aviso. Los permisos de la organización no dejan crear el token, así que hoy `E2E_API_URL` apunta al backend desplegado en Render.
 
 Si `npx playwright install chromium` se queda descargando, `E2E_CHANNEL=chrome npm run test:e2e` usa el Google Chrome instalado.
 
