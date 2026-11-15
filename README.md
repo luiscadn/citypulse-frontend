@@ -114,8 +114,10 @@ presentation/    Server Actions y componentes
     - El flujo de zonas corre en modo serial con un nombre único y se limpia al final, así que la suite da el mismo resultado si se corre dos veces seguidas.
 - **CI** (`.github/workflows/ci.yml`), en cada push:
   1. Lint, tipos, unitarias y build.
-  2. E2E contra el backend real, levantado en el mismo job con PostgreSQL y `db/init.sql`.
-  - Requiere el secreto `BACKEND_REPO_TOKEN`: un token con lectura sobre el repositorio del backend, que es privado.
+  2. E2E contra el backend real. El job elige el backend así:
+     - Con el secreto `BACKEND_REPO_TOKEN` (lectura sobre el repositorio del backend, que es privado), lo levanta en el mismo job con PostgreSQL y `db/init.sql`.
+     - Si no, con la variable del repositorio `E2E_API_URL`, prueba contra el backend desplegado.
+     - Sin ninguno de los dos, omite las E2E y deja un aviso. Los permisos de la organización no dejan crear el token, así que hoy se usa `E2E_API_URL` o se corren en local.
 
 Si `npx playwright install chromium` se queda descargando, `E2E_CHANNEL=chrome npm run test:e2e` usa el Google Chrome instalado.
 
@@ -136,5 +138,5 @@ Cada integrante indica qué herramientas usó y para qué partes.
 
 | Integrante | Herramienta | Para qué |
 |---|---|---|
-| Luis Cadena | Claude Code (Anthropic) | Apoyo en la implementación y las pruebas de zonas, lugares y mapas; configuración de Playwright y del pipeline de CI; borrador de este README |
+| Luis Cadena | Claude Code | Apoyo en la implementación y las pruebas de zonas, lugares y mapas; configuración de Playwright y del pipeline de CI; borrador de este README |
 | _Por completar_ | | |
