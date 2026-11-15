@@ -85,6 +85,11 @@ jobs:
             echo "::notice::E2E omitidas: falta el secreto BACKEND_REPO_TOKEN o la variable E2E_API_URL. Córrelas en local con npm run test:e2e"
           fi
 
+      # En el plan gratis de Render el servicio se duerme: se despierta antes de probar
+      - name: Despertar el backend desplegado
+        if: steps.backend.outputs.modo == 'desplegado'
+        run: curl -fsS --retry 12 --retry-delay 10 --retry-all-errors -o /dev/null "$API_URL/api/docs"
+
       # El backend está en otro repositorio privado de la organización:
       # BACKEND_REPO_TOKEN es un token con permiso de lectura sobre él.
       - uses: actions/checkout@v5
