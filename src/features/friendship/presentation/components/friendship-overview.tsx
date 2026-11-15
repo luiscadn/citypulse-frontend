@@ -1,22 +1,16 @@
-import { Alert, Badge, Card, CardHeader, EmptyState } from "@/shared/presentation/components";
-import { friendshipContainer } from "../../di/friendship.container";
-import type { FriendshipOverview as Overview } from "../../domain/entities/friendship";
+"use client";
+
+import { Badge, Card, CardHeader, EmptyState } from "@/shared/presentation/components";
+import { useFriendship } from "../hooks/use-friendship";
 import { FriendRequestActions } from "./friend-request-actions";
 import { FriendUserRow } from "./friend-user-row";
 
 /**
  * Amigos y solicitudes pendientes del usuario de la sesión.
- * Lee la cookie de sesión: con Cache Components debe ir dentro de <Suspense>.
+ * useFriendship() suspende hasta tener el resumen: debe ir dentro de <Suspense>.
  */
-export async function FriendshipOverview() {
-  let overview: Overview;
-  try {
-    overview = await friendshipContainer.getFriendshipOverviewUseCase.execute();
-  } catch {
-    return <Alert tone="danger">No pudimos cargar tus amigos. Intenta de nuevo más tarde.</Alert>;
-  }
-
-  const { friends, pendingReceived, pendingSent } = overview;
+export function FriendshipOverview() {
+  const { friends, pendingReceived, pendingSent } = useFriendship();
 
   return (
     <div className="flex flex-col gap-6">

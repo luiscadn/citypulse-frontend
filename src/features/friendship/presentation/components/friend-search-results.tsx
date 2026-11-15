@@ -1,30 +1,15 @@
-import { Alert, Badge } from "@/shared/presentation/components";
+import { Alert } from "@/shared/presentation/components";
 import { DomainError } from "@/shared/domain/errors/domain-error";
 import { friendshipContainer } from "../../di/friendship.container";
-import type {
-  FriendCandidateSearch,
-  FriendRelation,
-  FriendshipOverview,
-} from "../../domain/entities/friendship";
-import { friendRelation } from "../../domain/rules/friend-relation";
+import type { FriendCandidateSearch } from "../../domain/entities/friendship";
+import { CandidateAction } from "./candidate-action";
 import { FriendUserRow } from "./friend-user-row";
-import { SendFriendRequestButton } from "./send-friend-request-button";
 
-function RelationBadge({ relation }: { relation: Exclude<FriendRelation, "none"> }) {
-  if (relation === "friend") return <Badge tone="success">Ya son amigos</Badge>;
-  if (relation === "request-sent") return <Badge tone="warning" dot>Solicitud enviada</Badge>;
-  return <Badge tone="info">Te envió una solicitud</Badge>;
-}
-
-/** Personas que coinciden con la búsqueda y qué relación tengo con cada una. */
+/** Personas que coinciden con la búsqueda; la relación con cada una sale del estado de amistades. */
 export async function FriendSearchResults({ query }: { query: string }) {
   let search: FriendCandidateSearch;
-  let overview: FriendshipOverview;
   try {
-    [search, overview] = await Promise.all([
-      friendshipContainer.searchFriendCandidatesUseCase.execute(query),
-      friendshipContainer.getFriendshipOverviewUseCase.execute(),
-    ]);
+    search = await friendshipContainer.searchFriendCandidatesUseCase.execute(query);
   } catch (error) {
     if (error instanceof DomainError) {
       return <Alert tone="warning">{error.message}</Alert>;
@@ -47,18 +32,11 @@ export async function FriendSearchResults({ query }: { query: string }) {
       )}
       {/* Márgenes negativos: la lista llega hasta los bordes de la tarjeta, como las demás */}
       <ul className="-mx-5 -mb-4 divide-y divide-line border-t border-line">
-        {search.candidates.map((candidate) => {
-          const relation = friendRelation(candidate.id, overview);
-          return (
-            <FriendUserRow key={candidate.id} user={candidate}>
-              {relation === "none" ? (
-                <SendFriendRequestButton targetUserId={candidate.id} />
-              ) : (
-                <RelationBadge relation={relation} />
-              )}
-            </FriendUserRow>
-          );
-        })}
+        {search.candidates.map((candidate) => (
+          <FriendUserRow key={candidate.id} user={candidate}>
+            <CandidateAction userId={candidate.id} />
+          </FriendUserRow>
+        ))}
       </ul>
     </div>
   );
