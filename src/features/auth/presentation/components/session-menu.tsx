@@ -1,14 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import { ButtonLink } from "@/shared/presentation/components";
-import { getCurrentUser } from "../../infrastructure/session/get-current-user";
+import { useSession } from "../hooks/use-session";
 import { LogoutButton } from "./logout-button";
 
 /**
  * Correo del usuario + botón de cerrar sesión, o enlace a /login.
- * Lee la cookie de sesión: con Cache Components debe ir dentro de <Suspense>.
+ * useSession() suspende hasta tener la sesión: debe ir dentro de <Suspense>.
  */
-export async function SessionMenu() {
-  const user = await getCurrentUser();
+export function SessionMenu() {
+  const { user } = useSession();
 
   if (!user) {
     return (
