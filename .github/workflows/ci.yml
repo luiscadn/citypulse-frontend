@@ -1,6 +1,10 @@
 # ─────────────────────────────────────────────────────────────────────
 #  CI del frontend: calidad (lint, tipos, unitarias, build) y E2E con Playwright
-#  contra el backend real, levantado aquí mismo con una base de datos de prueba.
+#  contra el backend real. El job de E2E elige el backend así:
+#    1. Si existe el secreto BACKEND_REPO_TOKEN, levanta el backend aquí mismo
+#       con una base de datos de prueba (el repositorio del backend es privado).
+#    2. Si no, y existe la variable E2E_API_URL, prueba contra el backend desplegado.
+#    3. Si no hay ninguno de los dos, omite las E2E con un aviso (se corren en local).
 # ─────────────────────────────────────────────────────────────────────
 name: CI
 
@@ -60,13 +64,31 @@ jobs:
       CORS_ORIGIN: http://localhost:3000
       # Frontend
       API_URL: http://localhost:3001
+      # Solo dice si el secreto existe; el token no queda en el entorno
+      TIENE_TOKEN_BACKEND: ${{ secrets.BACKEND_REPO_TOKEN != '' }}
+      API_DESPLEGADA: ${{ vars.E2E_API_URL }}
 
     steps:
       - uses: actions/checkout@v5
 
+      - name: Elegir contra qué backend probar
+        id: backend
+        run: |
+          if [ "$TIENE_TOKEN_BACKEND" = "true" ]; then
+            echo "modo=local" >> "$GITHUB_OUTPUT"
+          elif [ -n "$API_DESPLEGADA" ]; then
+            echo "modo=desplegado" >> "$GITHUB_OUTPUT"
+            echo "API_URL=$API_DESPLEGADA" >> "$GITHUB_ENV"
+            echo "::notice::E2E contra el backend desplegado ($API_DESPLEGADA)"
+          else
+            echo "modo=ninguno" >> "$GITHUB_OUTPUT"
+            echo "::notice::E2E omitidas: falta el secreto BACKEND_REPO_TOKEN o la variable E2E_API_URL. Córrelas en local con npm run test:e2e"
+          fi
+
       # El backend está en otro repositorio privado de la organización:
       # BACKEND_REPO_TOKEN es un token con permiso de lectura sobre él.
       - uses: actions/checkout@v5
+        if: steps.backend.outputs.modo == 'local'
         with:
           repository: ICESI-CI3/icesi-2026b-nestjs-taller-group-6
           ref: main
@@ -74,23 +96,24 @@ jobs:
           path: backend
 
       - uses: actions/setup-node@v5
+        if: steps.backend.outputs.modo != 'ninguno'
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            backend/p2pevent/package-lock.json
 
       # Un secreto distinto en cada corrida: solo firma los tokens de esta prueba
       - name: Generar JWT_SECRET de prueba
+        if: steps.backend.outputs.modo == 'local'
         run: echo "JWT_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
 
       - name: Cargar esquema y datos de prueba
+        if: steps.backend.outputs.modo == 'local'
         run: psql -h localhost -U postgres -d citypulse_test -v ON_ERROR_STOP=1 -f backend/p2pevent/db/init.sql
         env:
           PGPASSWORD: postgres
 
       - name: Levantar el backend
+        if: steps.backend.outputs.modo == 'local'
         working-directory: backend/p2pevent
         run: |
           npm ci
@@ -99,13 +122,16 @@ jobs:
           npx wait-on http://localhost:3001/api/docs --timeout 60000
 
       - run: npm ci
+        if: steps.backend.outputs.modo != 'ninguno'
       - run: npx playwright install --with-deps chromium
+        if: steps.backend.outputs.modo != 'ninguno'
 
       # playwright.config.ts compila y arranca el frontend (CI=true)
       - run: npm run test:e2e
+        if: steps.backend.outputs.modo != 'ninguno'
 
       - name: Ver logs del backend
-        if: failure()
+        if: failure() && steps.backend.outputs.modo == 'local'
         run: cat backend/p2pevent/backend.log
 
       - uses: actions/upload-artifact@v6
