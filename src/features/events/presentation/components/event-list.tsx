@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { zoneContainer } from "@/features/zone/di/zone.container";
-import { Alert, ButtonLink, Card, CardBody, EmptyState } from "@/shared/presentation/components";
+import { ButtonLink, Card, CardBody, EmptyState } from "@/shared/presentation/components";
 import { eventContainer } from "../../di/event.container";
 import { parseEventFilters } from "../../domain/rules/event-input";
 import { canReportEvents } from "../../domain/rules/event-permissions";
@@ -30,7 +30,8 @@ export async function EventList({ searchParams }: { searchParams: PageProps<"/ev
   const [user, zones, page] = await Promise.all([
     getCurrentUser(),
     zoneContainer.listZonesUseCase.execute().catch(() => []),
-    eventContainer.listEventsUseCase.execute(filters).catch(() => null),
+    // Si falla, lo muestra error.tsx
+    eventContainer.listEventsUseCase.execute(filters),
   ]);
 
   const filtered =
@@ -55,9 +56,7 @@ export async function EventList({ searchParams }: { searchParams: PageProps<"/ev
         </CardBody>
       </Card>
 
-      {!page ? (
-        <Alert tone="danger">No pudimos cargar los eventos. Intenta de nuevo más tarde.</Alert>
-      ) : page.events.length === 0 ? (
+      {page.events.length === 0 ? (
         <EmptyState
           title={filtered ? "Ningún evento coincide con los filtros" : "Todavía no hay eventos"}
           description={

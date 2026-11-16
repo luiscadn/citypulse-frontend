@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/features/auth/infrastructure/session/get-curre
 import { zoneContainer } from "@/features/zone/di/zone.container";
 import { EventOrigin, EventStatus } from "@/shared/domain/enums";
 import { Alert, Badge, Card, CardBody, CardHeader, PageHeader } from "@/shared/presentation/components";
+import { Breadcrumbs } from "@/shared/presentation/components/breadcrumbs";
 import { formatDateTime } from "@/shared/presentation/formatters/date";
 import { eventContainer } from "../../di/event.container";
 import type { EventDetail as EventDetailData } from "../../domain/entities/event";
@@ -40,7 +41,8 @@ export async function EventDetail({ eventId }: { eventId: Promise<string> }) {
   } catch (error) {
     if (error instanceof EventNotFoundError) notFound();
     if (error instanceof EventPrivateError) return <Alert tone="warning">{error.message}</Alert>;
-    return <Alert tone="danger">No pudimos cargar el evento. Intenta de nuevo más tarde.</Alert>;
+    // Cualquier otro fallo lo muestra error.tsx
+    throw error;
   }
 
   const user = await getCurrentUser();
@@ -52,6 +54,7 @@ export async function EventDetail({ eventId }: { eventId: Promise<string> }) {
 
   return (
     <>
+      <Breadcrumbs items={[{ label: "Eventos", href: "/events" }, { label: event.title }]} />
       <PageHeader
         eyebrow={
           <Link href={`/zones/${event.zone.id}`} className="hover:underline">
@@ -66,7 +69,7 @@ export async function EventDetail({ eventId }: { eventId: Promise<string> }) {
             <Badge tone={official ? "info" : "neutral"}>{official ? "Oficial" : "Reporte ciudadano"}</Badge>
           </>
         }
-        className="pb-0"
+        className="pt-2 pb-0"
       />
 
       {event.status === EventStatus.CANCELADO && <Alert tone="warning">Este evento fue cancelado.</Alert>}
