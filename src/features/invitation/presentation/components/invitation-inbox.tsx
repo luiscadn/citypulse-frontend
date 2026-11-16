@@ -1,22 +1,18 @@
-import { Alert, Card, CardHeader, EmptyState } from "@/shared/presentation/components";
+"use client";
+
+import { Card, CardHeader, EmptyState } from "@/shared/presentation/components";
 import { formatDateTime } from "@/shared/presentation/formatters/date";
-import { invitationContainer } from "../../di/invitation.container";
-import type { PendingInvitation } from "../../domain/entities/invitation";
+import { useInvitations } from "../hooks/use-invitations";
 import { InvitationAnswerActions } from "./invitation-answer-actions";
 
 /**
  * Invitaciones pendientes del usuario de la sesión.
- * Lee la cookie de sesión: con Cache Components debe ir dentro de <Suspense>.
+ * useInvitations() suspende hasta tenerlas: debe ir dentro de <Suspense>.
  */
-export async function InvitationInbox() {
-  let invitations: readonly PendingInvitation[];
-  try {
-    invitations = await invitationContainer.getPendingInvitationsUseCase.execute();
-  } catch {
-    return <Alert tone="danger">No pudimos cargar tus invitaciones. Intenta de nuevo más tarde.</Alert>;
-  }
+export function InvitationInbox() {
+  const { pending } = useInvitations();
 
-  if (invitations.length === 0) {
+  if (pending.length === 0) {
     return (
       <EmptyState
         title="No tienes invitaciones pendientes"
@@ -29,7 +25,7 @@ export async function InvitationInbox() {
     <Card>
       <CardHeader title="Invitaciones pendientes" description="Tus amigos quieren que los acompañes." />
       <ul className="divide-y divide-line">
-        {invitations.map((invitation) => (
+        {pending.map((invitation) => (
           <li key={invitation.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-ink">{invitation.event.title}</p>

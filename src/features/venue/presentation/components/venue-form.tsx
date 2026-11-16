@@ -73,7 +73,8 @@ export function VenueForm({
         name="name"
         required
         maxLength={VENUE_NAME_MAX_LENGTH}
-        placeholder="Teatro Jorge Isaacs"
+        placeholder="Ej.: Teatro Jorge Isaacs…"
+        autoComplete="off"
         defaultValue={state.values.name}
         error={state.errors.name}
       />
@@ -82,7 +83,8 @@ export function VenueForm({
         name="address"
         required
         maxLength={VENUE_ADDRESS_MAX_LENGTH}
-        placeholder="Cra 3 # 12-28"
+        placeholder="Ej.: Cra 3 # 12-28…"
+        autoComplete="off"
         defaultValue={state.values.address}
         error={state.errors.address}
       />
@@ -107,7 +109,7 @@ export function VenueForm({
         name="description"
         rows={3}
         maxLength={VENUE_DESCRIPTION_MAX_LENGTH}
-        placeholder="Teatro histórico del centro"
+        placeholder="Ej.: Teatro histórico del centro…"
         hint="Opcional."
         defaultValue={state.values.description}
         error={state.errors.description}
