@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { zoneContainer } from "@/features/zone/di/zone.container";
-import { Alert, ButtonLink, Card, CardBody, EmptyState } from "@/shared/presentation/components";
+import { ButtonLink, Card, CardBody, EmptyState } from "@/shared/presentation/components";
 import { venueContainer } from "../../di/venue.container";
 import { parseVenueFilters } from "../../domain/rules/venue-input";
 import { canRegisterVenues, canVerifyVenues } from "../../domain/rules/venue-permissions";
-import { VenueCard } from "./venue-card";
+import { VenueRow, VenueRows } from "./venue-row";
 import { VenueFilters } from "./venue-filters";
 import { VenuePagination } from "./venue-pagination";
 
@@ -26,7 +26,7 @@ export async function VenueList({ searchParams }: { searchParams: PageProps<"/ve
   const [user, zones, page] = await Promise.all([
     getCurrentUser(),
     zoneContainer.listZonesUseCase.execute().catch(() => []),
-    venueContainer.listVenuesUseCase.execute(filters).catch(() => null),
+    venueContainer.listVenuesUseCase.execute(filters),
   ]);
 
   const isOwner = canRegisterVenues(user);
@@ -52,9 +52,7 @@ export async function VenueList({ searchParams }: { searchParams: PageProps<"/ve
         </CardBody>
       </Card>
 
-      {!page ? (
-        <Alert tone="danger">No pudimos cargar los lugares. Intenta de nuevo más tarde.</Alert>
-      ) : page.venues.length === 0 ? (
+      {page.venues.length === 0 ? (
         <EmptyState
           title={filtered ? "Ningún lugar coincide con los filtros" : "Todavía no hay lugares"}
           description={
@@ -73,13 +71,14 @@ export async function VenueList({ searchParams }: { searchParams: PageProps<"/ve
       ) : (
         <>
           <p className="text-sm text-ink-muted">
-            {page.total} {page.total === 1 ? "lugar" : "lugares"}
+            <span className="tabular-nums">{page.total}</span> {page.total === 1 ? "lugar" : "lugares"}
+            {filters.isVerified === false && " por verificar"}
           </p>
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <VenueRows>
             {page.venues.map((venue) => (
-              <VenueCard key={venue.id} venue={venue} />
+              <VenueRow key={venue.id} venue={venue} />
             ))}
-          </ul>
+          </VenueRows>
           <VenuePagination filters={{ ...filters, page: page.page }} lastPage={page.lastPage} />
         </>
       )}

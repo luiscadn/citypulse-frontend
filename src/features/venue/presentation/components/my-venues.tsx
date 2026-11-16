@@ -3,7 +3,7 @@ import { zoneContainer } from "@/features/zone/di/zone.container";
 import { Alert, Card, CardBody, CardHeader, EmptyState } from "@/shared/presentation/components";
 import { venueContainer } from "../../di/venue.container";
 import { canRegisterVenues } from "../../domain/rules/venue-permissions";
-import { VenueCard } from "./venue-card";
+import { VenueRow, VenueRows } from "./venue-row";
 import { VenueForm } from "./venue-form";
 
 /**
@@ -21,20 +21,18 @@ export async function MyVenues() {
   }
 
   const [venues, zones] = await Promise.all([
-    venueContainer.listMyVenuesUseCase.execute().catch(() => null),
+    venueContainer.listMyVenuesUseCase.execute(),
     zoneContainer.listZonesUseCase.execute().catch(() => []),
   ]);
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
-      {!venues ? (
-        <Alert tone="danger">No pudimos cargar tus lugares. Intenta de nuevo más tarde.</Alert>
-      ) : venues.length > 0 ? (
-        <ul className="grid gap-3 sm:grid-cols-2">
+      {venues.length > 0 ? (
+        <VenueRows>
           {venues.map((venue) => (
-            <VenueCard key={venue.id} venue={venue} />
+            <VenueRow key={venue.id} venue={venue} />
           ))}
-        </ul>
+        </VenueRows>
       ) : (
         <EmptyState
           title="Todavía no tienes lugares"
@@ -42,7 +40,7 @@ export async function MyVenues() {
         />
       )}
 
-      <Card>
+      <Card className="lg:sticky lg:top-24">
         <CardHeader title="Registrar un lugar" description="Nace pendiente hasta que un administrador lo verifique." />
         <CardBody>
           <VenueForm zones={zones} />

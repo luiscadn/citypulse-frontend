@@ -1,11 +1,6 @@
-import { RoleName } from "@/shared/domain/enums";
-import { Badge, type Tone } from "@/shared/presentation/components";
-
-const ROLE_LABEL: Record<RoleName, { label: string; tone: Tone }> = {
-  [RoleName.USER]: { label: "Usuario", tone: "neutral" },
-  [RoleName.OWNER]: { label: "Propietario", tone: "info" },
-  [RoleName.ADMIN]: { label: "Administrador", tone: "primary" },
-};
+import type { RoleName } from "@/shared/domain/enums";
+import { Badge } from "@/shared/presentation/components";
+import { ROLE_LABEL } from "../role-labels";
 
 export function RoleBadges({ roles }: { roles: readonly RoleName[] }) {
   return (

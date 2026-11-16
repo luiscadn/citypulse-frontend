@@ -1,19 +1,14 @@
 "use client";
 
-import { useActionState } from "react";
 import { Alert, Button } from "@/shared/presentation/components";
-import { initialInvitationActionState } from "../actions/invitation-action-state";
-import { respondInvitationAction } from "../actions/invitation.actions";
+import { useRespondInvitation } from "../hooks/use-respond-invitation";
 
 /** Botones para aceptar o rechazar una invitación recibida. */
 export function InvitationAnswerActions({ invitationId }: { invitationId: number }) {
-  const [state, formAction, pending] = useActionState(
-    respondInvitationAction,
-    initialInvitationActionState,
-  );
+  const { error, respond, pending } = useRespondInvitation();
 
   return (
-    <form action={formAction} className="flex flex-col items-end gap-2">
+    <form action={respond} className="flex flex-col items-end gap-2">
       <input type="hidden" name="invitationId" value={invitationId} />
       <div className="flex gap-2">
         <Button type="submit" name="answer" value="ACEPTADA" size="sm" disabled={pending}>
@@ -23,7 +18,7 @@ export function InvitationAnswerActions({ invitationId }: { invitationId: number
           Rechazar
         </Button>
       </div>
-      {state.error && <Alert tone="danger">{state.error}</Alert>}
+      {error && <Alert tone="danger">{error}</Alert>}
     </form>
   );
 }

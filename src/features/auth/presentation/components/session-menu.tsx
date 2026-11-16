@@ -1,14 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { RoleName } from "@/shared/domain/enums";
 import { ButtonLink } from "@/shared/presentation/components";
-import { getCurrentUser } from "../../infrastructure/session/get-current-user";
+import { useSession } from "../hooks/use-session";
 import { LogoutButton } from "./logout-button";
 
 /**
  * Correo del usuario + botón de cerrar sesión, o enlace a /login.
- * Lee la cookie de sesión: con Cache Components debe ir dentro de <Suspense>.
+ * useSession() suspende hasta tener la sesión: debe ir dentro de <Suspense>.
  */
-export async function SessionMenu() {
-  const user = await getCurrentUser();
+export function SessionMenu() {
+  const { user } = useSession();
 
   if (!user) {
     return (
@@ -20,6 +23,11 @@ export async function SessionMenu() {
 
   return (
     <div className="flex items-center gap-3">
+      {user.roles.includes(RoleName.ADMIN) && (
+        <ButtonLink href="/admin/users" variant="ghost" size="sm">
+          Roles
+        </ButtonLink>
+      )}
       <Link
         href="/profile"
         aria-label="Mi perfil"
