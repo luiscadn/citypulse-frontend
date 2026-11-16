@@ -14,7 +14,7 @@ export function EventFilters({ filters, zones }: { filters: Filters; zones: read
   return (
     // key: al navegar a otros filtros, los campos deben mostrar los de la URL
     <Form
-      key={`${filters.zoneId}-${filters.status}-${filters.origin}-${filters.search}`}
+      key={`${filters.zoneId}-${filters.status}-${filters.origin}-${filters.search}-${filters.from}-${filters.to}`}
       action="/events"
       className="flex flex-wrap items-end gap-3"
     >
@@ -48,6 +48,8 @@ export function EventFilters({ filters, zones }: { filters: Filters; zones: read
         <option value={EventOrigin.OFICIAL}>Oficiales</option>
         <option value={EventOrigin.REPORTE_USUARIO}>Reportes ciudadanos</option>
       </SelectField>
+      <TextField label="Desde" name="from" type="date" defaultValue={filters.from ?? ""} className="min-w-36" />
+      <TextField label="Hasta" name="to" type="date" defaultValue={filters.to ?? ""} className="min-w-36" />
       <Button type="submit" variant="secondary">
         Filtrar
       </Button>

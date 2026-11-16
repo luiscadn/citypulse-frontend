@@ -22,6 +22,8 @@ export async function EventList({ searchParams }: { searchParams: PageProps<"/ev
     status: first(params.status),
     origin: first(params.origin),
     search: first(params.search),
+    from: first(params.from),
+    to: first(params.to),
     page: first(params.page),
   });
 
@@ -32,7 +34,12 @@ export async function EventList({ searchParams }: { searchParams: PageProps<"/ev
   ]);
 
   const filtered =
-    filters.zoneId !== null || filters.status !== null || filters.origin !== null || filters.search !== null;
+    filters.zoneId !== null ||
+    filters.status !== null ||
+    filters.origin !== null ||
+    filters.search !== null ||
+    filters.from !== null ||
+    filters.to !== null;
 
   return (
     <div className="flex flex-col gap-6">

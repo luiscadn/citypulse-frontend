@@ -8,6 +8,8 @@ function pageHref(filters: EventFilters, page: number): string {
   if (filters.zoneId !== null) params.set("zoneId", String(filters.zoneId));
   if (filters.status !== null) params.set("status", filters.status);
   if (filters.origin !== null) params.set("origin", filters.origin);
+  if (filters.from !== null) params.set("from", filters.from);
+  if (filters.to !== null) params.set("to", filters.to);
   if (page > 1) params.set("page", String(page));
   const query = params.toString();
   return query ? `/events?${query}` : "/events";

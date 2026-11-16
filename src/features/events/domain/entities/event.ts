@@ -62,6 +62,10 @@ export interface EventFilters {
   readonly status: EventStatus | null;
   readonly origin: EventOrigin | null;
   readonly search: string | null;
+  /** Día "2026-12-01" (hora de Colombia): eventos que empiezan ese día o después */
+  readonly from: string | null;
+  /** Día "2026-12-31" (hora de Colombia): eventos que empiezan ese día o antes */
+  readonly to: string | null;
   readonly page: number;
 }
 

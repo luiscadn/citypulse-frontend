@@ -54,16 +54,51 @@ describe("list", () => {
     http.get.mockResolvedValue({ data: [eventDto], total: 1, page: 2, limit: 12, lastPage: 2 });
 
     await expect(
-      repository.list({ zoneId: 2, status: EventStatus.CONFIRMADO, origin: EventOrigin.OFICIAL, search: "feria", page: 2 }),
+      repository.list({
+        zoneId: 2,
+        status: EventStatus.CONFIRMADO,
+        origin: EventOrigin.OFICIAL,
+        search: "feria",
+        from: null,
+        to: null,
+        page: 2,
+      }),
     ).resolves.toEqual({ events: [event], total: 1, page: 2, lastPage: 2 });
     expect(http.get).toHaveBeenCalledWith("/events?page=2&limit=12&zoneId=2&status=CONFIRMADO&origin=OFICIAL&search=feria");
+  });
+
+  // Las fechas del filtro son días de Colombia: el backend las recibe como instantes UTC
+  it("envía el rango de fechas como instantes que cubren los días completos", async () => {
+    http.get.mockResolvedValue({ data: [], total: 0, page: 1, limit: 12, lastPage: 0 });
+
+    await repository.list({
+      zoneId: null,
+      status: null,
+      origin: null,
+      search: null,
+      from: "2026-12-01",
+      to: "2026-12-31",
+      page: 1,
+    });
+
+    const params = new URL(`http://x${http.get.mock.calls[0][0]}`).searchParams;
+    expect(params.get("from")).toBe("2026-12-01T05:00:00.000Z");
+    expect(params.get("to")).toBe("2027-01-01T04:59:59.999Z");
   });
 
   // Sin resultados el backend responde lastPage: 0
   it("no envía los filtros vacíos y siempre hay al menos una página", async () => {
     http.get.mockResolvedValue({ data: [], total: 0, page: 1, limit: 12, lastPage: 0 });
 
-    const page = await repository.list({ zoneId: null, status: null, origin: null, search: null, page: 1 });
+    const page = await repository.list({
+      zoneId: null,
+      status: null,
+      origin: null,
+      search: null,
+      from: null,
+      to: null,
+      page: 1,
+    });
 
     expect(http.get).toHaveBeenCalledWith("/events?page=1&limit=12");
     expect(page.lastPage).toBe(1);
@@ -78,7 +113,15 @@ describe("list", () => {
       lastPage: 1,
     });
 
-    const { events } = await repository.list({ zoneId: null, status: null, origin: null, search: null, page: 1 });
+    const { events } = await repository.list({
+      zoneId: null,
+      status: null,
+      origin: null,
+      search: null,
+      from: null,
+      to: null,
+      page: 1,
+    });
 
     expect(events[0]).toMatchObject({ ticketPrice: 45000, capacity: 300 });
   });

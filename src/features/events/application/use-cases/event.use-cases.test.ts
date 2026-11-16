@@ -35,7 +35,7 @@ beforeEach(() => vi.clearAllMocks());
 
 describe("ListEventsUseCase", () => {
   it("pasa los filtros tal cual al repositorio", async () => {
-    const filters = { zoneId: 2, status: null, origin: null, search: "jazz", page: 1 };
+    const filters = { zoneId: 2, status: null, origin: null, search: "jazz", from: null, to: null, page: 1 };
     repository.list.mockResolvedValue({ events: [], total: 0, page: 1, lastPage: 1 });
 
     await new ListEventsUseCase(repository).execute(filters);

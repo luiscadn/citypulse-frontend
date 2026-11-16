@@ -9,6 +9,7 @@ import {
   EventPrivateError,
   EventZoneNotFoundError,
 } from "../../domain/errors/event-errors";
+import { colombiaDayEndIso, colombiaDayStartIso } from "../../domain/rules/event-input";
 import { EVENTS_PAGE_SIZE } from "../../domain/rules/event-limits";
 import type { EventDetailDto, EventDto, EventPageDto } from "../dtos/event.dto";
 import {
@@ -32,6 +33,8 @@ export class HttpEventRepository implements EventRepository {
     if (filters.status !== null) params.set("status", filters.status);
     if (filters.origin !== null) params.set("origin", filters.origin);
     if (filters.search !== null) params.set("search", filters.search);
+    if (filters.from !== null) params.set("from", colombiaDayStartIso(filters.from));
+    if (filters.to !== null) params.set("to", colombiaDayEndIso(filters.to));
     return toEventPage(await this.http.get<EventPageDto>(`/events?${params}`));
   }
 

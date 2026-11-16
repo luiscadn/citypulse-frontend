@@ -81,6 +81,25 @@ export function normalizeEventInput(draft: EventDraft): EventInput {
   };
 }
 
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** "2026-12-01" solo si es un día que existe (descarta "2026-02-31"); si no, null. */
+function parseDay(raw: string | undefined): string | null {
+  if (!raw || !DAY.test(raw)) return null;
+  const date = new Date(`${raw}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(raw) ? raw : null;
+}
+
+/** Primer instante de un día de Colombia, en ISO (UTC), para el filtro "desde". */
+export function colombiaDayStartIso(day: string): string {
+  return new Date(`${day}T00:00:00-0${COLOMBIA_OFFSET_HOURS}:00`).toISOString();
+}
+
+/** Último instante de un día de Colombia, en ISO (UTC), para el filtro "hasta". */
+export function colombiaDayEndIso(day: string): string {
+  return new Date(`${day}T23:59:59.999-0${COLOMBIA_OFFSET_HOURS}:00`).toISOString();
+}
+
 function enumValue<T extends string>(values: Record<string, T>, raw: string | undefined): T | null {
   return Object.values(values).find((value) => value === raw) ?? null;
 }
@@ -94,6 +113,8 @@ export function parseEventFilters(raw: {
   status?: string;
   origin?: string;
   search?: string;
+  from?: string;
+  to?: string;
   page?: string;
 }): EventFilters {
   const zoneId = Number(raw.zoneId);
@@ -104,6 +125,8 @@ export function parseEventFilters(raw: {
     status: enumValue(EventStatus, raw.status),
     origin: enumValue(EventOrigin, raw.origin),
     search: search || null,
+    from: parseDay(raw.from),
+    to: parseDay(raw.to),
     page: isPositiveInteger(page) ? page : 1,
   };
 }

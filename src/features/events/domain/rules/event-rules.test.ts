@@ -12,6 +12,8 @@ import {
 } from "../errors/event-errors";
 import {
   assertValidEventId,
+  colombiaDayEndIso,
+  colombiaDayStartIso,
   colombiaLocalToIso,
   isoToColombiaLocal,
   normalizeEventInput,
@@ -93,17 +95,37 @@ describe("assertValidEventId", () => {
 describe("parseEventFilters", () => {
   it("lee los filtros de la URL", () => {
     expect(
-      parseEventFilters({ zoneId: "2", status: "CONFIRMADO", origin: "OFICIAL", search: " jazz ", page: "3" }),
-    ).toEqual({ zoneId: 2, status: EventStatus.CONFIRMADO, origin: EventOrigin.OFICIAL, search: "jazz", page: 3 });
+      parseEventFilters({
+        zoneId: "2",
+        status: "CONFIRMADO",
+        origin: "OFICIAL",
+        search: " jazz ",
+        from: "2026-12-01",
+        to: "2026-12-31",
+        page: "3",
+      }),
+    ).toEqual({
+      zoneId: 2,
+      status: EventStatus.CONFIRMADO,
+      origin: EventOrigin.OFICIAL,
+      search: "jazz",
+      from: "2026-12-01",
+      to: "2026-12-31",
+      page: 3,
+    });
   });
 
   // La URL la puede escribir cualquiera: lo que no sirve se ignora en vez de fallar
   it("ignora valores que no tienen sentido", () => {
-    expect(parseEventFilters({ zoneId: "-1", status: "NADA", origin: "x", search: "  ", page: "0" })).toEqual({
+    expect(
+      parseEventFilters({ zoneId: "-1", status: "NADA", origin: "x", search: "  ", from: "ayer", to: "2026-02-31", page: "0" }),
+    ).toEqual({
       zoneId: null,
       status: null,
       origin: null,
       search: null,
+      from: null,
+      to: null,
       page: 1,
     });
   });
@@ -111,6 +133,14 @@ describe("parseEventFilters", () => {
   it("recorta la búsqueda al máximo que acepta el backend", () => {
     const { search } = parseEventFilters({ search: "a".repeat(EVENT_SEARCH_MAX_LENGTH + 20) });
     expect(search).toHaveLength(EVENT_SEARCH_MAX_LENGTH);
+  });
+});
+
+describe("rango de un día de Colombia", () => {
+  // Un día de Colombia va de las 05:00 UTC de ese día a las 04:59 UTC del siguiente
+  it("empieza a medianoche y termina a las 23:59:59.999, hora de Colombia", () => {
+    expect(colombiaDayStartIso("2026-12-01")).toBe("2026-12-01T05:00:00.000Z");
+    expect(colombiaDayEndIso("2026-12-01")).toBe("2026-12-02T04:59:59.999Z");
   });
 });
 
