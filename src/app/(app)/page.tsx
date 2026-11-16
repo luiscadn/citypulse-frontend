@@ -8,6 +8,7 @@ export const metadata: Metadata = { title: "Inicio" };
 
 /** Secciones de la app (las mismas del encabezado) con una línea de qué hay en cada una. */
 const SECTIONS = [
+  { href: "/events", title: "Eventos", description: "Mira lo que pasa en Cali, reporta un evento o publica el tuyo." },
   { href: "/zones", title: "Zonas", description: "Barrios y sectores de la ciudad donde ocurren los eventos." },
   { href: "/venues", title: "Lugares", description: "Explora lugares verificados y ubícalos en el mapa." },
   { href: "/friends", title: "Amigos", description: "Busca personas, responde solicitudes y mira a tus amigos." },

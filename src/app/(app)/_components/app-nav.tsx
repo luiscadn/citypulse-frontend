@@ -6,6 +6,7 @@ import { cn } from "@/shared/presentation/cn";
 
 /** Secciones de la app. Para agregar una, basta con sumarla aquí. */
 const LINKS = [
+  { href: "/events", label: "Eventos" },
   { href: "/friends", label: "Amigos" },
   { href: "/invitations", label: "Invitaciones" },
   { href: "/zones", label: "Zonas" },
