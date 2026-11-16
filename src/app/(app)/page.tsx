@@ -1,69 +1,42 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { Container } from "@/shared/presentation/components";
+import { AdminSectionCard } from "./_components/admin-section-card";
+import { SectionCard } from "./_components/section-card";
 
-export default function Home() {
+export const metadata: Metadata = { title: "Inicio" };
+
+/** Secciones de la app (las mismas del encabezado) con una línea de qué hay en cada una. */
+const SECTIONS = [
+  { href: "/zones", title: "Zonas", description: "Barrios y sectores de la ciudad donde ocurren los eventos." },
+  { href: "/venues", title: "Lugares", description: "Explora lugares verificados y ubícalos en el mapa." },
+  { href: "/friends", title: "Amigos", description: "Busca personas, responde solicitudes y mira a tus amigos." },
+  { href: "/invitations", title: "Invitaciones", description: "Revisa las invitaciones que recibiste a eventos." },
+  { href: "/profile", title: "Mi perfil", description: "Edita tus datos y activa la verificación en dos pasos." },
+] as const;
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <Container className="flex flex-col gap-10 pb-12">
+      <section className="flex flex-col gap-3 py-10 sm:py-14">
+        <p className="text-xs font-semibold tracking-wider text-primary-strong uppercase">CityPulse</p>
+        <h1 className="max-w-2xl text-3xl leading-tight font-bold tracking-tight text-balance text-ink sm:text-5xl">
+          El pulso de tu ciudad, verificado por su gente.
+        </h1>
+        <p className="max-w-xl text-base text-ink-muted sm:text-lg">
+          Descubre zonas y lugares verificados, conecta con tus amigos y confirma tu asistencia a los eventos.
+        </p>
+      </section>
+
+      <section aria-label="Secciones" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {SECTIONS.map((section) => (
+          <SectionCard key={section.href} {...section} />
+        ))}
+        {/* Lee la cookie de sesión para saber el rol: va en Suspense y no frena el resto de la página */}
+        <Suspense>
+          <AdminSectionCard />
+        </Suspense>
+      </section>
+    </Container>
   );
 }

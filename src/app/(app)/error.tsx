@@ -1,26 +1,8 @@
 "use client";
 
-import { Button, ButtonLink, Container, EmptyState } from "@/shared/presentation/components";
+import { RouteError } from "@/shared/presentation/components";
 
-/**
- * Error inesperado en una página de la app (por ejemplo, el backend no responde).
- * Debe ser Client Component: es un Error Boundary de React. `retry` vuelve a pedir el segmento.
- */
-export default function AppError({ retry }: { error: unknown; retry: () => void }) {
-  return (
-    <Container className="py-12">
-      <EmptyState
-        title="Algo salió mal"
-        description="No pudimos cargar esta página. Puede ser un problema de conexión con el servidor."
-        action={
-          <div className="flex flex-wrap justify-center gap-2">
-            <Button onClick={() => retry()}>Intentar de nuevo</Button>
-            <ButtonLink href="/" variant="secondary">
-              Ir al inicio
-            </ButtonLink>
-          </div>
-        }
-      />
-    </Container>
-  );
+/** Error de cualquier página de la app: se muestra bajo el encabezado, que sigue disponible. */
+export default function AppError({ error, retry }: { error: unknown; retry: () => void }) {
+  return <RouteError error={error} retry={retry} />;
 }

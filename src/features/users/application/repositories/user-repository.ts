@@ -11,7 +11,4 @@ export interface UserRepository {
   update(id: number, params: UpdateUserParams): Promise<User>;
   delete(id: number): Promise<void>;
   assignRoles(id: number, roles: readonly RoleName[]): Promise<User>;
-  /** Búsqueda de disponibilidad (opcional, solo si el form la usa en vivo). */
-  existsByEmail?(email: string): Promise<boolean>;
-  existsByUsername?(username: string): Promise<boolean>;
 }

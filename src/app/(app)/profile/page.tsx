@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { TwoFactorPanel } from "@/features/auth/presentation/components/two-factor-panel";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { usersContainer } from "@/features/users/di/users.container";
+import { UserNotFoundError } from "@/features/users/domain/errors/user-errors";
 import { ProfileForm } from "@/features/users/presentation/components/profile-form";
 import { RoleBadges } from "@/features/users/presentation/components/role-badges";
 import {
@@ -12,41 +12,30 @@ import {
   CardHeader,
   Container,
   PageHeader,
-  Spinner,
 } from "@/shared/presentation/components";
+import { formatDate } from "@/shared/presentation/formatters/date";
 
 export const metadata: Metadata = { title: "Mi perfil" };
 
-export default function ProfilePage() {
-  return (
-    <Container className="pb-12">
-      {/* Lee la cookie de sesión y llama al backend: dato de la petición → Suspense */}
-      <Suspense
-        fallback={
-          <div className="grid h-64 place-items-center text-primary">
-            <Spinner />
-          </div>
-        }
-      >
-        <ProfileContent />
-      </Suspense>
-    </Container>
-  );
-}
-
-async function ProfileContent() {
+/**
+ * Lee la cookie de sesión y llama al backend: mientras carga se muestra loading.tsx,
+ * si el backend falla, error.tsx, y si la cuenta ya no existe, not-found.
+ */
+export default async function ProfilePage() {
   const session = await getCurrentUser();
   if (!session) redirect("/login?from=/profile");
 
-  const user = await usersContainer.getUser(session.id);
-  const memberSince = user.createdAt.toLocaleDateString("es-CO", { dateStyle: "long" });
+  const user = await usersContainer.getUser(session.id).catch((error: unknown) => {
+    if (error instanceof UserNotFoundError) notFound();
+    throw error;
+  });
 
   return (
-    <>
+    <Container className="pb-12">
       <PageHeader
         eyebrow="Mi cuenta"
         title={user.fullName}
-        description={`@${user.username} · Miembro desde ${memberSince}`}
+        description={`@${user.username} · Miembro desde ${formatDate(user.createdAt)}`}
         actions={<RoleBadges roles={user.roles} />}
       />
 
@@ -68,6 +57,6 @@ async function ProfileContent() {
           </CardBody>
         </Card>
       </div>
-    </>
+    </Container>
   );
 }
