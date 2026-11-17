@@ -2,56 +2,76 @@
 
 /* ──────────────────────────────────────────────────────────────────────
    Design tokens de CityPulse
-   Paleta y tipografía tomadas de la identidad digital de la Universidad
-   Icesi (primario #5454E9, texto #1E1F26, fuente Plus Jakarta Sans).
 
-   Regla para el equipo: en los componentes usa SOLO estos nombres
+   La paleta son SOLO estos 9 colores. Todo lo demás (fondos suaves, hover,
+   texto de un color con suficiente contraste) es una mezcla de dos de ellos
+   con color-mix(), nunca un tono nuevo.
+
+   Regla para el equipo: en los componentes usa SOLO los nombres de abajo
    (bg-primary, text-ink, border-line, text-danger-strong...). No uses
-   colores sueltos de Tailwind (zinc-500, blue-600...): así toda la app
-   se ve igual y el modo oscuro funciona solo.
+   colores sueltos de Tailwind: así toda la app se ve igual y el modo
+   oscuro funciona solo.
 
    - <color>          fondo sólido (botones, indicadores)
-   - <color>-strong   texto/ícono de ese color sobre fondo claro (contraste AA)
+   - <color>-strong   texto/ícono de ese color con contraste AA sobre el fondo
    - <color>-soft     fondo suave (badges, alertas)
    ────────────────────────────────────────────────────────────────────── */
 
 :root {
+  /* Paleta */
+  --blue: #5454e9;
+  --yellow: #e4eb60;
+  --orange: #e9683b;
+  --green: #4cb979;
+  --purple: #865cf0;
+  --black: #000000;
+  --gray-1: #88898c;
+  --gray-2: #cecfd4;
+  --white: #ffffff;
+
   /* Marca */
-  --primary: #5454e9;
-  --primary-hover: #4141c9;
-  --primary-strong: #4141c9;
-  --primary-soft: #ededfd;
-  --on-primary: #ffffff;
+  --primary: var(--blue);
+  --primary-hover: color-mix(in srgb, var(--blue) 82%, var(--black));
+  --primary-strong: var(--blue);
+  --primary-soft: color-mix(in srgb, var(--blue) 11%, var(--white));
+  --on-primary: var(--white);
 
   /* Superficies y texto */
-  --canvas: #f6f7fb;   /* fondo de la página */
-  --surface: #ffffff;  /* tarjetas, header, inputs */
-  --ink: #1e1f26;      /* texto principal */
-  --ink-muted: #5c606b;/* texto secundario */
-  --line: #e2e4ec;     /* bordes */
-  --line-strong: #c9ccd8;
+  --canvas: color-mix(in srgb, var(--gray-2) 22%, var(--white)); /* fondo de la página */
+  --surface: var(--white); /* tarjetas, header, inputs */
+  --ink: var(--black); /* texto principal */
+  /* El gris 1 puro no llega a 4.5:1 sobre blanco: para texto se oscurece con negro */
+  --ink-muted: color-mix(in srgb, var(--gray-1) 72%, var(--black));
+  --line: var(--gray-2);
+  --line-strong: var(--gray-1);
 
-  /* Estados */
-  --success: #3fb618;
-  --success-strong: #267a0c;
-  --success-soft: #e8f7e2;
+  /* Acento: el verde, el "pulso" de la ciudad */
+  --accent: var(--green);
+  --accent-strong: color-mix(in srgb, var(--green) 58%, var(--black));
+  --accent-soft: color-mix(in srgb, var(--green) 13%, var(--white));
 
-  --danger: #ff0039;
-  --danger-strong: #c8002d;
-  --danger-soft: #ffe5eb;
+  /* Estados: verde = bien, naranja = error, amarillo = aviso, morado = información */
+  --success: var(--green);
+  --success-strong: color-mix(in srgb, var(--green) 58%, var(--black));
+  --success-soft: color-mix(in srgb, var(--green) 13%, var(--white));
 
-  --warning: #ff7518;
-  --warning-strong: #a84b00;
-  --warning-soft: #fff0e5;
+  --danger: var(--orange);
+  --danger-strong: color-mix(in srgb, var(--orange) 64%, var(--black));
+  --danger-soft: color-mix(in srgb, var(--orange) 12%, var(--white));
+  --on-danger: var(--white);
 
-  --info: #9954bb;
-  --info-strong: #7a3d99;
-  --info-soft: #f4ebf8;
+  --warning: var(--yellow);
+  --warning-strong: color-mix(in srgb, var(--yellow) 44%, var(--black));
+  --warning-soft: color-mix(in srgb, var(--yellow) 24%, var(--white));
 
-  --neutral-soft: #eef0f4;
-  --neutral-strong: #4b4f5a;
+  --info: var(--purple);
+  --info-strong: color-mix(in srgb, var(--purple) 78%, var(--black));
+  --info-soft: color-mix(in srgb, var(--purple) 11%, var(--white));
 
-  --focus-ring: rgb(84 84 233 / 0.35);
+  --neutral-soft: color-mix(in srgb, var(--gray-2) 38%, var(--white));
+  --neutral-strong: color-mix(in srgb, var(--gray-1) 60%, var(--black));
+
+  --focus-ring: color-mix(in srgb, var(--blue) 35%, transparent);
   color-scheme: light;
 }
 
@@ -63,44 +83,52 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --primary: #6b6bf0;
-  --primary-hover: #8585f5;
-  --primary-strong: #a3a3ff;
-  --primary-soft: #23234a;
-  --on-primary: #ffffff;
+  --primary: var(--blue);
+  --primary-hover: color-mix(in srgb, var(--blue) 78%, var(--white));
+  --primary-strong: color-mix(in srgb, var(--blue) 60%, var(--white));
+  --primary-soft: color-mix(in srgb, var(--blue) 22%, var(--black));
+  --on-primary: var(--white);
 
-  --canvas: #121318;
-  --surface: #1b1c23;
-  --ink: #eceef4;
-  --ink-muted: #a2a6b3;
-  --line: #2c2e38;
-  --line-strong: #3d404c;
+  --canvas: var(--black);
+  --surface: color-mix(in srgb, var(--gray-2) 9%, var(--black));
+  --ink: var(--white);
+  --ink-muted: var(--gray-2);
+  --line: color-mix(in srgb, var(--gray-1) 28%, var(--black));
+  --line-strong: color-mix(in srgb, var(--gray-1) 55%, var(--black));
 
-  --success: #4fc82a;
-  --success-strong: #7fdc62;
-  --success-soft: #1a2e14;
+  /* Sobre negro los colores puros ya tienen buen contraste */
+  --accent: var(--green);
+  --accent-strong: var(--green);
+  --accent-soft: color-mix(in srgb, var(--green) 20%, var(--black));
 
-  --danger: #ff3d66;
-  --danger-strong: #ff8aa3;
-  --danger-soft: #3a1520;
+  --success: var(--green);
+  --success-strong: var(--green);
+  --success-soft: color-mix(in srgb, var(--green) 20%, var(--black));
 
-  --warning: #ff8a3d;
-  --warning-strong: #ffb27a;
-  --warning-soft: #3a2414;
+  --danger: var(--orange);
+  --danger-strong: var(--orange);
+  --danger-soft: color-mix(in srgb, var(--orange) 22%, var(--black));
+  --on-danger: var(--black);
 
-  --info: #b27ad1;
-  --info-strong: #d3a8eb;
-  --info-soft: #2d1f36;
+  --warning: var(--yellow);
+  --warning-strong: var(--yellow);
+  --warning-soft: color-mix(in srgb, var(--yellow) 16%, var(--black));
 
-  --neutral-soft: #262832;
-  --neutral-strong: #c3c6d0;
+  --info: var(--purple);
+  --info-strong: color-mix(in srgb, var(--purple) 78%, var(--white));
+  --info-soft: color-mix(in srgb, var(--purple) 22%, var(--black));
 
-  --focus-ring: rgb(133 133 245 / 0.45);
+  --neutral-soft: color-mix(in srgb, var(--gray-2) 14%, var(--black));
+  --neutral-strong: var(--gray-2);
+
+  --focus-ring: color-mix(in srgb, var(--purple) 55%, transparent);
 }
 
 @theme inline {
-  /* Azul Icesi fijo (no cambia en modo oscuro): paneles de marca con texto blanco */
+  /* Fijos (no cambian en modo oscuro): el panel de marca del login, con texto blanco */
   --color-brand: #5454e9;
+  --color-brand-purple: #865cf0;
+  --color-brand-green: #4cb979;
 
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
@@ -115,12 +143,17 @@
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
 
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+
   --color-success: var(--success);
   --color-success-strong: var(--success-strong);
   --color-success-soft: var(--success-soft);
   --color-danger: var(--danger);
   --color-danger-strong: var(--danger-strong);
   --color-danger-soft: var(--danger-soft);
+  --color-on-danger: var(--on-danger);
   --color-warning: var(--warning);
   --color-warning-strong: var(--warning-strong);
   --color-warning-soft: var(--warning-soft);
@@ -140,9 +173,201 @@
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
+
+  /* Animaciones: animate-rise, animate-pop, animate-float... */
+  --ease-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-rise: rise 520ms var(--ease-spring) both;
+  --animate-pop: pop 320ms var(--ease-spring) both;
+  --animate-fade: fade-in 400ms ease-out both;
+  --animate-float: float 14s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-pan: pan 8s ease-in-out infinite alternate;
+  --animate-draw: draw 1.4s 200ms var(--ease-spring) both;
 }
 
 body {
   background: var(--canvas);
   color: var(--ink);
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Movimiento
+   Todo es CSS: no hay librería de animaciones. Las transiciones entre
+   páginas usan <ViewTransition> de React (ver app/(app)/template.tsx).
+   ────────────────────────────────────────────────────────────────────── */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -40px) scale(1.08);
+  }
+  66% {
+    transform: translate(-25px, 20px) scale(0.95);
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pan {
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+/* Dibuja la línea de pulso del logo */
+@keyframes draw {
+  from {
+    stroke-dashoffset: 24;
+  }
+}
+
+/* "En vivo": el punto verde que late */
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* Los hijos de .stagger entran uno detrás de otro */
+.stagger > * {
+  animation: var(--animate-rise);
+}
+.stagger > :nth-child(2) { animation-delay: 50ms; }
+.stagger > :nth-child(3) { animation-delay: 100ms; }
+.stagger > :nth-child(4) { animation-delay: 150ms; }
+.stagger > :nth-child(5) { animation-delay: 200ms; }
+.stagger > :nth-child(6) { animation-delay: 250ms; }
+.stagger > :nth-child(7) { animation-delay: 300ms; }
+.stagger > :nth-child(8) { animation-delay: 350ms; }
+.stagger > :nth-child(n + 9) { animation-delay: 400ms; }
+
+/* Texto con degradado azul → verde que se desplaza despacio */
+.text-gradient {
+  background: linear-gradient(100deg, var(--primary) 0%, var(--accent) 50%, var(--primary) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: var(--animate-pan);
+}
+
+/* Bloque de carga con brillo que lo recorre */
+.skeleton {
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, var(--neutral-soft) 25%, var(--line) 37%, var(--neutral-soft) 63%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+.pulse-dot {
+  position: relative;
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--accent);
+}
+.pulse-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Transiciones entre páginas. El encabezado queda quieto y el contenido se desliza */
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+::view-transition-old(.page-exit) {
+  animation: 160ms ease-in both page-out;
+}
+::view-transition-new(.page-enter) {
+  animation: 380ms var(--ease-spring) 80ms both page-in;
+}
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+    filter: blur(2px);
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(3px);
+  }
+}
+
+/* Quien pide menos movimiento ve los cambios al instante */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+  }
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/* Título que viaja de la tarjeta de un evento a su detalle */
+::view-transition-group(.morph) {
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-spring);
+}
+::view-transition-image-pair(.morph) {
+  animation-name: via-blur;
+}
+@keyframes via-blur {
+  30% {
+    filter: blur(2px);
+  }
 }
