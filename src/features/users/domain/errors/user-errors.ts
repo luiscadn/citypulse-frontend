@@ -30,3 +30,8 @@ export class SelfDemotionError extends DomainError {
     super('No puedes quitarte tu propio rol ADMIN');
   }
 }
+export class InvalidUserError extends DomainError {
+  constructor(message = "El usuario no es válido") {
+    super(message);
+  }
+}
