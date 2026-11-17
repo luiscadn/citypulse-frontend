@@ -8,6 +8,8 @@ export function toVenue(dto: VenueDto): Venue {
     name: dto.name,
     description: dto.description ?? null,
     address: dto.address ?? null,
+    latitude: dto.latitude ?? null,
+    longitude: dto.longitude ?? null,
     isVerified: dto.isVerified,
     zone: { id: dto.zone.id, name: dto.zone.name },
     owner: { id: dto.owner.id, username: dto.owner.username, fullName: dto.owner.fullName },
@@ -32,15 +34,18 @@ export function toCreateVenueBody(input: VenueInput): VenueBodyDto {
     address: input.address,
     zoneId: input.zoneId,
     ...(input.description && { description: input.description }),
+    ...(input.latitude !== null && { latitude: input.latitude, longitude: input.longitude }),
   };
 }
 
-/** Al editar, la descripción va siempre: null la borra. */
+/** Al editar, la descripción y la ubicación van siempre: null las borra. */
 export function toUpdateVenueBody(input: VenueInput): VenueBodyDto {
   return {
     name: input.name,
     address: input.address,
     zoneId: input.zoneId,
     description: input.description,
+    latitude: input.latitude,
+    longitude: input.longitude,
   };
 }

@@ -31,7 +31,14 @@ function readValues(formData: FormData): VenueFormValues {
     address: String(formData.get("address") ?? ""),
     description: String(formData.get("description") ?? ""),
     zoneId: String(formData.get("zoneId") ?? ""),
+    latitude: String(formData.get("latitude") ?? ""),
+    longitude: String(formData.get("longitude") ?? ""),
   };
+}
+
+// Number("") es 0: un campo vacío tiene que quedar como "sin ubicación"
+function toCoordinate(value: string): number | null {
+  return value.trim() === "" ? null : Number(value);
 }
 
 function toDraft(values: VenueFormValues): VenueDraft {
@@ -40,6 +47,8 @@ function toDraft(values: VenueFormValues): VenueDraft {
     address: values.address,
     description: values.description,
     zoneId: Number(values.zoneId),
+    latitude: toCoordinate(values.latitude),
+    longitude: toCoordinate(values.longitude),
   };
 }
 

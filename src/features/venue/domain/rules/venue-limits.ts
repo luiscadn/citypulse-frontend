@@ -5,3 +5,6 @@ export const VENUE_DESCRIPTION_MAX_LENGTH = 255;
 
 /** Lugares por página en el listado público. */
 export const VENUES_PAGE_SIZE = 12;
+
+/** Lugares que se piden para el mapa (el máximo por página del backend). */
+export const MAP_VENUES_LIMIT = 100;

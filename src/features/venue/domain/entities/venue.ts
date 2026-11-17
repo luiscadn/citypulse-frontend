@@ -7,6 +7,9 @@ export interface Venue {
   readonly name: string;
   readonly description: string | null;
   readonly address: string | null;
+  /** Ubicación en el mapa: las dos o ninguna. */
+  readonly latitude: number | null;
+  readonly longitude: number | null;
   readonly isVerified: boolean;
   readonly zone: VenueZone;
   readonly owner: VenueOwner;
@@ -47,6 +50,8 @@ export interface VenueInput {
   readonly address: string;
   readonly description: string | null;
   readonly zoneId: number;
+  readonly latitude: number | null;
+  readonly longitude: number | null;
 }
 
 /** Lo que llega del formulario, antes de validarlo. */
@@ -55,6 +60,29 @@ export interface VenueDraft {
   address: string;
   description?: string | null;
   zoneId: number;
+  /** NaN o null = sin ubicación */
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+/** Un lugar que se puede poner en el mapa: tiene las dos coordenadas. */
+export type MappedVenue = Venue & { readonly latitude: number; readonly longitude: number };
+
+export function hasLocation(venue: Venue): venue is MappedVenue {
+  return venue.latitude !== null && venue.longitude !== null;
+}
+
+/** Latitud y longitud válidas, o las dos ausentes. */
+export function isValidLocation(latitude: number | null, longitude: number | null): boolean {
+  if (latitude === null && longitude === null) return true;
+  return (
+    latitude !== null &&
+    longitude !== null &&
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    Math.abs(latitude) <= 90 &&
+    Math.abs(longitude) <= 180
+  );
 }
 
 /**
@@ -69,6 +97,9 @@ export function createVenue(props: Venue): Venue {
   }
   if (!isPositiveInt(props.owner.id)) throw new InvalidVenueError("El lugar debe tener un dueño válido");
   if (!isDateString(props.createdAt)) throw new InvalidVenueError("La fecha de creación del lugar no es válida");
+  if (!isValidLocation(props.latitude, props.longitude)) {
+    throw new InvalidVenueError("La ubicación del lugar no es válida");
+  }
   return Object.freeze({
     ...props,
     zone: Object.freeze({ ...props.zone }),

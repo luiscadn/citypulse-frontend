@@ -41,6 +41,12 @@ export class VenueZoneRequiredError extends DomainError {
   }
 }
 
+export class VenueLocationError extends DomainError {
+  constructor(message = "La ubicación no es válida: búscala de nuevo en Google Maps") {
+    super(message);
+  }
+}
+
 export class InvalidVenueError extends DomainError {
   constructor(message = "El lugar no es válido") {
     super(message);

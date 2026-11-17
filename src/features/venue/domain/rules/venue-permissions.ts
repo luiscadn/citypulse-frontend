@@ -26,14 +26,20 @@ export function canVerifyVenues(user: Requester): boolean {
 }
 
 /**
- * RF-2.5: si quien edita no es ADMIN y cambia nombre, dirección o zona de un lugar
+ * RF-2.5: si quien edita no es ADMIN y cambia nombre, dirección, ubicación o zona de un lugar
  * verificado, el lugar vuelve a quedar pendiente. Sirve para avisarle antes de guardar.
  */
 export function editLosesVerification(
   user: Requester,
-  venue: Pick<Venue, "name" | "address" | "zone" | "isVerified">,
-  input: Pick<VenueInput, "name" | "address" | "zoneId">,
+  venue: Pick<Venue, "name" | "address" | "zone" | "isVerified" | "latitude" | "longitude">,
+  input: Pick<VenueInput, "name" | "address" | "zoneId" | "latitude" | "longitude">,
 ): boolean {
   if (!venue.isVerified || isAdmin(user)) return false;
-  return input.name !== venue.name || input.address !== venue.address || input.zoneId !== venue.zone.id;
+  return (
+    input.name !== venue.name ||
+    input.address !== venue.address ||
+    input.zoneId !== venue.zone.id ||
+    input.latitude !== venue.latitude ||
+    input.longitude !== venue.longitude
+  );
 }
