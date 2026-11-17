@@ -1,5 +1,15 @@
-import { EventOrigin, EventStatus } from "@/shared/domain/enums";
-import type { EventDraft, EventFilters, EventInput } from "../entities/event";
+import { EventOrigin, EventStatus, EventVisibility } from "@/shared/domain/enums";
+import { isOneOf } from "@/shared/domain/invariants";
+import {
+  EVIDENCE_TYPES,
+  type EventDraft,
+  type EventFilters,
+  type EventInput,
+  type EvidenceDraft,
+  type EvidenceInput,
+  type OfficialEventDraft,
+  type OfficialEventInput,
+} from "../entities/event";
 import {
   EventAddressTooLongError,
   EventDatesOrderError,
@@ -7,10 +17,26 @@ import {
   EventStartDateRequiredError,
   EventTitleRequiredError,
   EventTitleTooLongError,
+  EventCapacityError,
+  EventTicketPriceError,
+  EventVisibilityError,
   EventZoneRequiredError,
+  EvidenceCaptionTooLongError,
+  EvidenceTypeError,
+  EvidenceUrlError,
   InvalidEventError,
+  OfficialVenueRequiredError,
+  RejectionReasonRequiredError,
+  RejectionReasonTooLongError,
 } from "../errors/event-errors";
-import { EVENT_ADDRESS_MAX_LENGTH, EVENT_SEARCH_MAX_LENGTH, EVENT_TITLE_MAX_LENGTH } from "./event-limits";
+import {
+  EVENT_ADDRESS_MAX_LENGTH,
+  EVENT_SEARCH_MAX_LENGTH,
+  EVENT_TITLE_MAX_LENGTH,
+  EVIDENCE_CAPTION_MAX_LENGTH,
+  EVIDENCE_URL_MAX_LENGTH,
+  REJECTION_REASON_MAX_LENGTH,
+} from "./event-limits";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -129,4 +155,51 @@ export function parseEventFilters(raw: {
     to: parseDay(raw.to),
     page: isPositiveInteger(page) ? page : 1,
   };
+}
+
+/** Solo direcciones web (http o https): descarta javascript:, data: y similares. */
+export function isWebUrl(value: string): boolean {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/** Réplica UX de CreateEvidenceDto: tipo conocido, enlace web y descripción corta. */
+export function normalizeEvidenceInput(draft: EvidenceDraft): EvidenceInput {
+  if (!isOneOf(EVIDENCE_TYPES, draft.type)) throw new EvidenceTypeError();
+  const url = draft.url.trim();
+  if (!isWebUrl(url) || url.length > EVIDENCE_URL_MAX_LENGTH) throw new EvidenceUrlError();
+  const caption = draft.caption?.trim() || null;
+  if (caption && caption.length > EVIDENCE_CAPTION_MAX_LENGTH) throw new EvidenceCaptionTooLongError();
+  return { type: draft.type, url, caption };
+}
+
+/** Réplica UX de RejectEventDto: el motivo es obligatorio. */
+export function normalizeRejectionReason(reason: string): string {
+  const clean = reason.trim();
+  if (!clean) throw new RejectionReasonRequiredError();
+  if (clean.length > REJECTION_REASON_MAX_LENGTH) throw new RejectionReasonTooLongError();
+  return clean;
+}
+
+const PRICE = /^\d+(\.\d{1,2})?$/;
+
+/** Réplica UX de CreateOfficialDto: lo mismo que un reporte, más lugar, visibilidad, cupo y precio. */
+export function normalizeOfficialEventInput(draft: OfficialEventDraft): OfficialEventInput {
+  if (!isPositiveInteger(draft.venueId)) throw new OfficialVenueRequiredError();
+  const base = normalizeEventInput(draft);
+  if (!isOneOf(Object.values(EventVisibility), draft.visibility)) throw new EventVisibilityError();
+
+  const capacity = draft.capacity ?? null;
+  if (capacity !== null && !isPositiveInteger(capacity)) throw new EventCapacityError();
+
+  const ticketPrice = draft.ticketPrice ?? null;
+  if (ticketPrice !== null && (!Number.isFinite(ticketPrice) || !PRICE.test(String(ticketPrice)))) {
+    throw new EventTicketPriceError();
+  }
+
+  return { ...base, venueId: draft.venueId, visibility: draft.visibility, capacity, ticketPrice };
 }

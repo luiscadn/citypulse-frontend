@@ -31,3 +31,18 @@ export function canCancelEvent(user: Requester, event: Pick<Event, "createdBy" |
 export function canSeeAttendees(user: Requester, event: Pick<Event, "createdBy">): boolean {
   return isAuthorOrAdmin(user, event);
 }
+
+/** RF-4.3 / RF-4.4: solo un ADMIN confirma o rechaza reportes. */
+export function canModerateEvents(user: Requester): boolean {
+  return isAdmin(user);
+}
+
+/** El autor (o un ADMIN) adjunta evidencias mientras el reporte está en revisión. */
+export function canAddEvidence(user: Requester, event: Pick<Event, "createdBy" | "status">): boolean {
+  return event.status === EventStatus.REPORTADO && isAuthorOrAdmin(user, event);
+}
+
+/** RF-5.1: un OWNER (o un ADMIN) publica eventos oficiales en sus propios lugares. */
+export function canPublishOfficialEvents(user: Requester): boolean {
+  return !!user && (user.roles.includes(RoleName.OWNER) || isAdmin(user));
+}

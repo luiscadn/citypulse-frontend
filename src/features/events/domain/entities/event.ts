@@ -146,14 +146,58 @@ export function createEventDetail(props: EventDetail): EventDetail {
   if (!Number.isInteger(props.attendeeCount) || props.attendeeCount < 0) {
     throw new InvalidEventError("El número de asistentes no es válido");
   }
-  for (const evidence of props.evidences) {
+  return Object.freeze({ ...props, ...event, evidences: freezeEvidences(props.evidences) });
+}
+
+function freezeEvidences(evidences: readonly EventEvidence[]): readonly EventEvidence[] {
+  for (const evidence of evidences) {
     if (!isPositiveInt(evidence.id) || !isNonBlank(evidence.url) || !isOneOf(EVIDENCE_TYPES, evidence.type)) {
       throw new InvalidEventError("Una evidencia del evento no es válida");
     }
   }
-  return Object.freeze({
-    ...props,
-    ...event,
-    evidences: Object.freeze(props.evidences.map((evidence) => Object.freeze({ ...evidence }))),
-  });
+  return Object.freeze(evidences.map((evidence) => Object.freeze({ ...evidence })));
+}
+
+/** Reporte en la cola de moderación: está en revisión y trae sus evidencias. */
+export interface PendingReport extends Event {
+  readonly evidences: readonly EventEvidence[];
+}
+
+/** Igual que createEvent, más: solo un reporte en revisión puede estar en la cola. */
+export function createPendingReport(props: PendingReport): PendingReport {
+  const event = createEvent(props);
+  if (event.status !== EventStatus.REPORTADO) {
+    throw new InvalidEventError("Solo un reporte en revisión puede estar pendiente de moderación");
+  }
+  return Object.freeze({ ...event, evidences: freezeEvidences(props.evidences) });
+}
+
+/** Evidencia ya validada, lista para adjuntar a un reporte. */
+export interface EvidenceInput {
+  readonly type: EvidenceType;
+  readonly url: string;
+  readonly caption: string | null;
+}
+
+/** Lo que llega del formulario de evidencia, antes de validarlo. */
+export interface EvidenceDraft {
+  type: string;
+  url: string;
+  caption?: string | null;
+}
+
+/** Evento oficial ya validado: un evento en un lugar propio, con sus datos de público. */
+export interface OfficialEventInput extends EventInput {
+  readonly venueId: number;
+  readonly visibility: EventVisibility;
+  readonly capacity: number | null;
+  readonly ticketPrice: number | null;
+}
+
+/** Lo que llega del formulario de evento oficial, antes de validarlo. */
+export interface OfficialEventDraft extends EventDraft {
+  venueId: number;
+  visibility: string;
+  capacity?: number | null;
+  ticketPrice?: number | null;
 }

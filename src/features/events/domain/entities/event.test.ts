@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { EventOrigin, EventStatus, EventVisibility } from "@/shared/domain/enums";
 import { EventDatesOrderError, InvalidEventError } from "../errors/event-errors";
-import { createEvent, createEventDetail, type Event, type EventDetail, type EvidenceType } from "./event";
+import { createEvent, createEventDetail, createPendingReport, type Event, type EventDetail, type EvidenceType } from "./event";
 
 const valid: Event = {
   id: "8f1c2c0e-5a4b-4c1e-9d0a-1b2c3d4e5f60",
@@ -72,5 +72,18 @@ describe("createEventDetail", () => {
   it("rechaza una evidencia de un tipo desconocido", () => {
     const evidences = [{ ...detail.evidences[0], type: "AUDIO" as EvidenceType }];
     expect(() => createEventDetail({ ...detail, evidences })).toThrow(InvalidEventError);
+  });
+});
+
+describe("createPendingReport", () => {
+  it("acepta un reporte en revisión con sus evidencias", () => {
+    const report = createPendingReport({ ...valid, evidences: [] });
+    expect(report.status).toBe(EventStatus.REPORTADO);
+  });
+
+  it("no deja en la cola un evento que ya fue revisado", () => {
+    expect(() => createPendingReport({ ...valid, status: EventStatus.CONFIRMADO, evidences: [] })).toThrow(
+      InvalidEventError,
+    );
   });
 });
