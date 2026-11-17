@@ -4,7 +4,7 @@ import { zoneContainer } from "@/features/zone/di/zone.container";
 import { ButtonLink, Card, CardBody, EmptyState } from "@/shared/presentation/components";
 import { eventContainer } from "../../di/event.container";
 import { parseEventFilters } from "../../domain/rules/event-input";
-import { canReportEvents } from "../../domain/rules/event-permissions";
+import { canModerateEvents, canPublishOfficialEvents, canReportEvents } from "../../domain/rules/event-permissions";
 import { EventCard } from "./event-card";
 import { EventFilters } from "./event-filters";
 import { EventPagination } from "./event-pagination";
@@ -45,8 +45,18 @@ export async function EventList({ searchParams }: { searchParams: PageProps<"/ev
   return (
     <div className="flex flex-col gap-6">
       {canReportEvents(user) && (
-        <div>
+        <div className="flex flex-wrap gap-2">
           <ButtonLink href="/events/new">Reportar un evento</ButtonLink>
+          {canPublishOfficialEvents(user) && (
+            <ButtonLink href="/events/official" variant="secondary">
+              Publicar evento oficial
+            </ButtonLink>
+          )}
+          {canModerateEvents(user) && (
+            <ButtonLink href="/admin/moderation" variant="secondary">
+              Reportes por revisar
+            </ButtonLink>
+          )}
         </div>
       )}
 
