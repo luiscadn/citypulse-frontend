@@ -1,13 +1,13 @@
 import { HttpError, type HttpClient } from "@/shared/infrastructure/http-client";
 import type { VenueRepository } from "../../application/repositories/venue-repository";
-import type { Venue, VenueFilters, VenueInput, VenuePage } from "../../domain/entities/venue";
+import { hasLocation, type MappedVenue, type Venue, type VenueFilters, type VenueInput, type VenuePage } from "../../domain/entities/venue";
 import {
   VenueForbiddenError,
   VenueNameTakenError,
   VenueNotFoundError,
   VenueZoneNotFoundError,
 } from "../../domain/errors/venue-errors";
-import { VENUES_PAGE_SIZE } from "../../domain/rules/venue-limits";
+import { MAP_VENUES_LIMIT, VENUES_PAGE_SIZE } from "../../domain/rules/venue-limits";
 import type { VenueDto, VenuePageDto } from "../dtos/venue.dto";
 import { toCreateVenueBody, toUpdateVenueBody, toVenue, toVenuePage } from "../mappers/venue.mapper";
 
@@ -28,6 +28,12 @@ export class HttpVenueRepository implements VenueRepository {
   async listMine(): Promise<Venue[]> {
     const dtos = await this.http.get<VenueDto[]>("/venues/mine");
     return dtos.map(toVenue);
+  }
+
+  async listMapped(): Promise<MappedVenue[]> {
+    const params = new URLSearchParams({ page: "1", limit: String(MAP_VENUES_LIMIT), isVerified: "true" });
+    const page = toVenuePage(await this.http.get<VenuePageDto>(`/venues?${params}`));
+    return page.venues.filter(hasLocation);
   }
 
   async findById(id: number): Promise<Venue> {

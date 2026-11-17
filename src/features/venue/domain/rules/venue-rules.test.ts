@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { RoleName } from "@/shared/domain/enums";
 import {
   VenueAddressRequiredError,
+  VenueLocationError,
   VenueNameRequiredError,
   VenueZoneRequiredError,
 } from "../errors/venue-errors";
@@ -22,7 +23,25 @@ describe("normalizeVenueInput", () => {
       address: "Cra 3",
       description: null,
       zoneId: 2,
+      latitude: null,
+      longitude: null,
     });
+  });
+
+  it("conserva una ubicación válida y trata NaN como sin ubicación", () => {
+    expect(normalizeVenueInput({ ...draft, latitude: 3.45, longitude: -76.53 })).toMatchObject({
+      latitude: 3.45,
+      longitude: -76.53,
+    });
+    expect(normalizeVenueInput({ ...draft, latitude: Number.NaN, longitude: Number.NaN })).toMatchObject({
+      latitude: null,
+      longitude: null,
+    });
+  });
+
+  it("rechaza una coordenada sola o fuera de rango", () => {
+    expect(() => normalizeVenueInput({ ...draft, latitude: 3.45 })).toThrow(VenueLocationError);
+    expect(() => normalizeVenueInput({ ...draft, latitude: 95, longitude: -76.53 })).toThrow(VenueLocationError);
   });
 
   it("exige nombre, dirección y zona (CreateVenueDto)", () => {
@@ -61,6 +80,8 @@ describe("permisos (RF-2.3 a RF-2.5)", () => {
     zone: { id: 2, name: "Centro" },
     owner: { id: 2, username: "teatro", fullName: "Teatro" },
     isVerified: true,
+    latitude: 3.4497,
+    longitude: -76.5339,
   };
 
   it("solo un OWNER registra y solo un ADMIN verifica", () => {
@@ -77,10 +98,14 @@ describe("permisos (RF-2.3 a RF-2.5)", () => {
   });
 
   describe("editLosesVerification", () => {
-    const same = { name: "Teatro", address: "Cra 5", zoneId: 2 };
+    const same = { name: "Teatro", address: "Cra 5", zoneId: 2, latitude: 3.4497, longitude: -76.5339 };
 
     it("el OWNER la pierde si cambia nombre, dirección o zona", () => {
       expect(editLosesVerification(owner, venue, { ...same, address: "Cra 6" })).toBe(true);
+    });
+
+    it("también si mueve el lugar en el mapa", () => {
+      expect(editLosesVerification(owner, venue, { ...same, latitude: 3.46 })).toBe(true);
     });
 
     it("no la pierde si solo cambia la descripción", () => {
@@ -88,7 +113,7 @@ describe("permisos (RF-2.3 a RF-2.5)", () => {
     });
 
     it("el ADMIN la conserva aunque cambie todo", () => {
-      expect(editLosesVerification(admin, venue, { name: "X", address: "Y", zoneId: 9 })).toBe(false);
+      expect(editLosesVerification(admin, venue, { name: "X", address: "Y", zoneId: 9, latitude: null, longitude: null })).toBe(false);
     });
   });
 });

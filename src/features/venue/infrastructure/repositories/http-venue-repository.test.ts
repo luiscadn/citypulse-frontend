@@ -15,6 +15,8 @@ const venue = {
   name: "Teatro Municipal",
   description: "Teatro de la ciudad",
   address: "Cra 5 # 6-64",
+  latitude: null,
+  longitude: null,
   isVerified: true,
   zone: { id: 2, name: "Centro Histórico" },
   owner: { id: 2, username: "teatro", fullName: "Teatro Municipal" },
@@ -26,7 +28,14 @@ const venueDto = {
   updatedAt: "2026-11-14T05:31:00.711Z",
   owner: { ...venue.owner, email: "teatro@citypulse.co" },
 };
-const input = { name: "Teatro Municipal", address: "Cra 5 # 6-64", description: null, zoneId: 2 };
+const input = {
+  name: "Teatro Municipal",
+  address: "Cra 5 # 6-64",
+  description: null,
+  zoneId: 2,
+  latitude: null,
+  longitude: null,
+};
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -86,5 +95,31 @@ describe("update y remove", () => {
     http.delete.mockRejectedValue(new HttpError(403, {}));
 
     await expect(repository.remove(1)).rejects.toBeInstanceOf(VenueForbiddenError);
+  });
+});
+
+describe("mapa", () => {
+  it("pide los lugares verificados y deja solo los que tienen ubicación", async () => {
+    http.get.mockResolvedValue({
+      data: [
+        { ...venueDto, id: 1, latitude: 3.4497, longitude: -76.5339 },
+        { ...venueDto, id: 2 },
+        // Backend sin la migración: no envía los campos
+        { ...venueDto, id: 3, latitude: undefined, longitude: undefined },
+      ],
+      total: 3,
+      page: 1,
+      limit: 100,
+      lastPage: 1,
+    });
+    const venues = await repository.listMapped();
+    expect(http.get).toHaveBeenCalledWith("/venues?page=1&limit=100&isVerified=true");
+    expect(venues.map((v) => v.id)).toEqual([1]);
+  });
+
+  it("al registrar envía las coordenadas solo si las hay", async () => {
+    http.post.mockResolvedValue(venueDto);
+    await repository.create({ ...input, latitude: 3.4497, longitude: -76.5339 });
+    expect(http.post).toHaveBeenCalledWith("/venues", expect.objectContaining({ latitude: 3.4497, longitude: -76.5339 }));
   });
 });

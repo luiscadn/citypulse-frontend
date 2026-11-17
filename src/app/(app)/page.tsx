@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Container } from "@/shared/presentation/components";
 import { AdminSectionCard } from "./_components/admin-section-card";
+import { CityMapSection } from "./_components/city-map-section";
 import { SectionCard } from "./_components/section-card";
 
 export const metadata: Metadata = { title: "Inicio" };
@@ -40,6 +41,8 @@ export default function HomePage() {
           Descubre zonas y lugares verificados, conecta con tus amigos y confirma tu asistencia a los eventos.
         </p>
       </section>
+
+      <CityMapSection />
 
       <section aria-label="Secciones" className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {SECTIONS.map((section) => (

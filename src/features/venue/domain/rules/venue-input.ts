@@ -1,9 +1,10 @@
-import type { VenueDraft, VenueFilters, VenueInput } from "../entities/venue";
+import { isValidLocation, type VenueDraft, type VenueFilters, type VenueInput } from "../entities/venue";
 import {
   InvalidVenueError,
   VenueAddressRequiredError,
   VenueAddressTooLongError,
   VenueDescriptionTooLongError,
+  VenueLocationError,
   VenueNameRequiredError,
   VenueNameTooLongError,
   VenueZoneRequiredError,
@@ -27,6 +28,11 @@ export function assertValidVenueId(id: number): void {
   if (!isValidVenueId(id)) throw new InvalidVenueError();
 }
 
+// Campo vacío (NaN, null o undefined) = sin ubicación
+function toCoordinate(value: number | null | undefined): number | null {
+  return value === null || value === undefined || Number.isNaN(value) ? null : value;
+}
+
 /**
  * Réplica UX de CreateVenueDto: limpia el formulario y rechaza lo que ya se sabe
  * que va a fallar. Si difieren, el backend gana.
@@ -47,7 +53,11 @@ export function normalizeVenueInput(draft: VenueDraft): VenueInput {
 
   if (!isPositiveInteger(draft.zoneId)) throw new VenueZoneRequiredError();
 
-  return { name, address, description, zoneId: draft.zoneId };
+  const latitude = toCoordinate(draft.latitude);
+  const longitude = toCoordinate(draft.longitude);
+  if (!isValidLocation(latitude, longitude)) throw new VenueLocationError();
+
+  return { name, address, description, zoneId: draft.zoneId, latitude, longitude };
 }
 
 /**

@@ -5,6 +5,9 @@ export interface VenueFormValues {
   description: string;
   /** "" = sin elegir */
   zoneId: string;
+  /** Las llena la búsqueda de Google Maps (campos ocultos). "" = sin ubicación */
+  latitude: string;
+  longitude: string;
 }
 
 export type VenueFieldErrors = Partial<Record<keyof VenueFormValues, string>>;
@@ -18,7 +21,14 @@ export interface VenueFormState {
   success?: string;
 }
 
-export const emptyVenueFormValues: VenueFormValues = { name: "", address: "", description: "", zoneId: "" };
+export const emptyVenueFormValues: VenueFormValues = {
+  name: "",
+  address: "",
+  description: "",
+  zoneId: "",
+  latitude: "",
+  longitude: "",
+};
 
 export function initialVenueFormState(values: VenueFormValues = emptyVenueFormValues): VenueFormState {
   return { values, errors: {} };

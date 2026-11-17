@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { Place } from "@/features/maps/domain/entities/place";
 import { PlaceSearch } from "@/features/maps/presentation/components/place-search";
 import type { Zone } from "@/features/zone/domain/entities/zone";
@@ -29,15 +29,29 @@ export function VenueForm({
 }) {
   const { editing, state, formAction, pending } = useVenueForm(venue);
   const formRef = useRef<HTMLFormElement>(null);
+  const [located, setLocated] = useState(state.values.latitude !== "");
+
+  function setField(name: string, value: string) {
+    const field = formRef.current?.elements.namedItem(name);
+    if (field instanceof HTMLInputElement) field.value = value;
+  }
 
   // Los campos no son controlados (defaultValue): se llenan directo en el formulario
   function fillFromPlace(place: Place) {
-    const setField = (name: string, value: string) => {
-      const field = formRef.current?.elements.namedItem(name);
-      if (field instanceof HTMLInputElement) field.value = value;
-    };
     setField("name", place.name.slice(0, VENUE_NAME_MAX_LENGTH));
     setField("address", place.address.slice(0, VENUE_ADDRESS_MAX_LENGTH));
+    const hasCoords = place.latitude !== null && place.longitude !== null;
+    setField("latitude", hasCoords ? String(place.latitude) : "");
+    setField("longitude", hasCoords ? String(place.longitude) : "");
+    setLocated(hasCoords);
+  }
+
+  // Si la dirección se escribe a mano, la ubicación anterior ya no corresponde
+  function forgetLocation() {
+    if (!located) return;
+    setField("latitude", "");
+    setField("longitude", "");
+    setLocated(false);
   }
 
   return (
@@ -47,11 +61,19 @@ export function VenueForm({
       {venue && <input type="hidden" name="venueId" value={venue.id} />}
       {warnVerification && (
         <Alert tone="warning">
-          Si cambias el nombre, la dirección o la zona, el lugar vuelve a quedar pendiente de verificación.
+          Si cambias el nombre, la dirección, la ubicación o la zona, el lugar vuelve a quedar pendiente de verificación.
         </Alert>
       )}
 
       <PlaceSearch onPick={fillFromPlace} />
+      <input type="hidden" name="latitude" defaultValue={state.values.latitude} />
+      <input type="hidden" name="longitude" defaultValue={state.values.longitude} />
+      <p className="flex items-center gap-2 text-sm text-ink-muted" role="status">
+        <span aria-hidden className={located ? "pulse-dot" : "size-2 rounded-full bg-line-strong"} />
+        {located
+          ? "Ubicado en el mapa de la ciudad."
+          : "Sin ubicación: búscalo en Google Maps para que aparezca en el mapa."}
+      </p>
 
       <TextField
         label="Nombre"
@@ -70,6 +92,7 @@ export function VenueForm({
         maxLength={VENUE_ADDRESS_MAX_LENGTH}
         placeholder="Ej.: Cra 3 # 12-28…"
         autoComplete="off"
+        onInput={forgetLocation}
         defaultValue={state.values.address}
         error={state.errors.address}
       />

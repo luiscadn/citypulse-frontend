@@ -20,6 +20,8 @@ export function useVenueForm(venue?: Venue) {
             address: venue.address ?? "",
             description: venue.description ?? "",
             zoneId: String(venue.zone.id),
+            latitude: venue.latitude === null ? "" : String(venue.latitude),
+            longitude: venue.longitude === null ? "" : String(venue.longitude),
           }
         : undefined,
     ),

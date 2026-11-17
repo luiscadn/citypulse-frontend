@@ -13,6 +13,7 @@ import { VerifyVenueUseCase } from "./verify-venue.use-case";
 const repository = {
   list: vi.fn(),
   listMine: vi.fn(),
+  listMapped: vi.fn(),
   findById: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
@@ -25,6 +26,8 @@ const venue = {
   name: "Teatro",
   description: null,
   address: "Cra 5",
+  latitude: null,
+  longitude: null,
   isVerified: false,
   zone: { id: 2, name: "Centro" },
   owner: { id: 2, username: "teatro", fullName: "Teatro" },
@@ -48,7 +51,7 @@ describe("CreateVenueUseCase", () => {
 
     await useCase.execute({ name: " Teatro ", address: "Cra 5", description: "", zoneId: 2 });
 
-    expect(repository.create).toHaveBeenCalledWith({ name: "Teatro", address: "Cra 5", description: null, zoneId: 2 });
+    expect(repository.create).toHaveBeenCalledWith({ name: "Teatro", address: "Cra 5", description: null, zoneId: 2, latitude: null, longitude: null });
   });
 
   it("no llama al backend con datos inválidos", async () => {

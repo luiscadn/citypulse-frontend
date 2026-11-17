@@ -48,7 +48,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
         </Container>
         {/* Línea de "pulso": un brillo verde recorre el borde inferior del encabezado */}
         <div aria-hidden className="h-px overflow-hidden">
-          <div className="h-full w-full animate-pan bg-linear-to-r from-transparent via-accent to-transparent bg-size-[200%_100%]" />
+          <div className="h-full w-[200%] animate-pan bg-linear-to-r from-transparent via-accent to-transparent will-change-transform" />
         </div>
       </header>
       <div className="flex flex-1 flex-col">{children}</div>
