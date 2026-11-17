@@ -13,7 +13,7 @@ import { SESSION_COOKIE } from "@/shared/infrastructure/session/session-constant
  * Rutas que se ven sin iniciar sesión. "/" NO está: sin sesión, la raíz lleva
  * al login. Si el listado público de eventos termina en "/", hay que agregarla.
  */
-const PUBLIC_ROUTES = ["/login", "/register", "/ui"];
+const PUBLIC_ROUTES = ["/login", "/register"];
 /** Rutas que no tienen sentido con sesión abierta */
 const GUEST_ONLY_ROUTES = ["/login", "/register"];
 

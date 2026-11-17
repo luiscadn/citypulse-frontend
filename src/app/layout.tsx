@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 /*
  * Layout raíz: solo html, fuentes y tema. El encabezado vive en
  * app/(app)/layout.tsx; las páginas sin encabezado (como /login) van fuera
- * de ese grupo. Los paréntesis no cambian la URL: app/(app)/ui → /ui.
+ * de ese grupo. Los paréntesis no cambian la URL: app/(app)/zones → /zones.
  */
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

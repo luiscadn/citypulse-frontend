@@ -17,7 +17,7 @@ El backend está en el plan gratis de Render: si lleva un rato sin uso, la prime
 ## Tecnologías
 
 - Next.js 16 (App Router, Cache Components, Server Actions), React 19 y TypeScript
-- Tailwind CSS 4 con el sistema de diseño propio (ver `/ui`)
+- Tailwind CSS 4 con un sistema de diseño propio (tokens en `src/app/globals.css`, componentes en `src/shared/presentation/components`)
 - Vitest y Testing Library (pruebas unitarias), Playwright (pruebas E2E)
 - GitHub Actions (CI)
 
@@ -83,7 +83,6 @@ Usuarios de prueba que crea `db/init.sql` en el backend:
 | Mapas | `/venues/mine` | En el formulario de lugar, busca en Google Maps (por ejemplo, "Teatro Municipal") y elige un resultado: se llenan el nombre y la dirección. Requiere `GOOGLE_MAPS_API_KEY` en el backend |
 | Eventos | `/events`, `/events/new`, `/events/[id]` | Filtra por zona, estado, origen, texto y rango de fechas, y pasa de página. Reporta un evento: nace en revisión. Su autor (o un ADMIN) lo edita mientras está en revisión y lo cancela |
 | Asistencia | `/events/[id]` | En el detalle de un evento abierto responde "Asistiré", "Tal vez" o "No iré" y mira qué respondieron tus amigos. El autor y los ADMIN ven además todas las respuestas |
-| Sistema de diseño | `/ui` | Componentes, colores y modo oscuro |
 
 ## Arquitectura
 

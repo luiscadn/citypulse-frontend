@@ -4,7 +4,7 @@ import { cn } from "../cn";
  * Símbolo de CityPulse: un pin de mapa (la ciudad) con una línea de pulso.
  * `inverse` lo pinta en blanco para usarlo sobre fondos de color primario.
  */
-export function LogoSymbol({ className, inverse = false }: { className?: string; inverse?: boolean }) {
+function LogoSymbol({ className, inverse = false }: { className?: string; inverse?: boolean }) {
   return (
     <svg viewBox="0 0 32 32" className={cn("size-8 shrink-0", className)} aria-hidden>
       <rect width="32" height="32" rx="9" className={inverse ? "fill-white" : "fill-primary"} />

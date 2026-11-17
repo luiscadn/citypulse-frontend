@@ -16,7 +16,7 @@ function request(path: string, token?: string) {
 describe("proxy", () => {
   it("deja pasar las rutas públicas sin sesión", () => {
     expect(proxy(request("/login")).headers.get("location")).toBeNull();
-    expect(proxy(request("/ui")).headers.get("location")).toBeNull();
+    expect(proxy(request("/register")).headers.get("location")).toBeNull();
   });
 
   it("sin sesión, la raíz lleva al login (sin ?from=)", () => {
