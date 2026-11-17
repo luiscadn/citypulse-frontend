@@ -1,9 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
 import { Alert, Button, TextField } from "@/shared/presentation/components";
-import { updateProfileAction } from "../actions/profile.actions";
-import type { ProfileFormState } from "../actions/profile-form-state";
+import { useProfileForm } from "../hooks/use-profile-form";
 
 export function ProfileForm({
   initial,
@@ -13,10 +11,7 @@ export function ProfileForm({
   /** El correo es la identidad de inicio de sesión: se muestra, no se edita */
   email: string;
 }) {
-  const [state, formAction, pending] = useActionState<ProfileFormState, FormData>(updateProfileAction, {
-    values: initial,
-    errors: {},
-  });
+  const { state, formAction, pending } = useProfileForm(initial);
 
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>

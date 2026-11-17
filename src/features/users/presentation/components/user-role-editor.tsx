@@ -1,14 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { RoleName } from "@/shared/domain/enums";
 import { Alert, Button } from "@/shared/presentation/components";
 import { ALL_ROLES } from "../../domain/rules/roles";
-import { assignRolesAction } from "../actions/admin-users.actions";
+import { useRoleEditor } from "../hooks/use-role-editor";
 import { ROLE_LABEL } from "../role-labels";
-
-const sameRoles = (a: readonly RoleName[], b: readonly RoleName[]) =>
-  a.length === b.length && a.every((role) => b.includes(role));
 
 /**
  * Casillas de roles de un usuario + botón para guardarlos.
@@ -26,32 +22,7 @@ export function UserRoleEditor({
   /** Es la cuenta de quien administra: no puede quitarse a sí mismo el rol ADMIN */
   isSelf: boolean;
 }) {
-  const [pending, startTransition] = useTransition();
-  const [saved, setSaved] = useState<readonly RoleName[]>(initialRoles);
-  const [selected, setSelected] = useState<readonly RoleName[]>(initialRoles);
-  const [feedback, setFeedback] = useState<{ tone: "success" | "danger"; text: string } | null>(null);
-
-  const dirty = !sameRoles(selected, saved);
-
-  function toggle(role: RoleName) {
-    setFeedback(null);
-    setSelected((current) =>
-      current.includes(role) ? current.filter((r) => r !== role) : [...current, role],
-    );
-  }
-
-  function save() {
-    setFeedback(null);
-    startTransition(async () => {
-      const result = await assignRolesAction(userId, [...selected]);
-      if (result.ok) {
-        setSaved(selected);
-        setFeedback({ tone: "success", text: "Roles actualizados." });
-      } else {
-        setFeedback({ tone: "danger", text: result.error });
-      }
-    });
-  }
+  const { selected, dirty, feedback, pending, toggle, save } = useRoleEditor(userId, initialRoles);
 
   return (
     <div className="flex flex-col gap-3">
