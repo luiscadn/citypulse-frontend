@@ -51,3 +51,23 @@ export interface EventBodyDto {
   startDate: string;
   endDate: string;
 }
+
+/** Elemento de GET /moderation/pending: el reporte con sus evidencias (sin lugar ni asistentes). */
+export interface PendingReportDto extends EventDto {
+  evidences: EvidenceDto[];
+}
+
+/** Cuerpo de POST /events/official. */
+export interface OfficialEventBodyDto extends EventBodyDto {
+  venueId: number;
+  visibility: string;
+  capacity?: number;
+  ticketPrice?: number;
+}
+
+/** Cuerpo de POST /evidence/event/:eventId. */
+export interface EvidenceBodyDto {
+  type: string;
+  url: string;
+  caption?: string;
+}

@@ -1,13 +1,11 @@
 "use client";
 
-import { useActionState } from "react";
 import { Alert, Button, TextField } from "@/shared/presentation/components";
 import { PASSWORD_MIN } from "@/features/users/domain/rules/user-fields";
-import { registerAction } from "../actions/auth.actions";
-import { initialRegisterState } from "../actions/register-form-state";
+import { useRegister } from "../hooks/use-register";
 
 export function RegisterForm() {
-  const [state, formAction, pending] = useActionState(registerAction, initialRegisterState);
+  const { state, formAction, pending } = useRegister();
   const { values, errors } = state;
 
   // React reinicia el formulario tras cada acción: los valores vuelven a escribirse

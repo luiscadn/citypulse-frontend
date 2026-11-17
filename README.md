@@ -17,7 +17,7 @@ El backend está en el plan gratis de Render: si lleva un rato sin uso, la prime
 ## Tecnologías
 
 - Next.js 16 (App Router, Cache Components, Server Actions), React 19 y TypeScript
-- Tailwind CSS 4 con el sistema de diseño propio (ver `/ui`)
+- Tailwind CSS 4 con un sistema de diseño propio (tokens en `src/app/globals.css`, componentes en `src/shared/presentation/components`)
 - Vitest y Testing Library (pruebas unitarias), Playwright (pruebas E2E)
 - GitHub Actions (CI)
 
@@ -81,7 +81,12 @@ Usuarios de prueba que crea `db/init.sql` en el backend:
 | Zonas | `/zones` | Como ADMIN: crea, edita y borra zonas, con zona padre. Si la zona tiene lugares, el borrado se rechaza con un mensaje. Como USER solo puedes verlas |
 | Lugares | `/venues`, `/venues/mine` | Filtra por zona y estado y pasa de página. Como OWNER, registra un lugar en "Mis lugares": nace pendiente. Como ADMIN, verifícalo. Si el OWNER cambia nombre, dirección o zona, vuelve a pendiente |
 | Mapas | `/venues/mine` | En el formulario de lugar, busca en Google Maps (por ejemplo, "Teatro Municipal") y elige un resultado: se llenan el nombre y la dirección. Requiere `GOOGLE_MAPS_API_KEY` en el backend |
-| Sistema de diseño | `/ui` | Componentes, colores y modo oscuro |
+| Eventos | `/events`, `/events/new`, `/events/[id]` | Filtra por zona, estado, origen, texto y rango de fechas, y pasa de página. Reporta un evento: nace en revisión. Su autor (o un ADMIN) lo edita mientras está en revisión y lo cancela |
+| Asistencia | `/events/[id]` | En el detalle de un evento abierto responde "Asistiré", "Tal vez" o "No iré" y mira qué respondieron tus amigos. El autor y los ADMIN ven además todas las respuestas |
+| Evidencias | `/events/[id]` | Como autor de un reporte en revisión, adjunta fotos, enlaces o documentos (por URL). Sin evidencia, el detalle avisa que ningún ADMIN lo puede confirmar |
+| Moderación | `/admin/moderation` | Como ADMIN, revisa los reportes con evidencias: confírmalos o recházalos con un motivo, que verá su autor. También desde el detalle del reporte. Otro rol recibe 404 |
+| Eventos oficiales | `/events/official` | Como OWNER (por ejemplo `teatro@citypulse.co`), publica un evento en uno de tus lugares, con visibilidad, cupo y precio: nace confirmado |
+| Invitar amigos | `/events/[id]` | En un evento abierto, elige a un amigo y envíale una invitación con un mensaje; le llega a `/invitations`. Invitar dos veces al mismo amigo se rechaza con un mensaje |
 
 ## Arquitectura
 
@@ -92,8 +97,11 @@ domain/          entidades, errores de dominio y reglas (TypeScript puro)
 application/     puertos (interfaces de repositorio) y casos de uso
 infrastructure/  DTO, mappers y repositorios HTTP (adaptadores)
 di/              contenedor: único lugar donde se instancian repositorios y casos de uso
-presentation/    Server Actions y componentes
+presentation/    Server Actions, hooks fachada y componentes
 ```
+
+- **Entidades:** cada una tiene una fábrica (`createZone`, `createVenue`, `createEvent`, `createUser`...) que comprueba sus invariantes y la congela; los mappers solo construyen entidades a través de ella, así que una entidad inválida no puede existir. Son funciones y no clases porque las entidades pasan de Server a Client Components, que solo aceptan objetos planos.
+- **Hooks fachada:** los componentes de cliente no importan Server Actions ni contextos; usan hooks (`useZoneForm`, `useAttendance`, `useSession`...) que los encapsulan.
 
 - **Sesión:** el JWT del backend se guarda en una cookie `httpOnly` (`cp_session`).
 - **Llamadas al backend:**

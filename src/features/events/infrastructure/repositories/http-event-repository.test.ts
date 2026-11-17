@@ -8,6 +8,9 @@ import {
   EventNotFoundError,
   EventPrivateError,
   EventZoneNotFoundError,
+  OfficialVenueForbiddenError,
+  ReportAlreadyReviewedError,
+  ReportWithoutEvidenceError,
 } from "../../domain/errors/event-errors";
 import { HttpEventRepository } from "./http-event-repository";
 
@@ -229,5 +232,53 @@ describe("cancel", () => {
   ])("traduce el %i a un error de dominio", async (status, errorType) => {
     http.delete.mockRejectedValue(new HttpError(status, {}));
     await expect(repository.cancel(ID)).rejects.toBeInstanceOf(errorType);
+  });
+});
+
+describe("moderación, evidencias y eventos oficiales", () => {
+  const evidence = { id: 1, type: "FOTO", url: "https://example.com/a.jpg", caption: null };
+
+  it("mapea la cola de moderación con sus evidencias", async () => {
+    http.get.mockResolvedValue([{ ...eventDto, evidences: [evidence] }]);
+    const [report] = await repository.listPendingReports();
+    expect(http.get).toHaveBeenCalledWith("/moderation/pending");
+    expect(report.evidences).toEqual([evidence]);
+    expect(report.createdBy).toEqual(event.createdBy);
+  });
+
+  it("distingue los dos 400 de confirmar por el texto del backend", async () => {
+    http.patch.mockRejectedValueOnce(
+      new HttpError(400, { message: "El reporte debe tener al menos una evidencia para ser confirmado" }),
+    );
+    await expect(repository.confirmReport(ID)).rejects.toBeInstanceOf(ReportWithoutEvidenceError);
+
+    http.patch.mockRejectedValueOnce(new HttpError(400, { message: "El evento ya fue procesado" }));
+    await expect(repository.confirmReport(ID)).rejects.toBeInstanceOf(ReportAlreadyReviewedError);
+  });
+
+  it("envía el motivo del rechazo", async () => {
+    http.patch.mockResolvedValue({});
+    await repository.rejectReport(ID, "Sin pruebas");
+    expect(http.patch).toHaveBeenCalledWith(`/moderation/${ID}/reject`, { reason: "Sin pruebas" });
+  });
+
+  it("adjunta una evidencia sin enviar la descripción vacía", async () => {
+    http.post.mockResolvedValue({});
+    await repository.addEvidence(ID, { type: "ENLACE", url: "https://example.com", caption: null });
+    expect(http.post).toHaveBeenCalledWith(`/evidence/event/${ID}`, { type: "ENLACE", url: "https://example.com" });
+  });
+
+  it("publica un evento oficial y traduce el 403 de lugar ajeno", async () => {
+    const official = { ...input, venueId: 7, visibility: EventVisibility.PUBLICO, capacity: null, ticketPrice: 0 };
+    http.post.mockResolvedValueOnce({ ...eventDto, origin: EventOrigin.OFICIAL, status: EventStatus.CONFIRMADO });
+    await repository.publishOfficial(official);
+    expect(http.post).toHaveBeenCalledWith(
+      "/events/official",
+      expect.objectContaining({ venueId: 7, visibility: "PUBLICO", ticketPrice: 0 }),
+    );
+    expect(http.post.mock.calls[0][1]).not.toHaveProperty("capacity");
+
+    http.post.mockRejectedValueOnce(new HttpError(403, {}));
+    await expect(repository.publishOfficial(official)).rejects.toBeInstanceOf(OfficialVenueForbiddenError);
   });
 });

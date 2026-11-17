@@ -1,14 +1,14 @@
-import type { Zone, ZoneInput } from "../../domain/entities/zone";
+import { createZone, type Zone, type ZoneInput } from "../../domain/entities/zone";
 import type { ZoneBodyDto, ZoneDto } from "../dtos/zone.dto";
 
 export function toZone(dto: ZoneDto): Zone {
-  return {
+  return createZone({
     id: dto.id,
     name: dto.name,
     description: dto.description ?? null,
     parentId: dto.parent?.id ?? null,
     createdAt: dto.createdAt,
-  };
+  });
 }
 
 /** Al crear, lo vacío no se envía: el backend lo deja en null por defecto. */

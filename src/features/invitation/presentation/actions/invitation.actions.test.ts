@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { invitationContainer } from "../../di/invitation.container";
 import { InvitationAlreadyAnsweredError } from "../../domain/errors/invitation-errors";
-import { respondInvitationAction } from "./invitation.actions";
+import { respondInvitationAction, sendInvitationAction } from "./invitation.actions";
 
 vi.mock("next/cache", () => ({ refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({
@@ -19,6 +19,7 @@ vi.mock("@/features/auth/infrastructure/session/get-current-user", () => ({
 vi.mock("../../di/invitation.container", () => ({
   invitationContainer: {
     respondInvitationUseCase: { execute: vi.fn() },
+    sendInvitationUseCase: { execute: vi.fn() },
   },
 }));
 
@@ -84,5 +85,32 @@ describe("respondInvitationAction", () => {
     const state = await respondInvitationAction({}, form({ invitationId: "3", answer: "RECHAZADA" }));
 
     expect(state.error).toBe("No se pudo conectar con el servidor. Intenta de nuevo.");
+  });
+});
+
+describe("sendInvitationAction", () => {
+  const send = vi.mocked(invitationContainer.sendInvitationUseCase.execute);
+  const EVENT_ID = "0b7c9a52-6c1e-4f1a-9a77-2f5f1f0f7a10";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getCurrentUser).mockResolvedValue({ id: 4, email: "ana@citypulse.co", roles: [] });
+  });
+
+  it("invita al amigo elegido, con el mensaje si lo hay", async () => {
+    const state = await sendInvitationAction({}, form({ eventId: EVENT_ID, toUserId: "5", message: "¿Vamos?" }));
+    expect(send).toHaveBeenCalledWith(4, { eventId: EVENT_ID, toUserId: 5, message: "¿Vamos?" });
+    expect(state.success).toBeDefined();
+  });
+
+  it("sin mensaje no lo envía", async () => {
+    await sendInvitationAction({}, form({ eventId: EVENT_ID, toUserId: "5", message: "" }));
+    expect(send).toHaveBeenCalledWith(4, { eventId: EVENT_ID, toUserId: 5 });
+  });
+
+  it("manda al login si no hay sesión", async () => {
+    vi.mocked(getCurrentUser).mockResolvedValue(null);
+    await expect(sendInvitationAction({}, form({ eventId: EVENT_ID, toUserId: "5" }))).rejects.toThrow("REDIRECT");
+    expect(send).not.toHaveBeenCalled();
   });
 });

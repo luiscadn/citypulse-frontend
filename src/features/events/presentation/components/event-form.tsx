@@ -1,41 +1,23 @@
 "use client";
 
-import { useActionState } from "react";
 import type { Zone } from "@/features/zone/domain/entities/zone";
 import { Alert, Button, SelectField, TextareaField, TextField } from "@/shared/presentation/components";
 import type { Event } from "../../domain/entities/event";
-import { isoToColombiaLocal } from "../../domain/rules/event-input";
 import { EVENT_ADDRESS_MAX_LENGTH, EVENT_TITLE_MAX_LENGTH } from "../../domain/rules/event-limits";
-import { reportEventAction, updateEventAction } from "../actions/event.actions";
-import { initialEventFormState } from "../actions/event-form-state";
+import { useEventForm } from "../hooks/use-event-form";
 
 /**
  * Formulario para reportar un evento (cualquier usuario) o editar un reporte (su autor o un ADMIN).
  * Sin `event` reporta; con `event` edita ese reporte.
  */
 export function EventForm({ event, zones }: { event?: Event; zones: readonly Pick<Zone, "id" | "name">[] }) {
-  const editing = event !== undefined;
-  const [state, formAction, pending] = useActionState(
-    editing ? updateEventAction : reportEventAction,
-    initialEventFormState(
-      editing
-        ? {
-            title: event.title,
-            description: event.description ?? "",
-            zoneId: String(event.zone.id),
-            addressText: event.addressText ?? "",
-            startDate: isoToColombiaLocal(event.startDate),
-            endDate: isoToColombiaLocal(event.endDate),
-          }
-        : undefined,
-    ),
-  );
+  const { editing, state, formAction, pending } = useEventForm(event);
 
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>
       {state.error && <Alert tone="danger">{state.error}</Alert>}
       {state.success && <Alert tone="success">{state.success}</Alert>}
-      {editing && <input type="hidden" name="eventId" value={event.id} />}
+      {event && <input type="hidden" name="eventId" value={event.id} />}
 
       <TextField
         label="Título"

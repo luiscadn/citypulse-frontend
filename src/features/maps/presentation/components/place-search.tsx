@@ -1,28 +1,17 @@
 "use client";
 
-import { useState, useTransition, type KeyboardEvent } from "react";
+import type { KeyboardEvent } from "react";
 import { Alert, Button, Input } from "@/shared/presentation/components";
 import { MapPinIcon } from "@/shared/presentation/components/icons";
 import type { Place } from "../../domain/entities/place";
-import { searchPlacesAction } from "../actions/maps.actions";
+import { usePlaceSearch } from "../hooks/use-place-search";
 
 /**
  * Busca el lugar en Google Maps para llenar el formulario con su nombre y dirección reales.
  * Va dentro de otro <form> (el del lugar): por eso no es un form, y Enter busca en vez de enviar.
  */
 export function PlaceSearch({ onPick }: { onPick: (place: Place) => void }) {
-  const [query, setQuery] = useState("");
-  const [places, setPlaces] = useState<Place[] | null>(null);
-  const [error, setError] = useState<string>();
-  const [pending, startTransition] = useTransition();
-
-  function search() {
-    startTransition(async () => {
-      const result = await searchPlacesAction(query);
-      setPlaces(result.places);
-      setError(result.error);
-    });
-  }
+  const { query, setQuery, places, error, pending, search, reset } = usePlaceSearch();
 
   function searchOnEnter(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter") {
@@ -33,8 +22,7 @@ export function PlaceSearch({ onPick }: { onPick: (place: Place) => void }) {
 
   function pick(place: Place) {
     onPick(place);
-    setPlaces(null);
-    setQuery("");
+    reset();
   }
 
   return (

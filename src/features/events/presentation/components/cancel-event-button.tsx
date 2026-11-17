@@ -1,15 +1,15 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { Alert, Button } from "@/shared/presentation/components";
-import { cancelEventAction } from "../actions/event.actions";
+import { useCancelEvent } from "../hooks/use-cancel-event";
 
 /**
  * Cancela el evento tras pedir confirmación en la misma página (sin window.confirm).
  * El evento no se borra: queda con estado CANCELADO.
  */
 export function CancelEventButton({ eventId, eventTitle }: { eventId: string; eventTitle: string }) {
-  const [state, formAction, pending] = useActionState(cancelEventAction, {});
+  const { state, formAction, pending } = useCancelEvent();
   const [confirming, setConfirming] = useState(false);
 
   return (

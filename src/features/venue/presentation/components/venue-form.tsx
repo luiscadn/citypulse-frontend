@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useRef } from "react";
 import type { Place } from "@/features/maps/domain/entities/place";
 import { PlaceSearch } from "@/features/maps/presentation/components/place-search";
 import type { Zone } from "@/features/zone/domain/entities/zone";
@@ -11,8 +11,7 @@ import {
   VENUE_DESCRIPTION_MAX_LENGTH,
   VENUE_NAME_MAX_LENGTH,
 } from "../../domain/rules/venue-limits";
-import { createVenueAction, updateVenueAction } from "../actions/venue.actions";
-import { initialVenueFormState } from "../actions/venue-form-state";
+import { useVenueForm } from "../hooks/use-venue-form";
 
 /**
  * Formulario para registrar un lugar (OWNER) o editar uno existente (su OWNER o un ADMIN).
@@ -28,21 +27,7 @@ export function VenueForm({
   /** Avisar que cambiar nombre, dirección o zona quita la verificación (OWNER con lugar verificado) */
   warnVerification?: boolean;
 }) {
-  const editing = venue !== undefined;
-  const [state, formAction, pending] = useActionState(
-    editing ? updateVenueAction : createVenueAction,
-    initialVenueFormState(
-      editing
-        ? {
-            name: venue.name,
-            address: venue.address ?? "",
-            description: venue.description ?? "",
-            zoneId: String(venue.zone.id),
-          }
-        : undefined,
-    ),
-  );
-
+  const { editing, state, formAction, pending } = useVenueForm(venue);
   const formRef = useRef<HTMLFormElement>(null);
 
   // Los campos no son controlados (defaultValue): se llenan directo en el formulario
@@ -59,7 +44,7 @@ export function VenueForm({
     <form ref={formRef} action={formAction} className="flex flex-col gap-5" noValidate>
       {state.error && <Alert tone="danger">{state.error}</Alert>}
       {state.success && <Alert tone="success">{state.success}</Alert>}
-      {editing && <input type="hidden" name="venueId" value={venue.id} />}
+      {venue && <input type="hidden" name="venueId" value={venue.id} />}
       {warnVerification && (
         <Alert tone="warning">
           Si cambias el nombre, la dirección o la zona, el lugar vuelve a quedar pendiente de verificación.

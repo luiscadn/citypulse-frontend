@@ -24,7 +24,7 @@ export function InvitationInbox() {
   return (
     <Card>
       <CardHeader title="Invitaciones pendientes" description="Tus amigos quieren que los acompañes." />
-      <ul className="divide-y divide-line">
+      <ul className="stagger divide-y divide-line">
         {pending.map((invitation) => (
           <li key={invitation.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
             <div className="min-w-0">

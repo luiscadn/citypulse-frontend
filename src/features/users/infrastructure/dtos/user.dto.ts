@@ -9,7 +9,7 @@ export interface UserDto {
   fullName: string;
   isActive: boolean;
   twoFactorEnabled: boolean;
-  zoneId: number | null;
+  zoneId?: number | null;
   createdAt: string;            // ISO
   userRoles?: { role: { name: string } }[];  // ← nested, snake/camel según backend
 }

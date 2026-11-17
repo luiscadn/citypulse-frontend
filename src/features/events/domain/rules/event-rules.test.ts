@@ -20,7 +20,15 @@ import {
   parseEventFilters,
 } from "./event-input";
 import { EVENT_ADDRESS_MAX_LENGTH, EVENT_SEARCH_MAX_LENGTH, EVENT_TITLE_MAX_LENGTH } from "./event-limits";
-import { canCancelEvent, canEditEvent, canReportEvents } from "./event-permissions";
+import {
+  canAddEvidence,
+  canCancelEvent,
+  canEditEvent,
+  canModerateEvents,
+  canPublishOfficialEvents,
+  canReportEvents,
+  canSeeAttendees,
+} from "./event-permissions";
 
 const draft = {
   title: "Feria artesanal",
@@ -174,5 +182,33 @@ describe("permisos", () => {
     expect(canCancelEvent(admin, reported)).toBe(true);
     expect(canCancelEvent(stranger, reported)).toBe(false);
     expect(canCancelEvent(author, { ...reported, status: EventStatus.CANCELADO })).toBe(false);
+  });
+
+  // RF-5.7: la lista completa de respuestas es solo para el autor y el ADMIN
+  it("solo el autor y el ADMIN ven a todos los que respondieron", () => {
+    expect(canSeeAttendees(author, reported)).toBe(true);
+    expect(canSeeAttendees(admin, reported)).toBe(true);
+    expect(canSeeAttendees(stranger, reported)).toBe(false);
+    expect(canSeeAttendees(null, reported)).toBe(false);
+  });
+
+  it("solo un ADMIN modera reportes", () => {
+    expect(canModerateEvents(admin)).toBe(true);
+    expect(canModerateEvents(author)).toBe(false);
+    expect(canModerateEvents(null)).toBe(false);
+  });
+
+  it("el autor y el ADMIN adjuntan evidencias solo mientras el reporte está en revisión", () => {
+    expect(canAddEvidence(author, reported)).toBe(true);
+    expect(canAddEvidence(admin, reported)).toBe(true);
+    expect(canAddEvidence(stranger, reported)).toBe(false);
+    expect(canAddEvidence(author, { ...reported, status: EventStatus.CONFIRMADO })).toBe(false);
+  });
+
+  it("solo un OWNER o un ADMIN publica eventos oficiales", () => {
+    expect(canPublishOfficialEvents({ id: 9, roles: [RoleName.OWNER] })).toBe(true);
+    expect(canPublishOfficialEvents(admin)).toBe(true);
+    expect(canPublishOfficialEvents(stranger)).toBe(false);
+    expect(canPublishOfficialEvents(null)).toBe(false);
   });
 });

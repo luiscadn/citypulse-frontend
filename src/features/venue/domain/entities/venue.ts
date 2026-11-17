@@ -1,3 +1,6 @@
+import { isDateString, isNonBlank, isPositiveInt } from "@/shared/domain/invariants";
+import { InvalidVenueError } from "../errors/venue-errors";
+
 /** Lugar (teatro, museo, parque...) que registra un OWNER y verifica un ADMIN. */
 export interface Venue {
   readonly id: number;
@@ -52,4 +55,23 @@ export interface VenueDraft {
   address: string;
   description?: string | null;
   zoneId: number;
+}
+
+/**
+ * Única forma de construir un Venue: comprueba sus invariantes y lo congela.
+ * Función y no clase: las entidades viajan a Client Components como objetos planos.
+ */
+export function createVenue(props: Venue): Venue {
+  if (!isPositiveInt(props.id)) throw new InvalidVenueError("El lugar necesita un ID válido");
+  if (!isNonBlank(props.name)) throw new InvalidVenueError("El lugar necesita un nombre");
+  if (!isPositiveInt(props.zone.id) || !isNonBlank(props.zone.name)) {
+    throw new InvalidVenueError("El lugar debe pertenecer a una zona válida");
+  }
+  if (!isPositiveInt(props.owner.id)) throw new InvalidVenueError("El lugar debe tener un dueño válido");
+  if (!isDateString(props.createdAt)) throw new InvalidVenueError("La fecha de creación del lugar no es válida");
+  return Object.freeze({
+    ...props,
+    zone: Object.freeze({ ...props.zone }),
+    owner: Object.freeze({ ...props.owner }),
+  });
 }

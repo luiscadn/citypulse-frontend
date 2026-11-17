@@ -17,7 +17,7 @@ export function FriendshipOverview() {
       {pendingReceived.length > 0 && (
         <Card>
           <CardHeader title="Solicitudes recibidas" description="Personas que quieren ser tus amigas." />
-          <ul className="divide-y divide-line">
+          <ul className="stagger divide-y divide-line">
             {pendingReceived.map((request) => (
               <FriendUserRow key={request.id} user={request.from}>
                 <FriendRequestActions requestId={request.id} />
@@ -30,7 +30,7 @@ export function FriendshipOverview() {
       {pendingSent.length > 0 && (
         <Card>
           <CardHeader title="Solicitudes enviadas" description="Todavía no las han respondido." />
-          <ul className="divide-y divide-line">
+          <ul className="stagger divide-y divide-line">
             {pendingSent.map((request) => (
               <FriendUserRow key={request.id} user={request.to}>
                 <Badge tone="warning" dot>
@@ -45,7 +45,7 @@ export function FriendshipOverview() {
       {friends.length > 0 ? (
         <Card>
           <CardHeader title="Mis amigos" />
-          <ul className="divide-y divide-line">
+          <ul className="stagger divide-y divide-line">
             {friends.map((friend) => (
               <FriendUserRow key={friend.id} user={friend} />
             ))}
