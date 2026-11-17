@@ -109,7 +109,15 @@ export function SelectField({ label, hint, error, className, ...props }: FieldSh
   return (
     <Field label={label} hint={hint} error={error} required={props.required} className={className}>
       {(id, describedBy, invalid) => (
-        <Select id={id} aria-describedby={describedBy} aria-invalid={invalid || undefined} {...props} />
+        // Tras una Server Action, React reinicia el formulario y un <select> vuelve a la opción
+        // con la que se montó, no al defaultValue nuevo. La key lo vuelve a montar cuando cambia.
+        <Select
+          key={String(props.defaultValue ?? "")}
+          id={id}
+          aria-describedby={describedBy}
+          aria-invalid={invalid || undefined}
+          {...props}
+        />
       )}
     </Field>
   );
