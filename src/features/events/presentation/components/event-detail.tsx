@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EventAttendance } from "@/features/attendance/presentation/components/event-attendance";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
+import { InviteFriends } from "@/features/invitation/presentation/components/invite-friends";
 import { zoneContainer } from "@/features/zone/di/zone.container";
 import { EventOrigin, EventStatus } from "@/shared/domain/enums";
 import { Alert, Badge, Card, CardBody, CardHeader, PageHeader } from "@/shared/presentation/components";
@@ -10,22 +11,19 @@ import { formatDateTime } from "@/shared/presentation/formatters/date";
 import { eventContainer } from "../../di/event.container";
 import type { EventDetail as EventDetailData } from "../../domain/entities/event";
 import { EventNotFoundError, EventPrivateError } from "../../domain/errors/event-errors";
-import { canCancelEvent, canEditEvent, canSeeAttendees } from "../../domain/rules/event-permissions";
+import {
+  canAddEvidence,
+  canCancelEvent,
+  canEditEvent,
+  canModerateEvents,
+  canSeeAttendees,
+} from "../../domain/rules/event-permissions";
 import { CancelEventButton } from "./cancel-event-button";
 import { EventForm } from "./event-form";
+import { EvidenceForm } from "./evidence-form";
+import { EvidenceList } from "./evidence-list";
 import { EventStatusBadge } from "./event-status-badge";
-
-const EVIDENCE_LABELS = { FOTO: "Foto", ENLACE: "Enlace", DOCUMENTO: "Documento" } as const;
-
-/** Solo se enlazan direcciones web: la URL de una evidencia la escribe cualquier usuario. */
-function isWebUrl(url: string): boolean {
-  try {
-    const { protocol } = new URL(url);
-    return protocol === "https:" || protocol === "http:";
-  } catch {
-    return false;
-  }
-}
+import { ReviewReportPanel } from "./review-report-panel";
 
 const priceFormat = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
 
@@ -54,6 +52,8 @@ export async function EventDetail({ eventId }: { eventId: Promise<string> }) {
   const official = event.origin === EventOrigin.OFICIAL;
   // A un evento cancelado o rechazado ya no se responde
   const open = event.status !== EventStatus.CANCELADO && event.status !== EventStatus.RECHAZADO;
+  const addEvidence = canAddEvidence(user, event);
+  const review = event.status === EventStatus.REPORTADO && canModerateEvents(user);
 
   return (
     <>
@@ -81,9 +81,14 @@ export async function EventDetail({ eventId }: { eventId: Promise<string> }) {
           {event.rejectionReason ?? "Un administrador rechazó este reporte."}
         </Alert>
       )}
-      {event.status === EventStatus.REPORTADO && (
-        <Alert tone="info">Este reporte está en revisión: un administrador lo confirmará con las evidencias.</Alert>
-      )}
+      {event.status === EventStatus.REPORTADO &&
+        (addEvidence && event.evidences.length === 0 ? (
+          <Alert tone="warning" title="Falta la evidencia">
+            Adjunta al menos una evidencia: sin ella, ningún administrador puede confirmar el reporte.
+          </Alert>
+        ) : (
+          <Alert tone="info">Este reporte está en revisión: un administrador lo confirmará con las evidencias.</Alert>
+        ))}
 
       <Card>
         <CardBody>
@@ -136,30 +141,41 @@ export async function EventDetail({ eventId }: { eventId: Promise<string> }) {
         <Card>
           <CardHeader title="Evidencias" description="Lo que adjuntó su autor para que se pueda verificar." />
           <CardBody>
-            <ul className="flex flex-col gap-2 text-sm">
-              {event.evidences.map((evidence) => (
-                <li key={evidence.id} className="flex flex-wrap items-center gap-2">
-                  <Badge>{EVIDENCE_LABELS[evidence.type]}</Badge>
-                  {isWebUrl(evidence.url) ? (
-                    <a
-                      href={evidence.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-semibold text-primary-strong hover:underline"
-                    >
-                      {evidence.caption ?? evidence.url} ↗
-                    </a>
-                  ) : (
-                    <span className="text-ink">{evidence.caption ?? evidence.url}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <EvidenceList evidences={event.evidences} />
           </CardBody>
         </Card>
       )}
 
-      {user && open && <EventAttendance eventId={event.id} showAttendees={canSeeAttendees(user, event)} />}
+      {(review || addEvidence) && (
+        <div className="grid items-start gap-6 lg:grid-cols-2">
+          {review && (
+            <Card>
+              <CardHeader
+                title="Revisar reporte"
+                description="Confírmalo si las evidencias lo respaldan; si no, recházalo con un motivo."
+              />
+              <CardBody>
+                <ReviewReportPanel eventId={event.id} />
+              </CardBody>
+            </Card>
+          )}
+          {addEvidence && (
+            <Card>
+              <CardHeader title="Adjuntar evidencia" description="Fotos, enlaces o documentos que prueben el evento." />
+              <CardBody>
+                <EvidenceForm eventId={event.id} />
+              </CardBody>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {user && open && (
+        <div className="grid items-start gap-6 lg:grid-cols-2">
+          <EventAttendance eventId={event.id} showAttendees={canSeeAttendees(user, event)} />
+          <InviteFriends eventId={event.id} />
+        </div>
+      )}
 
       {(canEdit || canCancel) && (
         <div className="grid items-start gap-6 lg:grid-cols-2">
