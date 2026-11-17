@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { EventAttendance } from "@/features/attendance/presentation/components/event-attendance";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { zoneContainer } from "@/features/zone/di/zone.container";
 import { EventOrigin, EventStatus } from "@/shared/domain/enums";
@@ -9,7 +10,7 @@ import { formatDateTime } from "@/shared/presentation/formatters/date";
 import { eventContainer } from "../../di/event.container";
 import type { EventDetail as EventDetailData } from "../../domain/entities/event";
 import { EventNotFoundError, EventPrivateError } from "../../domain/errors/event-errors";
-import { canCancelEvent, canEditEvent } from "../../domain/rules/event-permissions";
+import { canCancelEvent, canEditEvent, canSeeAttendees } from "../../domain/rules/event-permissions";
 import { CancelEventButton } from "./cancel-event-button";
 import { EventForm } from "./event-form";
 import { EventStatusBadge } from "./event-status-badge";
@@ -51,6 +52,8 @@ export async function EventDetail({ eventId }: { eventId: Promise<string> }) {
   // Las zonas solo hacen falta para el formulario de edición
   const zones = canEdit ? await zoneContainer.listZonesUseCase.execute().catch(() => []) : [];
   const official = event.origin === EventOrigin.OFICIAL;
+  // A un evento cancelado o rechazado ya no se responde
+  const open = event.status !== EventStatus.CANCELADO && event.status !== EventStatus.RECHAZADO;
 
   return (
     <>
@@ -155,6 +158,8 @@ export async function EventDetail({ eventId }: { eventId: Promise<string> }) {
           </CardBody>
         </Card>
       )}
+
+      {user && open && <EventAttendance eventId={event.id} showAttendees={canSeeAttendees(user, event)} />}
 
       {(canEdit || canCancel) && (
         <div className="grid items-start gap-6 lg:grid-cols-2">

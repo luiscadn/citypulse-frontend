@@ -26,3 +26,8 @@ export function canEditEvent(user: Requester, event: Pick<Event, "createdBy" | "
 export function canCancelEvent(user: Requester, event: Pick<Event, "createdBy" | "status">): boolean {
   return event.status !== EventStatus.CANCELADO && isAuthorOrAdmin(user, event);
 }
+
+/** RF-5.7: solo el autor (o un ADMIN) ve la lista completa de quienes respondieron. */
+export function canSeeAttendees(user: Requester, event: Pick<Event, "createdBy">): boolean {
+  return isAuthorOrAdmin(user, event);
+}
