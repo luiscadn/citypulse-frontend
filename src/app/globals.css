@@ -28,6 +28,7 @@
   --gray-1: #88898c;
   --gray-2: #cecfd4;
   --white: #ffffff;
+  --red: #ff2c2c;
 
   /* Marca */
   --primary: var(--blue);
@@ -55,9 +56,9 @@
   --success-strong: color-mix(in srgb, var(--green) 58%, var(--black));
   --success-soft: color-mix(in srgb, var(--green) 13%, var(--white));
 
-  --danger: var(--orange);
-  --danger-strong: color-mix(in srgb, var(--orange) 64%, var(--black));
-  --danger-soft: color-mix(in srgb, var(--orange) 12%, var(--white));
+  --danger: var(--red);
+  --danger-strong: color-mix(in srgb, var(--red) 64%, var(--black));
+  --danger-soft: color-mix(in srgb, var(--red) 12%, var(--white));
   --on-danger: var(--white);
 
   --warning: var(--yellow);
@@ -105,9 +106,9 @@
   --success-strong: var(--green);
   --success-soft: color-mix(in srgb, var(--green) 20%, var(--black));
 
-  --danger: var(--orange);
-  --danger-strong: var(--orange);
-  --danger-soft: color-mix(in srgb, var(--orange) 22%, var(--black));
+  --danger: var(--red);
+  --danger-strong: var(--red);
+  --danger-soft: color-mix(in srgb, var(--red) 22%, var(--black));
   --on-danger: var(--black);
 
   --warning: var(--yellow);

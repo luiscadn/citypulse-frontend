@@ -18,7 +18,7 @@ const variants: Record<ButtonVariant, string> = {
     "hover:shadow-[0_8px_22px_-8px_var(--primary)]",
   secondary: "border border-line-strong bg-surface text-ink hover:border-accent hover:bg-accent-soft/50",
   ghost: "text-ink hover:bg-neutral-soft",
-  danger: "bg-danger-strong text-on-danger hover:opacity-90",
+  danger: "bg-danger text-on-danger hover:opacity-90",
 };
 
 const sizes: Record<ButtonSize, string> = {
