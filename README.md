@@ -81,6 +81,8 @@ Usuarios de prueba que crea `db/init.sql` en el backend:
 | Zonas | `/zones` | Como ADMIN: crea, edita y borra zonas, con zona padre. Si la zona tiene lugares, el borrado se rechaza con un mensaje. Como USER solo puedes verlas |
 | Lugares | `/venues`, `/venues/mine` | Filtra por zona y estado y pasa de página. Como OWNER, registra un lugar en "Mis lugares": nace pendiente. Como ADMIN, verifícalo. Si el OWNER cambia nombre, dirección o zona, vuelve a pendiente |
 | Mapas | `/venues/mine` | En el formulario de lugar, busca en Google Maps (por ejemplo, "Teatro Municipal") y elige un resultado: se llenan el nombre y la dirección. Requiere `GOOGLE_MAPS_API_KEY` en el backend |
+| Eventos | `/events`, `/events/new`, `/events/[id]` | Filtra por zona, estado, origen, texto y rango de fechas, y pasa de página. Reporta un evento: nace en revisión. Su autor (o un ADMIN) lo edita mientras está en revisión y lo cancela |
+| Asistencia | `/events/[id]` | En el detalle de un evento abierto responde "Asistiré", "Tal vez" o "No iré" y mira qué respondieron tus amigos. El autor y los ADMIN ven además todas las respuestas |
 | Sistema de diseño | `/ui` | Componentes, colores y modo oscuro |
 
 ## Arquitectura
@@ -92,8 +94,11 @@ domain/          entidades, errores de dominio y reglas (TypeScript puro)
 application/     puertos (interfaces de repositorio) y casos de uso
 infrastructure/  DTO, mappers y repositorios HTTP (adaptadores)
 di/              contenedor: único lugar donde se instancian repositorios y casos de uso
-presentation/    Server Actions y componentes
+presentation/    Server Actions, hooks fachada y componentes
 ```
+
+- **Entidades:** cada una tiene una fábrica (`createZone`, `createVenue`, `createEvent`, `createUser`...) que comprueba sus invariantes y la congela; los mappers solo construyen entidades a través de ella, así que una entidad inválida no puede existir. Son funciones y no clases porque las entidades pasan de Server a Client Components, que solo aceptan objetos planos.
+- **Hooks fachada:** los componentes de cliente no importan Server Actions ni contextos; usan hooks (`useZoneForm`, `useAttendance`, `useSession`...) que los encapsulan.
 
 - **Sesión:** el JWT del backend se guarda en una cookie `httpOnly` (`cp_session`).
 - **Llamadas al backend:**
