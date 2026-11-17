@@ -1,9 +1,9 @@
-import type { Venue, VenueInput, VenuePage } from "../../domain/entities/venue";
+import { createVenue, type Venue, type VenueInput, type VenuePage } from "../../domain/entities/venue";
 import type { VenueBodyDto, VenueDto, VenuePageDto } from "../dtos/venue.dto";
 
 /** Solo copia lo que usa la UI: del dueño, nunca más que id, usuario y nombre. */
 export function toVenue(dto: VenueDto): Venue {
-  return {
+  return createVenue({
     id: dto.id,
     name: dto.name,
     description: dto.description ?? null,
@@ -12,7 +12,7 @@ export function toVenue(dto: VenueDto): Venue {
     zone: { id: dto.zone.id, name: dto.zone.name },
     owner: { id: dto.owner.id, username: dto.owner.username, fullName: dto.owner.fullName },
     createdAt: dto.createdAt,
-  };
+  });
 }
 
 export function toVenuePage(dto: VenuePageDto): VenuePage {
