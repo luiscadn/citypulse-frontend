@@ -371,3 +371,54 @@ body {
     filter: blur(2px);
   }
 }
+
+/* ── Mapa de la ciudad (MapLibre) ── */
+
+/* Pin de un lugar: punto rojo (color de alerta) con un anillo que late */
+.map-pin {
+  position: relative;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 9999px;
+  background: var(--danger);
+  border: 3px solid var(--white);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.3);
+  cursor: pointer;
+  transition: transform 200ms var(--ease-spring);
+}
+.map-pin::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: var(--danger);
+  z-index: -1;
+  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.map-pin:hover,
+.map-pin:focus-visible {
+  transform: scale(1.35);
+  outline: none;
+}
+
+/* Tarjeta del lugar: los colores del tema en lugar del blanco fijo de MapLibre.
+   ".maplibregl-map" sube la especificidad: su CSS se carga después que este */
+.maplibregl-map .maplibregl-popup-content {
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem 1rem;
+  box-shadow: 0 18px 40px -16px rgb(0 0 0 / 0.35);
+  font-family: var(--font-sans);
+  animation: var(--animate-pop);
+}
+.maplibregl-map .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: var(--surface);
+}
+.maplibregl-map .maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: var(--surface);
+}
+.maplibregl-map .maplibregl-ctrl-group {
+  border-radius: 9999px !important;
+  overflow: hidden;
+}
