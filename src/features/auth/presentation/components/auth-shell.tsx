@@ -24,7 +24,12 @@ export function AuthShell({
   return (
     <main className="grid min-h-dvh flex-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
       {/* Panel de marca (solo en pantallas grandes) */}
-      <section className="relative hidden animate-pan overflow-hidden bg-linear-135 from-brand via-brand to-brand-purple bg-size-[200%_200%] text-white lg:flex lg:flex-col lg:justify-between lg:px-14 lg:py-12">
+      <section className="relative isolate hidden overflow-hidden text-white lg:flex lg:flex-col lg:justify-between lg:px-14 lg:py-12">
+        {/* Degradado de fondo en una capa aparte que se desliza con transform (no repinta) */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute top-0 left-0 -z-10 h-[200%] w-[200%] animate-pan bg-linear-135 from-brand via-brand to-brand-purple will-change-transform [--pan-y:-25%]"
+        />
         <div aria-hidden className="pointer-events-none absolute -top-28 -right-28 size-[26rem] animate-float rounded-full bg-white/10" />
         <div
           aria-hidden

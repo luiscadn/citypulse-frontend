@@ -235,9 +235,12 @@ body {
   }
 }
 
+/* Desliza una capa más grande que su caja. Con transform la mueve la GPU sin repintar
+   (antes era background-position, que repintaba toda el área en cada cuadro).
+   --pan-x / --pan-y: hasta dónde llega la capa */
 @keyframes pan {
   to {
-    background-position: 100% 50%;
+    transform: translate3d(var(--pan-x, -50%), var(--pan-y, 0), 0);
   }
 }
 
