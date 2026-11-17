@@ -14,7 +14,7 @@ const STATUS_TONE: Record<AttendanceStatus, "success" | "warning" | "neutral"> =
 function AttendanceList({ items, empty }: { items: readonly Attendance[]; empty: string }) {
   if (items.length === 0) return <p className="text-sm text-ink-muted">{empty}</p>;
   return (
-    <ul className="flex flex-col divide-y divide-line">
+    <ul className="stagger flex flex-col divide-y divide-line">
       {items.map(({ user, status }) => (
         <li key={user.id} className="flex items-center justify-between gap-3 py-2 text-sm">
           <span className="text-ink">

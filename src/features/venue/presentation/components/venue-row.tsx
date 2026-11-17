@@ -9,7 +9,7 @@ export function VenueRow({ venue }: { venue: Venue }) {
     <li>
       <Link
         href={`/venues/${venue.id}`}
-        className="group flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3.5 transition-colors hover:bg-neutral-soft focus-visible:bg-neutral-soft focus-visible:outline-none sm:flex-nowrap"
+        className="group flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3.5 transition-colors hover:bg-accent-soft/60 focus-visible:bg-neutral-soft focus-visible:outline-none sm:flex-nowrap"
       >
         <div className="min-w-0 flex-1 basis-full sm:basis-auto">
           <p className="truncate font-semibold text-ink">{venue.name}</p>
@@ -22,7 +22,7 @@ export function VenueRow({ venue }: { venue: Venue }) {
         <span className="sm:w-28">
           <VenueStatusBadge isVerified={venue.isVerified} />
         </span>
-        <ChevronRightIcon className="hidden text-ink-muted transition-transform group-hover:translate-x-0.5 sm:block" />
+        <ChevronRightIcon className="hidden text-ink-muted transition-[transform,color] duration-300 group-hover:translate-x-1 group-hover:text-accent-strong sm:block" />
       </Link>
     </li>
   );
@@ -30,5 +30,5 @@ export function VenueRow({ venue }: { venue: Venue }) {
 
 /** Contenedor de filas de lugares. */
 export function VenueRows({ children }: { children: React.ReactNode }) {
-  return <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">{children}</ul>;
+  return <ul className="stagger divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">{children}</ul>;
 }

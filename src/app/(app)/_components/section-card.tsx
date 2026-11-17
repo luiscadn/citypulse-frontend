@@ -19,10 +19,28 @@ export function SectionCard({
       href={href}
       className="group rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring"
     >
-      <Card className="flex h-full flex-col gap-1.5 p-5 transition-colors group-hover:border-primary">
+      <Card
+        className={
+          "relative flex h-full flex-col gap-1.5 overflow-hidden p-5 " +
+          "group-hover:-translate-y-1 group-hover:border-accent group-hover:shadow-[0_14px_30px_-14px_var(--accent)]"
+        }
+      >
+        {/* Barra azul → verde que se despliega arriba al pasar el cursor */}
+        <span
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-linear-to-r from-primary to-accent transition-transform duration-500 ease-out group-hover:scale-x-100"
+        />
         <span className="flex items-center gap-2">
-          <span className="text-base font-semibold text-ink group-hover:text-primary-strong">{title}</span>
+          <span className="text-base font-semibold text-ink transition-colors group-hover:text-accent-strong">
+            {title}
+          </span>
           {badge}
+          <span
+            aria-hidden
+            className="ml-auto -translate-x-2 text-accent-strong opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
+          >
+            →
+          </span>
         </span>
         <span className="text-sm text-ink-muted">{description}</span>
       </Card>

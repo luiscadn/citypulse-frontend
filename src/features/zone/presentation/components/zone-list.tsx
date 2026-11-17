@@ -69,7 +69,7 @@ export async function ZoneList() {
           <h2 id="zones-heading" className="text-sm text-ink-muted">
             <span className="tabular-nums">{zones.length}</span> {zones.length === 1 ? "zona" : "zonas"}
           </h2>
-          <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
+          <ul className="stagger divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
             {asTree(zones).map(({ zone, depth }) => (
               <ZoneRow key={zone.id} zone={zone} depth={depth} />
             ))}

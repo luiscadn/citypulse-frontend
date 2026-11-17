@@ -12,6 +12,28 @@ export function RouteLoading({ label = "Cargando" }: { label?: string }) {
   );
 }
 
+/** Esqueleto de una página de listado: encabezado y tarjetas con brillo mientras llegan los datos. */
+export function PageSkeleton({ cards = 6 }: { cards?: number }) {
+  return (
+    <div role="status" aria-label="Cargando" className="animate-fade flex flex-col gap-6 py-8">
+      <div className="flex flex-col gap-3">
+        <div className="skeleton h-3 w-24" />
+        <div className="skeleton h-8 w-64 max-w-full" />
+        <div className="skeleton h-4 w-96 max-w-full" />
+      </div>
+      <div className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: cards }, (_, i) => (
+          <div key={i} className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-5">
+            <div className="skeleton h-4 w-3/4" />
+            <div className="skeleton h-3 w-1/2" />
+            <div className="skeleton h-3 w-full" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /** Contenido de un not-found.tsx: avisa que no existe lo que se buscaba y ofrece volver. */
 export function NotFoundState({
   title = "No encontramos lo que buscas",

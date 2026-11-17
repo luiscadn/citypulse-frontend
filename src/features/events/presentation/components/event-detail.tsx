@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ViewTransition } from "react";
 import { notFound } from "next/navigation";
 import { EventAttendance } from "@/features/attendance/presentation/components/event-attendance";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
@@ -64,7 +65,12 @@ export async function EventDetail({ eventId }: { eventId: Promise<string> }) {
             {event.zone.name}
           </Link>
         }
-        title={event.title}
+        title={
+          // Pareja del título de la tarjeta del listado (event-card.tsx)
+          <ViewTransition name={`event-title-${event.id}`} share="morph" default="none">
+            <span className="inline-block">{event.title}</span>
+          </ViewTransition>
+        }
         description={event.description ?? undefined}
         actions={
           <>

@@ -87,7 +87,7 @@ export async function EventList({ searchParams }: { searchParams: PageProps<"/ev
           <p className="text-sm text-ink-muted">
             {page.total} {page.total === 1 ? "evento" : "eventos"}
           </p>
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {page.events.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
