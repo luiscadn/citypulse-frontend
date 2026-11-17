@@ -1,17 +1,19 @@
 import type { EventOrigin, EventStatus, EventVisibility } from "@/shared/domain/enums";
-import type {
-  Event,
-  EventDetail,
-  EventEvidence,
-  EventInput,
-  EventPage,
-  EvidenceType,
+import {
+  createEvent,
+  createEventDetail,
+  type Event,
+  type EventDetail,
+  type EventEvidence,
+  type EventInput,
+  type EventPage,
+  type EvidenceType,
 } from "../../domain/entities/event";
 import type { EventBodyDto, EventDetailDto, EventDto, EventPageDto, EvidenceDto } from "../dtos/event.dto";
 
 /** Solo copia lo que usa la UI: del autor, nunca más que id, usuario y nombre. */
 export function toEvent(dto: EventDto): Event {
-  return {
+  return createEvent({
     id: dto.id,
     title: dto.title,
     description: dto.description ?? null,
@@ -26,7 +28,7 @@ export function toEvent(dto: EventDto): Event {
     capacity: dto.capacity ?? null,
     ticketPrice: dto.ticketPrice === null || dto.ticketPrice === undefined ? null : Number(dto.ticketPrice),
     createdBy: { id: dto.createdBy.id, username: dto.createdBy.username, fullName: dto.createdBy.fullName },
-  };
+  });
 }
 
 function toEvidence(dto: EvidenceDto): EventEvidence {
@@ -34,12 +36,12 @@ function toEvidence(dto: EvidenceDto): EventEvidence {
 }
 
 export function toEventDetail(dto: EventDetailDto): EventDetail {
-  return {
+  return createEventDetail({
     ...toEvent(dto),
     attendeeCount: dto.attendeeCount,
     evidences: (dto.evidences ?? []).map(toEvidence),
     rejectionReason: dto.rejectionReason ?? null,
-  };
+  });
 }
 
 export function toEventPage(dto: EventPageDto): EventPage {
