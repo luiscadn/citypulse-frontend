@@ -83,6 +83,10 @@ Usuarios de prueba que crea `db/init.sql` en el backend:
 | Mapas | `/venues/mine` | En el formulario de lugar, busca en Google Maps (por ejemplo, "Teatro Municipal") y elige un resultado: se llenan el nombre y la dirección. Requiere `GOOGLE_MAPS_API_KEY` en el backend |
 | Eventos | `/events`, `/events/new`, `/events/[id]` | Filtra por zona, estado, origen, texto y rango de fechas, y pasa de página. Reporta un evento: nace en revisión. Su autor (o un ADMIN) lo edita mientras está en revisión y lo cancela |
 | Asistencia | `/events/[id]` | En el detalle de un evento abierto responde "Asistiré", "Tal vez" o "No iré" y mira qué respondieron tus amigos. El autor y los ADMIN ven además todas las respuestas |
+| Evidencias | `/events/[id]` | Como autor de un reporte en revisión, adjunta fotos, enlaces o documentos (por URL). Sin evidencia, el detalle avisa que ningún ADMIN lo puede confirmar |
+| Moderación | `/admin/moderation` | Como ADMIN, revisa los reportes con evidencias: confírmalos o recházalos con un motivo, que verá su autor. También desde el detalle del reporte. Otro rol recibe 404 |
+| Eventos oficiales | `/events/official` | Como OWNER (por ejemplo `teatro@citypulse.co`), publica un evento en uno de tus lugares, con visibilidad, cupo y precio: nace confirmado |
+| Invitar amigos | `/events/[id]` | En un evento abierto, elige a un amigo y envíale una invitación con un mensaje; le llega a `/invitations`. Invitar dos veces al mismo amigo se rechaza con un mensaje |
 
 ## Arquitectura
 
