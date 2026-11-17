@@ -2,14 +2,27 @@ import type { EventOrigin, EventStatus, EventVisibility } from "@/shared/domain/
 import {
   createEvent,
   createEventDetail,
+  createPendingReport,
   type Event,
   type EventDetail,
   type EventEvidence,
   type EventInput,
   type EventPage,
+  type EvidenceInput,
   type EvidenceType,
+  type OfficialEventInput,
+  type PendingReport,
 } from "../../domain/entities/event";
-import type { EventBodyDto, EventDetailDto, EventDto, EventPageDto, EvidenceDto } from "../dtos/event.dto";
+import type {
+  EventBodyDto,
+  EventDetailDto,
+  EventDto,
+  EventPageDto,
+  EvidenceBodyDto,
+  EvidenceDto,
+  OfficialEventBodyDto,
+  PendingReportDto,
+} from "../dtos/event.dto";
 
 /** Solo copia lo que usa la UI: del autor, nunca más que id, usuario y nombre. */
 export function toEvent(dto: EventDto): Event {
@@ -79,4 +92,23 @@ export function toUpdateEventBody(input: EventInput): EventBodyDto {
     description: input.description ?? "",
     addressText: input.addressText ?? "",
   };
+}
+
+export function toPendingReport(dto: PendingReportDto): PendingReport {
+  return createPendingReport({ ...toEvent(dto), evidences: dto.evidences.map(toEvidence) });
+}
+
+/** Al publicar, lo opcional vacío no se envía. */
+export function toOfficialEventBody(input: OfficialEventInput): OfficialEventBodyDto {
+  return {
+    ...toReportEventBody(input),
+    venueId: input.venueId,
+    visibility: input.visibility,
+    ...(input.capacity !== null && { capacity: input.capacity }),
+    ...(input.ticketPrice !== null && { ticketPrice: input.ticketPrice }),
+  };
+}
+
+export function toEvidenceBody(input: EvidenceInput): EvidenceBodyDto {
+  return { type: input.type, url: input.url, ...(input.caption && { caption: input.caption }) };
 }
