@@ -1,13 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
 import { Alert, Button } from "@/shared/presentation/components";
 import { ConfirmSubmit } from "@/shared/presentation/components/confirm-submit";
-import { deleteVenueAction, verifyVenueAction } from "../actions/venue.actions";
+import { useDeleteVenue, useVerifyVenue } from "../hooks/use-venue-admin";
 
 /** Marca el lugar como verificado (solo ADMIN). */
 export function VerifyVenueButton({ venueId }: { venueId: number }) {
-  const [state, formAction, pending] = useActionState(verifyVenueAction, {});
+  const { state, formAction, pending } = useVerifyVenue();
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
@@ -24,7 +23,7 @@ export function VerifyVenueButton({ venueId }: { venueId: number }) {
 
 /** Borra el lugar tras pedir confirmación. Sus eventos se conservan, sin lugar. */
 export function DeleteVenueButton({ venueId, venueName }: { venueId: number; venueName: string }) {
-  const [state, formAction, pending] = useActionState(deleteVenueAction, {});
+  const { state, formAction, pending } = useDeleteVenue();
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
