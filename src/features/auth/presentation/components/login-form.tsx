@@ -1,15 +1,13 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Alert, Button, TextField } from "@/shared/presentation/components";
-import { loginAction } from "../actions/auth.actions";
-import { initialLoginState } from "../actions/login-form-state";
+import { useLogin } from "../hooks/use-login";
 
 export function LoginForm() {
-  const [state, formAction, pending] = useActionState(loginAction, initialLoginState);
+  const { state, formAction, pending, askCode } = useLogin();
   const from = useSearchParams().get("from") ?? "/";
-  const askCode = state.step === "two-factor";
   // Campos controlados: React reinicia los no controlados después de cada acción,
   // y en el paso 2FA hay que reenviar el mismo correo y contraseña.
   const [email, setEmail] = useState("");

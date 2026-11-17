@@ -1,9 +1,12 @@
+"use client";
+
 import { Button } from "@/shared/presentation/components";
-import { logoutAction } from "../actions/auth.actions";
+import { useLogout } from "../hooks/use-logout";
 
 export function LogoutButton() {
+  const { logout } = useLogout();
   return (
-    <form action={logoutAction}>
+    <form action={logout}>
       <Button type="submit" variant="secondary" size="sm">
         Cerrar sesión
       </Button>
