@@ -36,10 +36,10 @@ export function Select({ className, children, ...props }: ComponentProps<"select
   );
 }
 
-// Flecha del <select> (SVG en línea, color heredado del texto secundario)
+// Flecha del <select> (SVG en línea, en el gris 1 de la paleta)
 const chevron = {
   backgroundImage:
-    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%235c606b'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E\")",
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2388898c'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E\")",
   backgroundPosition: "right 0.6rem center",
   backgroundSize: "1.1rem",
 };
@@ -109,7 +109,15 @@ export function SelectField({ label, hint, error, className, ...props }: FieldSh
   return (
     <Field label={label} hint={hint} error={error} required={props.required} className={className}>
       {(id, describedBy, invalid) => (
-        <Select id={id} aria-describedby={describedBy} aria-invalid={invalid || undefined} {...props} />
+        // Tras una Server Action, React reinicia el formulario y un <select> vuelve a la opción
+        // con la que se montó, no al defaultValue nuevo. La key lo vuelve a montar cuando cambia.
+        <Select
+          key={String(props.defaultValue ?? "")}
+          id={id}
+          aria-describedby={describedBy}
+          aria-invalid={invalid || undefined}
+          {...props}
+        />
       )}
     </Field>
   );

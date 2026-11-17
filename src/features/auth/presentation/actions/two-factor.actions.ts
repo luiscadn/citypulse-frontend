@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { actionErrorMessage } from "@/shared/presentation/action-error";
+import type { ActionResult } from "@/shared/presentation/action-result";
 import { authContainer } from "../../di/auth.container";
 import type { TwoFactorSetup } from "../../domain/entities/two-factor-setup";
-import type { ActionResult } from "./action-result";
 
 /** Tras cambiar el 2FA se refresca el perfil, que muestra su estado. */
 const PROFILE_PATH = "/profile";

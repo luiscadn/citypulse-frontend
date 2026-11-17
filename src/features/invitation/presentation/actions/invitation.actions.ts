@@ -42,3 +42,25 @@ export async function respondInvitationAction(
   refresh();
   return {};
 }
+
+/** Invita a un amigo a un evento, con un mensaje opcional. */
+export async function sendInvitationAction(
+  _prev: InvitationActionState,
+  formData: FormData,
+): Promise<InvitationActionState> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const message = String(formData.get("message") ?? "");
+  try {
+    await invitationContainer.sendInvitationUseCase.execute(user.id, {
+      eventId: String(formData.get("eventId") ?? ""),
+      toUserId: Number(formData.get("toUserId")),
+      ...(message && { message }),
+    });
+  } catch (error) {
+    return toErrorState(error);
+  }
+
+  return { success: "Invitación enviada." };
+}

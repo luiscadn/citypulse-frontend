@@ -8,14 +8,17 @@ export type ButtonSize = "sm" | "md" | "lg";
 
 const base =
   "inline-flex items-center justify-center gap-2 rounded-md font-semibold whitespace-nowrap " +
-  "transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring " +
+  "transition-[color,background-color,border-color,box-shadow,transform] duration-200 ease-out " +
+  "active:scale-[0.97] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring " +
   "disabled:pointer-events-none disabled:opacity-55";
 
 const variants: Record<ButtonVariant, string> = {
-  primary: "bg-primary text-on-primary hover:bg-primary-hover",
-  secondary: "border border-line-strong bg-surface text-ink hover:bg-neutral-soft",
+  primary:
+    "bg-primary text-on-primary shadow-[0_1px_2px_rgb(0_0_0/0.12)] hover:-translate-y-px hover:bg-primary-hover " +
+    "hover:shadow-[0_8px_22px_-8px_var(--primary)]",
+  secondary: "border border-line-strong bg-surface text-ink hover:border-accent hover:bg-accent-soft/50",
   ghost: "text-ink hover:bg-neutral-soft",
-  danger: "bg-danger-strong text-white hover:bg-danger",
+  danger: "bg-danger text-on-danger hover:opacity-90",
 };
 
 const sizes: Record<ButtonSize, string> = {

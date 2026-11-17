@@ -6,18 +6,19 @@ import { cn } from "@/shared/presentation/cn";
 
 /** Secciones de la app. Para agregar una, basta con sumarla aquí. */
 const LINKS = [
+  { href: "/events", label: "Eventos" },
   { href: "/friends", label: "Amigos" },
   { href: "/invitations", label: "Invitaciones" },
+  { href: "/zones", label: "Zonas" },
+  { href: "/venues", label: "Lugares" },
 ] as const;
 
-function isActive(pathname: string, href: string): boolean {
+function isActive(pathname: string | null, href: string): boolean {
+  if (!pathname) return false;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Enlaces del encabezado; marca la sección en la que está la persona. */
-export function AppNav({ className }: { className?: string }) {
-  const pathname = usePathname();
-
+function NavLinks({ pathname, className }: { pathname: string | null; className?: string }) {
   return (
     <nav aria-label="Secciones" className={className}>
       <ul className="flex items-center gap-1">
@@ -29,7 +30,10 @@ export function AppNav({ className }: { className?: string }) {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "inline-flex h-8 items-center rounded-md px-3 text-sm font-semibold transition-colors",
+                  "relative inline-flex h-8 items-center rounded-md px-3 text-sm font-semibold transition-colors",
+                  "after:absolute after:inset-x-3 after:-bottom-1 after:h-0.5 after:origin-center after:rounded-full",
+                  "after:bg-accent after:transition-transform after:duration-300",
+                  active ? "after:scale-x-100" : "after:scale-x-0 hover:after:scale-x-50",
                   "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring",
                   active
                     ? "bg-primary-soft text-primary-strong"
@@ -44,4 +48,18 @@ export function AppNav({ className }: { className?: string }) {
       </ul>
     </nav>
   );
+}
+
+/** Enlaces del encabezado; marca la sección en la que está la persona. */
+export function AppNav({ className }: { className?: string }) {
+  return <NavLinks pathname={usePathname()} className={className} />;
+}
+
+/**
+ * Los mismos enlaces sin marcar la sección activa. Es el fallback del <Suspense> de AppNav:
+ * en rutas con parámetros (/zones/[id]) la ruta no se conoce al prerenderizar y
+ * usePathname() suspende; sin Suspense, `next build` falla.
+ */
+export function AppNavFallback({ className }: { className?: string }) {
+  return <NavLinks pathname={null} className={className} />;
 }
