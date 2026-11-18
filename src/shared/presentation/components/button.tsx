@@ -3,7 +3,9 @@ import type { ComponentProps, ReactNode } from "react";
 import { cn } from "../cn";
 import { Spinner } from "./spinner";
 
+/** Variantes visuales para botones de acción */
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+/** Tamaños soportados para botones */
 export type ButtonSize = "sm" | "md" | "lg";
 
 const base =
@@ -24,7 +26,16 @@ const sizes: Record<ButtonSize, string> = {
   lg: "h-12 px-6 text-base",
 };
 
-/** Clases de botón, para aplicarlas a otros elementos (p. ej. un <Link>). */
+/**
+ * Función buttonClasses
+ *
+ * - **¿Qué hace?**: Genera la cadena de clases de Tailwind combinando estilos base, la variante de color,
+ *   el tamaño y clases personalizadas opcionales.
+ * - **¿Cómo interactúa con el sistema en general?**: Es utilizada por los componentes `Button`, `ButtonLink` y por
+ *   enlaces estilizados como botones en diversas vistas del sistema.
+ * - **¿Cuál es su importancia?**: Centraliza el sistema de diseño visual de botones, garantizando que tanto los `<button>`
+ *   interactivos como los enlaces `<a>` compartan exactamente los mismos estilos y estados visuales (hover, focus, disabled).
+ */
 export function buttonClasses(
   variant: ButtonVariant = "primary",
   size: ButtonSize = "md",
@@ -42,6 +53,16 @@ type ButtonProps = ComponentProps<"button"> & {
   icon?: ReactNode;
 };
 
+/**
+ * Componente Button
+ *
+ * - **¿Qué hace?**: Renderiza un botón HTML estándar accesible con variantes visuales (`primary`, `secondary`, `ghost`, `danger`),
+ *   soporte para estado de carga (`loading`) que intercambia el icono por un `Spinner`, y estados de deshabilitado.
+ * - **¿Cómo interactúa con el sistema en general?**: Es el componente de interacción primaria utilizado en todos los formularios,
+ *   diálogos de confirmación y desencadenadores de Server Actions a lo largo de toda la aplicación.
+ * - **¿Cuál es su importancia?**: Mejora la experiencia de usuario y accesibilidad (gestiona `aria-busy`, deshabilita clics duplicados
+ *   mientras `loading` está activo) y estandariza la interacción con el usuario en acciones críticas o destructivas.
+ */
 export function Button({
   variant = "primary",
   size = "md",
@@ -72,7 +93,16 @@ type ButtonLinkProps = ComponentProps<typeof Link> & {
   size?: ButtonSize;
 };
 
-/** Enlace con aspecto de botón (navegación, no acciones). */
+/**
+ * Componente ButtonLink
+ *
+ * - **¿Qué hace?**: Renderiza un enlace de Next.js (`next/link`) con la apariencia visual de un botón pero manteniendo
+ *   la semántica y capacidades de navegación cliente del framework.
+ * - **¿Cómo interactúa con el sistema en general?**: Utilizado para llamadas a la acción que navegan a otras pantallas
+ *   (ej. "Crear Evento", "Explorar Zonas", "Volver al inicio").
+ * - **¿Cuál es su importancia?**: Mantiene la semántica HTML correcta (enlaces para navegar, botones para mutaciones)
+ *   evitando que los motores de búsqueda y lectores de pantalla confundan navegación con acciones de servidor.
+ */
 export function ButtonLink({ variant = "primary", size = "md", className, ...props }: ButtonLinkProps) {
   return <Link className={buttonClasses(variant, size, className)} {...props} />;
 }

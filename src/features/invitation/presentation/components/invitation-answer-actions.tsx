@@ -3,7 +3,15 @@
 import { Alert, Button } from "@/shared/presentation/components";
 import { useRespondInvitation } from "../hooks/use-respond-invitation";
 
-/** Botones para aceptar o rechazar una invitación recibida. */
+/**
+ * Componente InvitationAnswerActions: Controles de aceptación y rechazo de invitación.
+ *
+ * - **¿Qué hace?**: Renderiza un formulario con dos botones: "Aceptar" (`value="ACEPTADA"`) y "Rechazar" (`value="RECHAZADA"`).
+ *   Ambos botones se deshabilitan mientras la acción está en curso (`pending`) y muestran cualquier mensaje de error devuelto por la Server Action.
+ * - **¿Cómo interactúa con el sistema en general?**: Se compone dentro de cada fila de `InvitationInbox`.
+ *   Al ser enviado, ejecuta `respondInvitationAction` a través del hook `useRespondInvitation`.
+ * - **¿Cuál es su importancia?**: Ofrece una interfaz compacta y reactiva para responder invitaciones sin recargas de página.
+ */
 export function InvitationAnswerActions({ invitationId }: { invitationId: number }) {
   const { error, respond, pending } = useRespondInvitation();
 

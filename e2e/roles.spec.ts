@@ -1,7 +1,19 @@
+/**
+ * @file roles.spec.ts
+ * @description Suite de pruebas End-to-End (E2E) para verificar el control de acceso basado en roles (RBAC).
+ * Comprueba la visibilidad condicional de botones y pantallas según el rol del usuario conectado.
+ */
+
 import { expect, test } from "@playwright/test";
 import { sessionFile } from "./fixtures";
 
-// La interfaz muestra u oculta según el rol; el backend igual lo valida en cada petición
+/**
+ * Pruebas bajo el perfil de rol USER.
+ *
+ * - **¿Qué hace?**: Verifica que el usuario estándar pueda visualizar zonas pero no el formulario de creación, y no pueda registrar locales en `/venues/mine`.
+ * - **¿Cómo interactúa con el sistema en general?**: Comprueba el comportamiento de los Server Components ante usuarios sin roles especiales.
+ * - **¿Cuál es su importancia?**: Valida que la interfaz respete el principio de mínimo privilegio para la ciudadanía.
+ */
 test.describe("como USER", () => {
   test.use({ storageState: sessionFile("user") });
 
@@ -18,6 +30,13 @@ test.describe("como USER", () => {
   });
 });
 
+/**
+ * Pruebas bajo el perfil de rol OWNER.
+ *
+ * - **¿Qué hace?**: Verifica que un dueño de establecimiento pueda acceder al formulario de alta en `/venues/mine` pero no pueda administrar zonas.
+ * - **¿Cómo interactúa con el sistema en general?**: Comprueba las reglas de negocio de `venue-permissions` aplicadas en la interfaz.
+ * - **¿Cuál es su importancia?**: Asegura la segregación comercial entre dueños de recintos y la administración pública de zonas.
+ */
 test.describe("como OWNER", () => {
   test.use({ storageState: sessionFile("owner") });
 
@@ -30,6 +49,13 @@ test.describe("como OWNER", () => {
   });
 });
 
+/**
+ * Pruebas bajo el perfil de rol ADMIN.
+ *
+ * - **¿Qué hace?**: Verifica que el administrador tenga acceso completo a la creación de zonas y al listado de locales pendientes de verificación.
+ * - **¿Cómo interactúa con el sistema en general?**: Valida la renderización de opciones de moderación en Server Components de zonas y venues.
+ * - **¿Cuál es su importancia?**: Comprueba que las herramientas de moderación y gobierno de la plataforma estén habilitadas para el superusuario.
+ */
 test.describe("como ADMIN", () => {
   test.use({ storageState: sessionFile("admin") });
 

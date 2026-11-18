@@ -1,3 +1,9 @@
+/**
+ * @file event-input.ts
+ * @description Reglas de Dominio, validación, saneamiento y conversiones horarias para Eventos.
+ * Maneja el desfase horario de Colombia (UTC-5) y la normalización de borradores y filtros.
+ */
+
 import { EventOrigin, EventStatus } from "@/shared/domain/enums";
 import type { EventDraft, EventFilters, EventInput } from "../entities/event";
 import {
@@ -12,28 +18,44 @@ import {
 } from "../errors/event-errors";
 import { EVENT_ADDRESS_MAX_LENGTH, EVENT_SEARCH_MAX_LENGTH, EVENT_TITLE_MAX_LENGTH } from "./event-limits";
 
+/** Expresión regular para validar formato UUID v4 canónico. */
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Colombia no tiene horario de verano: el desfase con UTC es siempre el mismo. */
+/** Desfase horario fijo de Colombia respecto a UTC (UTC-5, sin horario de verano). */
 const COLOMBIA_OFFSET_HOURS = 5;
+
+/** Expresión regular para el formato de entrada de `<input type="datetime-local">` (YYYY-MM-DDTHH:mm). */
 const DATETIME_LOCAL = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 
+/** Función auxiliar para verificar enteros positivos. */
 function isPositiveInteger(value: number): boolean {
   return Number.isInteger(value) && value > 0;
 }
 
+/**
+ * Valida si un identificador de evento es un UUID válido.
+ *
+ * - **¿Qué hace?**: Evalúa el string contra el patrón canónico de UUID.
+ * - **¿Cómo interactúa con el sistema en general?**: Utilizado en `GetEventUseCase` y Server Actions.
+ * - **¿Cuál es su importancia?**: Evita peticiones HTTP erróneas ante parámetros maliciosos o corruptos.
+ */
 export function isValidEventId(id: string): boolean {
   return UUID.test(id);
 }
 
-/** Lanza si el ID no puede ser el de un evento: evita pedirle al backend algo que no existe. */
+/**
+ * Aserción que lanza `InvalidEventError` si el ID no es un UUID válido.
+ */
 export function assertValidEventId(id: string): void {
   if (!isValidEventId(id)) throw new InvalidEventError();
 }
 
 /**
- * Pasa lo que entrega <input type="datetime-local"> ("2026-10-01T09:00", hora de Colombia)
- * a una fecha ISO en UTC. Devuelve null si no es una fecha válida.
+ * Convierte una fecha y hora local de Colombia ("YYYY-MM-DDTHH:mm") a formato ISO 8601 en UTC.
+ *
+ * - **¿Qué hace?**: Parsea el string local agregando el desfase `-05:00` y genera la cadena ISO en tiempo universal coordinado.
+ * - **¿Cómo interactúa con el sistema en general?**: Usada en `normalizeEventInput` al procesar los formularios.
+ * - **¿Cuál es su importancia?**: Garantiza que el backend siempre almacene fechas normalizadas en UTC, sin importar el huso horario del navegador.
  */
 export function colombiaLocalToIso(value: string): string | null {
   if (!DATETIME_LOCAL.test(value)) return null;
@@ -41,15 +63,30 @@ export function colombiaLocalToIso(value: string): string | null {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
-/** Lo contrario: una fecha ISO a "2026-10-01T09:00" en hora de Colombia, para llenar el formulario. */
+/**
+ * Convierte una fecha ISO (UTC) a la representación local colombiana ("YYYY-MM-DDTHH:mm") para rellenar inputs HTML.
+ *
+ * - **¿Qué hace?**: Resta 5 horas al instante UTC y toma los primeros 16 caracteres.
+ * - **¿Cómo interactúa con el sistema en general?**: Usada en `EventForm` cuando está en modo edición para poblar `defaultValue`.
+ * - **¿Cuál es su importancia?**: Proporciona al usuario colombiano la fecha en su hora local esperada.
+ */
 export function isoToColombiaLocal(isoDate: string): string {
   const shifted = new Date(new Date(isoDate).getTime() - COLOMBIA_OFFSET_HOURS * 60 * 60 * 1000);
   return shifted.toISOString().slice(0, 16);
 }
 
 /**
- * Réplica UX de CreateReportDto y de la regla "fin posterior al inicio": limpia el formulario
- * y rechaza lo que ya se sabe que va a fallar. Si difieren, el backend gana.
+ * Normaliza y valida el borrador de un evento (`EventDraft`) produciendo un `EventInput` seguro.
+ *
+ * - **¿Qué hace?**:
+ *   Aplica `trim()`, comprueba obligatoriedad y límites de longitud de título y dirección,
+ *   valida el ID de zona, transforma las fechas locales a UTC y verifica que la fecha de finalización sea estrictamente posterior a la de inicio.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Punto de validación central en `ReportEventUseCase` y `UpdateEventUseCase`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Garantiza la validez semántica y cronológica de los eventos antes de cualquier comunicación con el backend.
  */
 export function normalizeEventInput(draft: EventDraft): EventInput {
   const title = draft.title.trim();
@@ -83,30 +120,56 @@ export function normalizeEventInput(draft: EventDraft): EventInput {
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
-/** "2026-12-01" solo si es un día que existe (descarta "2026-02-31"); si no, null. */
+/**
+ * Parsea un día en formato "YYYY-MM-DD" validando que represente un día real del calendario (descarta días imposibles como 31 de febrero).
+ */
 function parseDay(raw: string | undefined): string | null {
   if (!raw || !DAY.test(raw)) return null;
   const date = new Date(`${raw}T00:00:00Z`);
   return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(raw) ? raw : null;
 }
 
-/** Primer instante de un día de Colombia, en ISO (UTC), para el filtro "desde". */
+/**
+ * Obtiene el primer instante (00:00:00) de un día en Colombia expresado en ISO UTC.
+ *
+ * - **¿Qué hace?**: Calcula el inicio del día local con desfase `-05:00` y lo serializa a UTC.
+ * - **¿Cómo interactúa con el sistema en general?**: Utilizado en `HttpEventRepository.list` para el parámetro de filtro `from`.
+ * - **¿Cuál es su importancia?**: Asegura que el filtro de fechas capture todos los eventos que ocurren a partir de la medianoche local.
+ */
 export function colombiaDayStartIso(day: string): string {
   return new Date(`${day}T00:00:00-0${COLOMBIA_OFFSET_HOURS}:00`).toISOString();
 }
 
-/** Último instante de un día de Colombia, en ISO (UTC), para el filtro "hasta". */
+/**
+ * Obtiene el último instante (23:59:59.999) de un día en Colombia expresado en ISO UTC.
+ *
+ * - **¿Qué hace?**: Calcula el final del día local con desfase `-05:00` y lo serializa a UTC.
+ * - **¿Cómo interactúa con el sistema en general?**: Utilizado en `HttpEventRepository.list` para el parámetro de filtro `to`.
+ * - **¿Cuál es su importancia?**: Asegura que el filtro cubra el día completo hasta el último milisegundo en hora local colombiana.
+ */
 export function colombiaDayEndIso(day: string): string {
   return new Date(`${day}T23:59:59.999-0${COLOMBIA_OFFSET_HOURS}:00`).toISOString();
 }
 
+/**
+ * Helper genérico para validar si un string crudo pertenece a los valores de un enum.
+ */
 function enumValue<T extends string>(values: Record<string, T>, raw: string | undefined): T | null {
   return Object.values(values).find((value) => value === raw) ?? null;
 }
 
 /**
- * Filtros a partir de lo que venga en la URL. Lo que no tenga sentido se ignora
- * (se muestra todo) en vez de fallar: la URL la puede escribir cualquiera.
+ * Extrae y sanea los filtros de búsqueda a partir de los query parameters de la URL.
+ *
+ * - **¿Qué hace?**:
+ *   Parsea y normaliza `zoneId`, `status`, `origin`, `search`, `from`, `to` y `page`.
+ *   Los valores incongruentes se reemplazan con `null` o valores predeterminados sin lanzar excepciones.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Invocado por el Server Component `EventList` para procesar `searchParams`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Garantiza que cualquier URL escrita a mano o compartida no rompa la aplicación, proporcionando tolerancia a fallos.
  */
 export function parseEventFilters(raw: {
   zoneId?: string;

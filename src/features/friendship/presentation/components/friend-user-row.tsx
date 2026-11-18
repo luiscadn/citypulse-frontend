@@ -1,7 +1,17 @@
 import type { ReactNode } from "react";
 import type { FriendUser } from "../../domain/entities/friendship";
 
-/** Fila de un listado de personas: inicial, nombre, usuario y acciones a la derecha. */
+/**
+ * Componente FriendUserRow: Fila estándar de usuario para listados de amistades.
+ *
+ * - **¿Qué hace?**: Renderiza un elemento de lista (`<li>`) con un avatar circular mostrando la inicial
+ *   del nombre completo en mayúscula, el nombre completo (`fullName`), el nombre de usuario (`@username`),
+ *   y un espacio a la derecha (`children`) para acciones o insignias complementarias.
+ * - **¿Cómo interactúa con el sistema en general?**: Es el componente compartido utilizado por `FriendSearchResults`
+ *   y `FriendshipOverview` para renderizar amigos, solicitudes entrantes y solicitudes salientes.
+ * - **¿Cuál es su importancia?**: Provee una presentación homogénea, accesible y atractiva para perfiles de usuario
+ *   en todo el módulo social.
+ */
 export function FriendUserRow({ user, children }: { user: FriendUser; children?: ReactNode }) {
   return (
     <li className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">

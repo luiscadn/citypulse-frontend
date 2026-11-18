@@ -3,8 +3,14 @@ import { Button, Card, CardBody, CardHeader, TextField } from "@/shared/presenta
 import { FriendSearchResults } from "./friend-search-results";
 
 /**
- * Buscador de personas. El texto vive en la URL (/friends?q=ana).
- * searchParams es un dato de la petición: con Cache Components debe ir dentro de <Suspense>.
+ * Componente Server Component FriendSearch: Buscador de personas por nombre o username.
+ *
+ * - **¿Qué hace?**: Extrae el término de búsqueda `q` desde `searchParams` y renderiza un formulario de búsqueda
+ *   con el nuevo componente `<Form>` de Next.js (que realiza navegación cliente a `/friends?q=...` sin recarga de página).
+ *   Si hay un término de búsqueda activo, renderiza el componente `FriendSearchResults`.
+ * - **¿Cómo interactúa con el sistema en general?**: Se ubica en `src/app/(app)/friends/page.tsx` dentro de `<Suspense>`.
+ * - **¿Cuál es su importancia?**: Ofrece una búsqueda sincronizada con la URL ("URL-driven state"), lo que permite
+ *   compartir enlaces de búsqueda, usar el botón de retroceso del navegador y persistir el estado de búsqueda de forma natural.
  */
 export async function FriendSearch({ searchParams }: { searchParams: PageProps<"/friends">["searchParams"] }) {
   const { q } = await searchParams;

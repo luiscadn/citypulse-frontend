@@ -1,3 +1,9 @@
+/**
+ * @file get-current-user.ts
+ * @description Utilidad de Infraestructura del servidor para leer el usuario autenticado
+ * a partir de la cookie de sesión actual sin invocar al backend.
+ */
+
 import "server-only";
 
 import { connection } from "next/server";
@@ -7,16 +13,21 @@ import type { SessionUser } from "../../domain/entities/session-user";
 import { toRoles } from "../mappers/auth.mapper";
 
 /**
- * Usuario de la sesión actual, leído del JWT de la cookie (sin llamar al backend).
- * Devuelve null si no hay sesión o el token expiró.
+ * Obtiene el usuario autenticado de la sesión actual leyendo el JWT de la cookie.
  *
- * Lee cookies(), así que con Cache Components quien lo use debe estar
- * dentro de un <Suspense>.
+ * - **¿Qué hace?**:
+ *   Lee la cookie de sesión, invoca `connection()` de Next.js para indicar que la operación es dinámica
+ *   por petición, valida la firma/expiración del JWT con `readValidJwt`, y retorna un objeto `SessionUser` o `null` si no hay sesión válida.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Es la función de conveniencia estándar invocada en Server Components (`AppNav`, `VenueDetail`, `EventDetail`)
+ *   y Server Actions para determinar quién está navegando.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Alta eficiencia: permite autenticar peticiones en milisegundos en el servidor sin realizar llamadas HTTP externas al backend.
  */
 export async function getCurrentUser(): Promise<SessionUser | null> {
   const token = await getSessionToken();
-  // La expiración se compara con la hora actual (Date.now): con Cache Components
-  // hay que avisar que este cálculo es por petición y no se puede prerenderizar.
   await connection();
   const payload = readValidJwt(token);
   if (!payload) return null;

@@ -4,8 +4,15 @@ import { useState } from "react";
 import { Button } from "./button";
 
 /**
- * Botón de envío que pide confirmación en la misma página, sin window.confirm.
- * El primer clic muestra el aviso; solo "Sí, eliminar" envía el formulario que lo contiene.
+ * Componente ConfirmSubmit: Botón de envío con confirmación inline en dos pasos.
+ *
+ * - **¿Qué hace?**: Muestra inicialmente un botón de advertencia/peligro. Al hacer clic, en lugar de invocar
+ *   un diálogo bloqueante del navegador (`window.confirm`), despliega un panel inline con el mensaje explicativo
+ *   y dos opciones: "Sí, eliminar" (que efectivamente ejecuta el submit del formulario) y "Cancelar" (que restaura el botón original).
+ * - **¿Cómo interactúa con el sistema en general?**: Se integra en formularios de eliminación y acciones destructivas
+ *   como `delete-zone-button.tsx` o la cancelación/eliminación de establecimientos y eventos.
+ * - **¿Cuál es su importancia?**: Evita borrados accidentales de información sin degradar la experiencia de usuario con alertas nativas
+ *   del navegador (las cuales son inaccesibles, no estilizables y bloquean el hilo principal).
  */
 export function ConfirmSubmit({
   label,

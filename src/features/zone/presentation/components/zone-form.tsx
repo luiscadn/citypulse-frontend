@@ -10,8 +10,15 @@ import { initialZoneFormState } from "../actions/zone-form-state";
 type ZoneOption = Pick<Zone, "id" | "name">;
 
 /**
- * Formulario para crear una zona o editar una existente (solo ADMIN).
- * Sin `zone` crea; con `zone` edita esa zona.
+ * Componente ZoneForm: Formulario unificado para la creación y edición de zonas urbanas.
+ *
+ * - **¿Qué hace?**: Permite ingresar o modificar el nombre, la descripción y la zona padre.
+ *   Si recibe una prop `zone`, opera en modo edición vinculándose a `updateZoneAction`; si no, opera en modo creación
+ *   con `createZoneAction`. Filtra las opciones de zonas padre para evitar que una zona se seleccione a sí misma.
+ * - **¿Cómo interactúa con el sistema en general?**: Se renderiza en `ZoneList` (modo creación en panel lateral)
+ *   y en `ZoneDetail` (modo edición para administradores). Conecta directamente con las Server Actions usando `useActionState`.
+ * - **¿Cuál es su importancia?**: Reutiliza la misma interfaz accesible y validada tanto para crear como para editar,
+ *   garantizando coherencia visual y evitando la duplicación de controles de formulario.
  */
 export function ZoneForm({ zone, parentOptions }: { zone?: Zone; parentOptions: readonly ZoneOption[] }) {
   const editing = zone !== undefined;

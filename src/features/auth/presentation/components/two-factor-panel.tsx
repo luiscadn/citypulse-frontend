@@ -1,3 +1,9 @@
+/**
+ * @file two-factor-panel.tsx
+ * @description Client Component interactivo para la configuración y administración del 2FA (TOTP).
+ * Permite visualizar el estado, escanear el QR, confirmar el código y deshabilitar el segundo factor.
+ */
+
 "use client";
 
 import { useState, useTransition } from "react";
@@ -10,8 +16,19 @@ import {
 import type { TwoFactorSetup } from "../../domain/entities/two-factor-setup";
 
 /**
- * Verificación en dos pasos (TOTP): activar con QR + código, o desactivar.
- * `enabled` viene del servidor; tras cada acción la página se refresca sola.
+ * Panel de administración de la verificación en dos pasos en el perfil del usuario.
+ *
+ * - **¿Qué hace?**:
+ *   Muestra el estado actual (Activada / Desactivada). Si está inactivo, permite iniciar el proceso
+ *   obteniendo el código QR y la clave secreta manual, y provee un formulario para confirmar el primer código TOTP de 6 dígitos.
+ *   Si está activo, ofrece un flujo seguro para desactivar la protección tras confirmar.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Utiliza transiciones de React (`useTransition`) para invocar `startTwoFactorAction`, `enableTwoFactorAction`
+ *   y `disableTwoFactorAction`. Se renderiza en `/profile`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Empodera al usuario para elevar la seguridad de su cuenta mediante TOTP con una experiencia paso a paso clara y asistida.
  */
 export function TwoFactorPanel({ enabled }: { enabled: boolean }) {
   const [pending, startTransition] = useTransition();
@@ -95,7 +112,6 @@ export function TwoFactorPanel({ enabled }: { enabled: boolean }) {
           </ol>
 
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-            {/* Data URL generada por el backend: next/image no aporta nada aquí */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={setup.qrCodeUrl}

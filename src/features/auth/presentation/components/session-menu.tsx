@@ -1,3 +1,8 @@
+/**
+ * @file session-menu.tsx
+ * @description Client Component para el menú de estado de sesión en la barra de navegación superior.
+ */
+
 "use client";
 
 import Link from "next/link";
@@ -7,8 +12,18 @@ import { useSession } from "../hooks/use-session";
 import { LogoutButton } from "./logout-button";
 
 /**
- * Correo del usuario + botón de cerrar sesión, o enlace a /login.
- * useSession() suspende hasta tener la sesión: debe ir dentro de <Suspense>.
+ * Menú contextual de usuario en el encabezado.
+ *
+ * - **¿Qué hace?**:
+ *   Consume la sesión a través de `useSession()`. Si el usuario no está autenticado, muestra un botón hacia `/login`.
+ *   Si está autenticado, muestra enlace a `/admin/users` (si posee rol ADMIN), enlace con avatar y correo hacia `/profile`,
+ *   y el botón de cierre de sesión `LogoutButton`.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Renderizado en `AppNav` dentro de un `<Suspense>`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Ofrece acceso directo a las áreas de perfil y administración según los privilegios del usuario conectado.
  */
 export function SessionMenu() {
   const { user } = useSession();

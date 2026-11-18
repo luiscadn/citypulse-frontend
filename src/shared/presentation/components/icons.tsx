@@ -1,7 +1,13 @@
 import type { ComponentProps } from "react";
 import { cn } from "../cn";
 
-/** Íconos de línea (trazo 2, 16 px). Decorativos: el texto al lado ya dice qué hacen. */
+/**
+ * Componente base Icon: Envoltorio para gráficos SVG con trazo uniforme (2px) y tamaño base (16px).
+ *
+ * - **¿Qué hace?**: Estandariza las propiedades SVG (`viewBox`, `fill="none"`, `stroke="currentColor"`, `aria-hidden="true"`).
+ * - **¿Cómo interactúa con el sistema en general?**: Es el componente base del que derivan todos los iconos de este archivo.
+ * - **¿Cuál es su importancia?**: Asegura coherencia estética en grosor de línea y asegura que los iconos sean puramente decorativos para lectores de pantalla.
+ */
 function Icon({ className, children, ...props }: ComponentProps<"svg">) {
   return (
     <svg
@@ -20,6 +26,7 @@ function Icon({ className, children, ...props }: ComponentProps<"svg">) {
   );
 }
 
+/** Icono Chevron hacia la derecha (indicador de navegación y migas de pan). */
 export function ChevronRightIcon(props: ComponentProps<"svg">) {
   return (
     <Icon {...props}>
@@ -28,6 +35,7 @@ export function ChevronRightIcon(props: ComponentProps<"svg">) {
   );
 }
 
+/** Icono Chevron hacia la izquierda (indicador de retroceso y paginación anterior). */
 export function ChevronLeftIcon(props: ComponentProps<"svg">) {
   return (
     <Icon {...props}>
@@ -36,6 +44,7 @@ export function ChevronLeftIcon(props: ComponentProps<"svg">) {
   );
 }
 
+/** Icono de enlace externo (indica que el enlace abre una nueva pestaña o sitio ajeno). */
 export function ExternalLinkIcon(props: ComponentProps<"svg">) {
   return (
     <Icon {...props}>
@@ -46,6 +55,7 @@ export function ExternalLinkIcon(props: ComponentProps<"svg">) {
   );
 }
 
+/** Icono Pin de mapa (ubicaciones geográficas, establecimientos y mapas). */
 export function MapPinIcon(props: ComponentProps<"svg">) {
   return (
     <Icon {...props}>

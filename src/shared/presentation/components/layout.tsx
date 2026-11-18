@@ -1,12 +1,25 @@
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "../cn";
 
-/** Contenedor de página: ancho máximo y márgenes laterales consistentes. */
+/**
+ * Componente Container: Contenedor responsivo centrado.
+ *
+ * - **¿Qué hace?**: Aplica un ancho máximo (`max-w-6xl`) y espaciados laterales adaptativos (`px-4 sm:px-6`) para centrar el contenido en pantalla.
+ * - **¿Cómo interactúa con el sistema en general?**: Es el contenedor principal que envuelve las vistas en `src/app/(app)/...`.
+ * - **¿Cuál es su importancia?**: Mantiene la cuadrícula y el alineamiento visual consistente en todas las páginas del sistema.
+ */
 export function Container({ className, ...props }: ComponentProps<"div">) {
   return <div className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", className)} {...props} />;
 }
 
-/** Encabezado de página: título, descripción y acciones a la derecha. */
+/**
+ * Componente PageHeader: Encabezado estandarizado de página.
+ *
+ * - **¿Qué hace?**: Presenta el título principal de la vista (`title`), una descripción contextual opcional (`description`),
+ *   un texto introductorio superior (`eyebrow`) y un espacio para acciones principales a la derecha (`actions`).
+ * - **¿Cómo interactúa con el sistema en general?**: Se ubica al inicio de casi todas las páginas principales (`events/page.tsx`, `zones/page.tsx`, etc.).
+ * - **¿Cuál es su importancia?**: Comunica claramente la jerarquía de la página y provee un punto fijo de acceso a acciones clave de creación.
+ */
 export function PageHeader({
   title,
   description,
@@ -36,7 +49,13 @@ export function PageHeader({
   );
 }
 
-/** Tarjeta: agrupa contenido sobre una superficie con borde. */
+/**
+ * Componente Card: Contenedor tipo tarjeta.
+ *
+ * - **¿Qué hace?**: Envuelve secciones con borde redondeado, fondo de superficie y sombra sutil.
+ * - **¿Cómo interactúa con el sistema en general?**: Base de estructuración para formularios, resúmenes y paneles.
+ * - **¿Cuál es su importancia?**: Delimita visualmente grupos de contenido relacionados dentro de una página.
+ */
 export function Card({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
@@ -46,6 +65,13 @@ export function Card({ className, ...props }: ComponentProps<"div">) {
   );
 }
 
+/**
+ * Componente CardHeader: Encabezado de una tarjeta.
+ *
+ * - **¿Qué hace?**: Muestra el título, descripción secundaria y acciones de cabecera con una línea divisoria inferior.
+ * - **¿Cómo interactúa con el sistema en general?**: Se compone dentro de `Card`.
+ * - **¿Cuál es su importancia?**: Estandariza la jerarquía de títulos y controles secundarios en paneles de la interfaz.
+ */
 export function CardHeader({
   title,
   description,
@@ -68,10 +94,24 @@ export function CardHeader({
   );
 }
 
+/**
+ * Componente CardBody: Cuerpo principal de una tarjeta.
+ *
+ * - **¿Qué hace?**: Aplica padding interno (`px-5 py-4`) al contenido central de la tarjeta.
+ * - **¿Cómo interactúa con el sistema en general?**: Aloja los controles de formulario, tablas o párrafos informativos.
+ * - **¿Cuál es su importancia?**: Asegura un espaciado uniforme y armónico en todo el layout de la tarjeta.
+ */
 export function CardBody({ className, ...props }: ComponentProps<"div">) {
   return <div className={cn("px-5 py-4", className)} {...props} />;
 }
 
+/**
+ * Componente CardFooter: Pie de una tarjeta.
+ *
+ * - **¿Qué hace?**: Contenedor inferior alineado a la derecha con borde divisor superior para botones de acción.
+ * - **¿Cómo interactúa con el sistema en general?**: Contiene botones de guardar, cancelar o avanzar.
+ * - **¿Cuál es su importancia?**: Separa visualmente los controles de envío de los campos de entrada del formulario.
+ */
 export function CardFooter({ className, ...props }: ComponentProps<"div">) {
   return (
     <div

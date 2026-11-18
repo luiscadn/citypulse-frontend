@@ -1,17 +1,6 @@
 import { useId, type ComponentProps, type ReactNode } from "react";
 import { cn } from "../cn";
 
-/*
- * Controles de formulario. Son elementos nativos (<input>, <select>, <textarea>)
- * con estilo: funcionan directo con Server Actions usando `name`.
- *
- * Uso típico:
- *   <Field label="Correo" error={state.errors?.email}>
- *     {(id, describedBy) => <Input id={id} aria-describedby={describedBy} name="email" />}
- *   </Field>
- * o, más corto, los atajos <TextField>, <SelectField>, <TextareaField>.
- */
-
 const control =
   "w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-ink " +
   "placeholder:text-ink-muted/70 transition-colors " +
@@ -20,14 +9,35 @@ const control =
   "read-only:bg-neutral-soft " +
   "aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/25";
 
+/**
+ * Componente Input: Campo de entrada de texto nativo estilizado.
+ *
+ * - **¿Qué hace?**: Renderiza un `<input>` con tipografía, bordes, estados de foco y estilos de error (`aria-invalid`).
+ * - **¿Cómo interactúa con el sistema en general?**: Es la base de captura de texto en formularios de toda la aplicación.
+ * - **¿Cuál es su importancia?**: Ofrece consistencia visual y soporte nativo para `name` e integración con Server Actions.
+ */
 export function Input({ className, ...props }: ComponentProps<"input">) {
   return <input className={cn(control, "h-10", className)} {...props} />;
 }
 
+/**
+ * Componente Textarea: Área de texto multilínea nativa estilizada.
+ *
+ * - **¿Qué hace?**: Renderiza un `<textarea>` con alto ajustable y soporte de estilos de foco y error.
+ * - **¿Cómo interactúa con el sistema en general?**: Usada en descripciones de eventos, reseñas o información de zonas.
+ * - **¿Cuál es su importancia?**: Permite redactar textos extensos manteniendo los mismos estilos y tokens del diseño.
+ */
 export function Textarea({ className, rows = 4, ...props }: ComponentProps<"textarea">) {
   return <textarea rows={rows} className={cn(control, "py-2 leading-relaxed", className)} {...props} />;
 }
 
+/**
+ * Componente Select: Menú desplegable nativo estilizado.
+ *
+ * - **¿Qué hace?**: Renderiza un `<select>` con un icono de chevron integrado como background SVG para aspecto moderno.
+ * - **¿Cómo interactúa con el sistema en general?**: Empleado en selectores de estado, zonas y categorías.
+ * - **¿Cuál es su importancia?**: Mantiene la accesibilidad y el comportamiento nativo en dispositivos móviles sin librerías pesadas.
+ */
 export function Select({ className, children, ...props }: ComponentProps<"select">) {
   return (
     <select className={cn(control, "h-10 appearance-none bg-no-repeat pr-9", className)} style={chevron} {...props}>
@@ -55,7 +65,15 @@ type FieldProps = {
   children: (id: string, describedBy: string | undefined, invalid: boolean) => ReactNode;
 };
 
-/** Etiqueta + control + ayuda/error, con los atributos de accesibilidad conectados. */
+/**
+ * Componente Field: Envoltorio accesible para campos de formulario.
+ *
+ * - **¿Qué hace?**: Genera identificadores únicos con `useId()`, asocia etiquetas (`<label htmlFor>`),
+ *   textos de ayuda (`hint`) y mensajes de error (`error`) mediante atributos WAI-ARIA (`aria-describedby`).
+ * - **¿Cómo interactúa con el sistema en general?**: Es el componente contenedor utilizado por `TextField`, `SelectField` y `TextareaField`.
+ * - **¿Cuál es su importancia?**: Garantiza conformidad con estándares de accesibilidad (WCAG) al asegurar que los lectores
+ *   de pantalla anuncien inmediatamente la descripción y los errores asociados a cada control cuando el usuario se enfoca en él.
+ */
 export function Field({ label, hint, error, required, className, children }: FieldProps) {
   const id = useId();
   const hintId = hint ? `${id}-hint` : undefined;
@@ -85,6 +103,13 @@ export function Field({ label, hint, error, required, className, children }: Fie
 
 type FieldShortcut = { label: ReactNode; hint?: ReactNode; error?: string };
 
+/**
+ * Componente TextField
+ *
+ * - **¿Qué hace?**: Combina `Field` con `Input` en un único componente de conveniencia para campos de texto.
+ * - **¿Cómo interactúa con el sistema en general?**: Utilizado ampliamente en formularios de login, registro, eventos y zonas.
+ * - **¿Cuál es su importancia?**: Reduce el código repetitivo en la definición de campos de formulario comunes.
+ */
 export function TextField({ label, hint, error, className, ...props }: FieldShortcut & ComponentProps<"input">) {
   return (
     <Field label={label} hint={hint} error={error} required={props.required} className={className}>
@@ -95,6 +120,13 @@ export function TextField({ label, hint, error, className, ...props }: FieldShor
   );
 }
 
+/**
+ * Componente TextareaField
+ *
+ * - **¿Qué hace?**: Combina `Field` con `Textarea` para áreas de texto con etiqueta y validación.
+ * - **¿Cómo interactúa con el sistema en general?**: Usado para campos de descripción en formularios de creación y edición.
+ * - **¿Cuál es su importancia?**: Automatiza la vinculación de accesibilidad y visualización de errores para campos multilínea.
+ */
 export function TextareaField({ label, hint, error, className, ...props }: FieldShortcut & ComponentProps<"textarea">) {
   return (
     <Field label={label} hint={hint} error={error} required={props.required} className={className}>
@@ -105,6 +137,13 @@ export function TextareaField({ label, hint, error, className, ...props }: Field
   );
 }
 
+/**
+ * Componente SelectField
+ *
+ * - **¿Qué hace?**: Combina `Field` con `Select` para listas desplegables con etiqueta y errores.
+ * - **¿Cómo interactúa con el sistema en general?**: Usado en selección de zonas, orígenes de eventos o categorías.
+ * - **¿Cuál es su importancia?**: Centraliza la accesibilidad y estilos en menús de opciones en toda la aplicación.
+ */
 export function SelectField({ label, hint, error, className, ...props }: FieldShortcut & ComponentProps<"select">) {
   return (
     <Field label={label} hint={hint} error={error} required={props.required} className={className}>

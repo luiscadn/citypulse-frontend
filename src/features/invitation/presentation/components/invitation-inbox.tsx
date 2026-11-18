@@ -6,8 +6,16 @@ import { useInvitations } from "../hooks/use-invitations";
 import { InvitationAnswerActions } from "./invitation-answer-actions";
 
 /**
- * Invitaciones pendientes del usuario de la sesión.
- * useInvitations() suspende hasta tenerlas: debe ir dentro de <Suspense>.
+ * Componente InvitationInbox: Bandeja de entrada visual de invitaciones pendientes.
+ *
+ * - **¿Qué hace?**: Obtiene la lista de invitaciones pendientes mediante `useInvitations()`.
+ *   Si la lista está vacía, renderiza `EmptyState` informando que no hay invitaciones pendientes.
+ *   Si contiene invitaciones, renderiza una tarjeta `Card` con una lista dividida donde cada ítem muestra
+ *   el título del evento, la fecha formateada en horario de Bogotá, el nombre y usuario del remitente,
+ *   el mensaje personalizado si existe, y los botones interactivos `InvitationAnswerActions`.
+ * - **¿Cómo interactúa con el sistema en general?**: Se monta en `InvitationsPage` dentro de `<Suspense>`.
+ * - **¿Cuál es su importancia?**: Centraliza la experiencia de usuario para la interacción y recepción
+ *   de eventos compartidos por amigos en la comunidad de CityPulse.
  */
 export function InvitationInbox() {
   const { pending } = useInvitations();

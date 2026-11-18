@@ -1,9 +1,27 @@
+/**
+ * @file venue-row.tsx
+ * @description Componentes de visualización para ítems y listas de Lugares (Venues).
+ */
+
 import Link from "next/link";
 import { ChevronRightIcon, MapPinIcon } from "@/shared/presentation/components/icons";
 import type { Venue } from "../../domain/entities/venue";
 import { VenueStatusBadge } from "./venue-status-badge";
 
-/** Fila de un lugar en un listado: nombre y dirección a la izquierda, zona y estado a la derecha. */
+/**
+ * Fila interactiva que presenta un lugar dentro de una lista.
+ *
+ * - **¿Qué hace?**:
+ *   Muestra un elemento `<li>` navegable que incluye el nombre del lugar, la dirección física con ícono de chincheta,
+ *   el nombre de la zona geográfica, la insignia de estado (`VenueStatusBadge`) y una flecha indicativa.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Enlaza directamente hacia la página de detalle `/venues/[id]`. Es utilizado por `VenueList` y `MyVenues`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Condensa la información más relevante de cada venue en un diseño responsivo y accesible,
+ *   optimizando el espacio tanto en pantallas móviles como de escritorio.
+ */
 export function VenueRow({ venue }: { venue: Venue }) {
   return (
     <li>
@@ -28,7 +46,13 @@ export function VenueRow({ venue }: { venue: Venue }) {
   );
 }
 
-/** Contenedor de filas de lugares. */
+/**
+ * Contenedor estilizado para agrupar filas de lugares.
+ *
+ * - **¿Qué hace?**: Renderiza un elemento `<ul>` con bordes redondeados y divisores sutiles entre filas.
+ * - **¿Cómo interactúa con el sistema en general?**: Envuelve múltiples instancias de `VenueRow`.
+ * - **¿Cuál es su importancia?**: Proporciona coherencia estética y estructura semántica de lista ordenada para accesibilidad.
+ */
 export function VenueRows({ children }: { children: React.ReactNode }) {
   return <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">{children}</ul>;
 }

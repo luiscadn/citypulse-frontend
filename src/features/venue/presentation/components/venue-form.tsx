@@ -1,3 +1,9 @@
+/**
+ * @file venue-form.tsx
+ * @description Client Component para el formulario unificado de creación y edición de Lugares (Venues).
+ * Integra autocompletado de direcciones mediante `PlaceSearch` y validación progresiva.
+ */
+
 "use client";
 
 import { useActionState, useRef } from "react";
@@ -15,8 +21,20 @@ import { createVenueAction, updateVenueAction } from "../actions/venue.actions";
 import { initialVenueFormState } from "../actions/venue-form-state";
 
 /**
- * Formulario para registrar un lugar (OWNER) o editar uno existente (su OWNER o un ADMIN).
- * Sin `venue` registra; con `venue` edita ese lugar.
+ * Formulario interactivo para registrar un nuevo lugar o editar uno existente.
+ *
+ * - **¿Qué hace?**:
+ *   Maneja campos para nombre, dirección, zona y descripción. Permite autocompletar nombre y dirección
+ *   seleccionando un resultado en el buscador cartográfico integrado `PlaceSearch`. Muestra alertas
+ *   de éxito, error y advertencias sobre pérdida de verificación si un OWNER edita campos clave.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Se enlaza a `createVenueAction` o `updateVenueAction` mediante `useActionState`. Es utilizado
+ *   tanto en la barra lateral de `MyVenues` como en la tarjeta de edición de `VenueDetail`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Reutiliza la lógica y componentes de interfaz para creación y actualización (DRY), enriqueciendo
+ *   la captura de datos con geobúsqueda de Google Places y validación accesible.
  */
 export function VenueForm({
   venue,
@@ -25,7 +43,7 @@ export function VenueForm({
 }: {
   venue?: Venue;
   zones: readonly Pick<Zone, "id" | "name">[];
-  /** Avisar que cambiar nombre, dirección o zona quita la verificación (OWNER con lugar verificado) */
+  /** Indica si se debe advertir al usuario que editar revocará la verificación previa del lugar */
   warnVerification?: boolean;
 }) {
   const editing = venue !== undefined;
@@ -45,7 +63,9 @@ export function VenueForm({
 
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Los campos no son controlados (defaultValue): se llenan directo en el formulario
+  /**
+   * Llena directamente los campos del formulario con los datos elegidos en el buscador de lugares de Google Maps.
+   */
   function fillFromPlace(place: Place) {
     const setField = (name: string, value: string) => {
       const field = formRef.current?.elements.namedItem(name);

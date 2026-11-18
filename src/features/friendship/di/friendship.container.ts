@@ -7,7 +7,15 @@ import { SearchFriendCandidatesUseCase } from "../application/use-cases/search-f
 import { SendFriendRequestUseCase } from "../application/use-cases/send-friend-request.use-case";
 import { HttpFriendshipRepository } from "../infrastructure/repositories/http-friendship-repository";
 
-/** Arma los casos de uso de amistades con sus implementaciones concretas. */
+/**
+ * Contenedor de Inyección de Dependencias friendshipContainer (Capa de Composición / DI)
+ *
+ * - **¿Qué hace?**: Instancia `HttpFriendshipRepository` con `serverHttp` y ensambla los cuatro casos de uso
+ *   del módulo (`getFriendshipOverviewUseCase`, `searchFriendCandidatesUseCase`, `sendFriendRequestUseCase`, `respondFriendRequestUseCase`).
+ * - **¿Cómo interactúa con el sistema en general?**: Se ejecuta exclusivamente en el servidor (`server-only`).
+ *   Es consumido por la página `/friends` y las Server Actions de amistades.
+ * - **¿Cuál es su importancia?**: Centraliza la configuración de dependencias del módulo social en un único singleton.
+ */
 const friendshipRepository = new HttpFriendshipRepository(serverHttp);
 
 export const friendshipContainer = {

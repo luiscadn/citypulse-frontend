@@ -6,8 +6,14 @@ import { FriendRequestActions } from "./friend-request-actions";
 import { FriendUserRow } from "./friend-user-row";
 
 /**
- * Amigos y solicitudes pendientes del usuario de la sesión.
- * useFriendship() suspende hasta tener el resumen: debe ir dentro de <Suspense>.
+ * Componente Client Component FriendshipOverview: Tablero general de amistades.
+ *
+ * - **¿Qué hace?**: Consume `useFriendship()` para renderizar:
+ *   1. Tarjeta de solicitudes recibidas con `FriendRequestActions` (si hay pendientes).
+ *   2. Tarjeta de solicitudes enviadas con insignia "Pendiente" (si hay pendientes).
+ *   3. Tarjeta con la lista de amigos actuales o `EmptyState` si aún no cuenta con amigos.
+ * - **¿Cómo interactúa con el sistema en general?**: Se monta en `src/app/(app)/friends/page.tsx` dentro de un límite de `<Suspense>`.
+ * - **¿Cuál es su importancia?**: Ofrece una visión panorámica y control completo del círculo social del usuario en CityPulse.
  */
 export function FriendshipOverview() {
   const { friends, pendingReceived, pendingSent } = useFriendship();

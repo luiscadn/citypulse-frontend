@@ -1,6 +1,13 @@
+/**
+ * @file auth-shell.tsx
+ * @description Layout envolvente para las pantallas de autenticación (Login y Registro).
+ * Presenta un panel de marca con ilustración y propuesta de valor en desktop, y el formulario centrado.
+ */
+
 import type { ReactNode } from "react";
 import { BrandMark, ThemeToggle } from "@/shared/presentation/components";
 
+/** Aspectos destacados de la plataforma cultural mostrados en el panel lateral. */
 const highlights = [
   "Reporta lo que pasa en tu ciudad, con evidencias.",
   "Consulta eventos verificados por zona y lugar.",
@@ -8,9 +15,17 @@ const highlights = [
 ];
 
 /**
- * Pantalla completa de las páginas de acceso (login y registro): panel de marca
- * a la izquierda (solo en pantallas grandes) y el formulario a la derecha.
- * Está fuera del grupo (app), así que no lleva el encabezado de la aplicación.
+ * Cascarón visual para las vistas públicas de login y registro fuera del layout principal de la app.
+ *
+ * - **¿Qué hace?**:
+ *   Estructura una pantalla completa en dos columnas en pantallas grandes (panel de marca con fondo degradado a la izquierda,
+ *   y formulario interactivo a la derecha con conmutador de tema y encabezado).
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Utilizado en `src/app/login/page.tsx` y `src/app/register/page.tsx`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Garantiza coherencia de marca, diseño responsivo y una experiencia visual atractiva y profesional para nuevos usuarios y visitantes.
  */
 export function AuthShell({
   title,

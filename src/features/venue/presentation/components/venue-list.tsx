@@ -1,3 +1,9 @@
+/**
+ * @file venue-list.tsx
+ * @description Server Component para la vista del catálogo público de Lugares (Venues).
+ * Resuelve parámetros de consulta, carga datos en paralelo y organiza filtros, listas y paginación.
+ */
+
 import Link from "next/link";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { zoneContainer } from "@/features/zone/di/zone.container";
@@ -9,11 +15,26 @@ import { VenueRow, VenueRows } from "./venue-row";
 import { VenueFilters } from "./venue-filters";
 import { VenuePagination } from "./venue-pagination";
 
+/** Función auxiliar para extraer el primer valor si el parámetro viene como array. */
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
 /**
- * Listado público de lugares con filtros y paginación.
- * Lee searchParams y la sesión: con Cache Components debe ir dentro de <Suspense>.
+ * Componente de servidor para el listado general de lugares con paginación y filtros.
+ *
+ * - **¿Qué hace?**:
+ *   Parsea los query params recibidos en `searchParams`, recupera en paralelo (`Promise.all`) la sesión
+ *   del usuario, la lista de zonas y la página de venues filtrada (`listVenuesUseCase`), y renderiza:
+ *   accesos directos a "Mis lugares" (si es OWNER) y "Lugares por verificar" (si es ADMIN),
+ *   la tarjeta de filtros interactiva, el contador total, la lista de filas (`VenueRow`) o estado vacío,
+ *   y el control de paginación (`VenuePagination`).
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Es el componente principal de la página `/venues`. Conecta los casos de uso de `venue` y `zone`
+ *   con la autenticación y la URL del navegador.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Provee el punto de entrada para explorar toda la oferta física de la ciudad, ofreciendo una experiencia
+ *   rápida y optimizada gracias a la renderización en el servidor (RSC).
  */
 export async function VenueList({ searchParams }: { searchParams: PageProps<"/venues">["searchParams"] }) {
   const params = await searchParams;

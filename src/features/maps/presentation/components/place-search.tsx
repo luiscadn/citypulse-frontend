@@ -7,8 +7,16 @@ import type { Place } from "../../domain/entities/place";
 import { searchPlacesAction } from "../actions/maps.actions";
 
 /**
- * Busca el lugar en Google Maps para llenar el formulario con su nombre y dirección reales.
- * Va dentro de otro <form> (el del lugar): por eso no es un form, y Enter busca en vez de enviar.
+ * Componente PlaceSearch: Buscador interactivo de lugares conectado a Google Maps.
+ *
+ * - **¿Qué hace?**: Permite escribir un texto de búsqueda para localizar un lugar real en Cali.
+ *   Al presionar Enter o hacer clic en "Buscar", ejecuta la Server Action `searchPlacesAction` dentro de `startTransition`.
+ *   Muestra las opciones coincidentes con su dirección y, al hacer clic sobre una, invoca el callback `onPick(place)`,
+ *   limpiando la lista y el texto de búsqueda.
+ * - **¿Cómo interactúa con el sistema en general?**: Se integra dentro de `VenueForm` para autocompletar nombre y dirección
+ *   oficiales de establecimientos. No utiliza un elemento `<form>` propio para evitar el error de validación HTML por anidamiento de formularios.
+ * - **¿Cuál es su importancia?**: Mejora enormemente la precisión de las direcciones y ubicaciones de los lugares registrados,
+ *   evitando errores tipográficos manuales y asegurando que las coordenadas correspondan a ubicaciones reales en Google Maps.
  */
 export function PlaceSearch({ onPick }: { onPick: (place: Place) => void }) {
   const [query, setQuery] = useState("");
@@ -16,6 +24,7 @@ export function PlaceSearch({ onPick }: { onPick: (place: Place) => void }) {
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
 
+  /** Dispara la búsqueda asíncrona dentro de una transición de React */
   function search() {
     startTransition(async () => {
       const result = await searchPlacesAction(query);
@@ -24,6 +33,7 @@ export function PlaceSearch({ onPick }: { onPick: (place: Place) => void }) {
     });
   }
 
+  /** Captura la tecla Enter para ejecutar la búsqueda sin enviar el formulario contenedor */
   function searchOnEnter(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -31,6 +41,7 @@ export function PlaceSearch({ onPick }: { onPick: (place: Place) => void }) {
     }
   }
 
+  /** Selecciona el lugar y notifica al componente padre */
   function pick(place: Place) {
     onPick(place);
     setPlaces(null);

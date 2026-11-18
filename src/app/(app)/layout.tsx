@@ -6,7 +6,19 @@ import { SessionProvider } from "@/features/auth/presentation/context/session-co
 import { BrandMark, Container, ThemeToggle } from "@/shared/presentation/components";
 import { AppNav, AppNavFallback } from "./_components/app-nav";
 
-/** Layout de las páginas de la app: encabezado con logo, secciones, tema y sesión. */
+/**
+ * Componente AppLayout: Layout principal para la aplicación autenticada.
+ *
+ * - **¿Qué hace?**: Provee la barra de navegación superior fija (`header sticky`), el selector de temas (`ThemeToggle`),
+ *   el menú de usuario (`SessionMenu`), la barra de enlaces (`AppNav`) responsiva (con soporte móvil en segunda fila),
+ *   y envuelve el árbol de componentes dentro de `SessionProvider`.
+ * - **¿Cómo interactúa con el sistema en general?**: Obtiene la promesa de sesión con `getCurrentUser()` sin bloquear
+ *   con `await` a nivel del layout. Pasa la promesa (`sessionPromise`) directamente a `SessionProvider`, permitiendo
+ *   que los componentes que consumen la sesión se suspendan de manera granular mediante React 19 / Next.js Streaming SSR.
+ * - **¿Cuál es su importancia?**: Evita bloqueos de renderizado en cascada (waterfalls). La barra de navegación y el contenido
+ *   general se transmiten al navegador de inmediato, mientras que los datos de sesión y navegación activa se resuelven
+ *   dentro de sus respectivos límites de `<Suspense>`, logrando un First Contentful Paint (FCP) óptimo.
+ */
 export default function AppLayout({ children }: LayoutProps<"/">) {
   // Sin await: la sesión se resuelve dentro de los <Suspense> de quien la usa (useSession)
   const sessionPromise = getCurrentUser();

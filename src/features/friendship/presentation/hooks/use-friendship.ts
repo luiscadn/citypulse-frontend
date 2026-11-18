@@ -10,8 +10,13 @@ export interface Friendship extends FriendshipOverview {
 }
 
 /**
- * Hook fachada de amistades: mis amigos, mis solicitudes pendientes y qué relación
- * tengo con otra persona. Suspende hasta tener el resumen: va dentro de un <Suspense>.
+ * Hook useFriendship (Fachada de Lectura con React 19)
+ *
+ * - **¿Qué hace?**: Desempaqueta la promesa de `FriendshipContext` mediante `use()` y extiende el objeto resultante
+ *   con un método auxiliar `relationWith(userId)` que calcula la relación social con cualquier usuario.
+ * - **¿Cómo interactúa con el sistema en general?**: Se consume en `FriendshipOverview` y en `CandidateAction`.
+ * - **¿Cuál es su importancia?**: Ofrece una API reactiva rica y lista para usar en los componentes cliente
+ *   para consultar amigos, solicitudes y estados de conexión.
  */
 export function useFriendship(): Friendship {
   const overviewPromise = use(FriendshipContext);

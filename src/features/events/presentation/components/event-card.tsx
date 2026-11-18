@@ -1,3 +1,8 @@
+/**
+ * @file event-card.tsx
+ * @description Componente de presentación para tarjetas de Eventos en listados.
+ */
+
 import Link from "next/link";
 import { EventOrigin } from "@/shared/domain/enums";
 import { Badge } from "@/shared/presentation/components";
@@ -5,7 +10,20 @@ import { formatDateTime } from "@/shared/presentation/formatters/date";
 import type { Event } from "../../domain/entities/event";
 import { EventStatusBadge } from "./event-status-badge";
 
-/** Tarjeta de un evento en un listado; lleva a su detalle. */
+/**
+ * Tarjeta interactiva que sintetiza un evento en la cartelera o cuadrículas.
+ *
+ * - **¿Qué hace?**:
+ *   Muestra un bloque `<li>` con enlace navegable hacia `/events/[id]`, presentando el título,
+ *   insignia de estado (`EventStatusBadge`), fecha y hora formateadas, ubicación (lugar o dirección),
+ *   nombre de la zona geográfica y distintivo de origen (Oficial vs. Reporte ciudadano).
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Renderizado masivamente por `EventList` para desplegar la grilla de eventos disponibles.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Ofrece un resumen visual accesible y atractivo con estados claros que facilitan el escaneo rápido de actividades culturales.
+ */
 export function EventCard({ event }: { event: Event }) {
   const place = event.venue?.name ?? event.addressText;
 

@@ -15,11 +15,21 @@ import {
 } from "@/shared/presentation/components";
 import { formatDate } from "@/shared/presentation/formatters/date";
 
+/** Metadata para la vista del perfil */
 export const metadata: Metadata = { title: "Mi perfil" };
 
 /**
- * Lee la cookie de sesión y llama al backend: mientras carga se muestra loading.tsx,
- * si el backend falla, error.tsx, y si la cuenta ya no existe, not-found.
+ * Componente Server Component ProfilePage: Vista de gestión de perfil y seguridad.
+ *
+ * - **¿Qué hace?**: Obtiene la sesión activa con `getCurrentUser()`, consulta los datos completos del usuario
+ *   mediante `usersContainer.getUser(session.id)`, y renderiza dos paneles interactivos:
+ *   1. Datos personales (`ProfileForm`) para actualizar nombre y ver nombre de usuario y correo.
+ *   2. Seguridad (`TwoFactorPanel`) para activar o desactivar la autenticación en dos pasos (2FA con TOTP y QR).
+ * - **¿Cómo interactúa con el sistema en general?**: Orquesta los bounded contexts de Users y Auth.
+ *   Si el usuario no está logueado redirige a `/login?from=/profile`; si el usuario fue eliminado del backend,
+ *   captura `UserNotFoundError` y dispara `notFound()`.
+ * - **¿Cuál es su importancia?**: Centraliza la auto-administración de la cuenta del usuario, garantizando que
+ *   la información se valide y actualice en el servidor con persistencia inmediata y soporte para doble factor de autenticación.
  */
 export default async function ProfilePage() {
   const session = await getCurrentUser();

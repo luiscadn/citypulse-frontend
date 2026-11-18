@@ -3,7 +3,15 @@
 import { Alert, Button } from "@/shared/presentation/components";
 import { useRespondFriendRequest } from "../hooks/use-friend-request-actions";
 
-/** Botones para aceptar o rechazar una solicitud recibida. */
+/**
+ * Componente FriendRequestActions: Controles interactivos para aceptar o declinar solicitudes de amistad.
+ *
+ * - **¿Qué hace?**: Renderiza un formulario con dos botones: "Aceptar" (`value="ACEPTADA"`) y "Rechazar" (`value="RECHAZADA"`).
+ *   Muestra cualquier error producido por la Server Action y deshabilita los botones durante el procesamiento (`pending`).
+ * - **¿Cómo interactúa con el sistema en general?**: Se compone dentro de cada fila de `FriendshipOverview`
+ *   en la sección de solicitudes recibidas. Invoca `respondFriendRequestAction`.
+ * - **¿Cuál es su importancia?**: Permite gestionar solicitudes de amistad de forma reactiva e instantánea.
+ */
 export function FriendRequestActions({ requestId }: { requestId: number }) {
   const { error, respond, pending } = useRespondFriendRequest();
 

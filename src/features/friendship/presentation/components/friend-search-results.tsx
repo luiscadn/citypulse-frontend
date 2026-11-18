@@ -5,7 +5,18 @@ import type { FriendCandidateSearch } from "../../domain/entities/friendship";
 import { CandidateAction } from "./candidate-action";
 import { FriendUserRow } from "./friend-user-row";
 
-/** Personas que coinciden con la búsqueda; la relación con cada una sale del estado de amistades. */
+/**
+ * Componente Server Component FriendSearchResults: Resultados de búsqueda de candidatos a amigos.
+ *
+ * - **¿Qué hace?**: Ejecuta el caso de uso `searchFriendCandidatesUseCase` con el texto de búsqueda `query`.
+ *   - Si falla por validación de dominio (ej. menos de 2 letras), muestra un `Alert` de advertencia.
+ *   - Si no hay coincidencias, muestra un mensaje descriptivo.
+ *   - Si hay resultados, renderiza la lista de usuarios con `FriendUserRow` y adjunta `CandidateAction`
+ *     en cada fila para evaluar la relación social existente.
+ *   - Si hay más resultados que el límite (`hidden > 0`), sugiere refinar la búsqueda.
+ * - **¿Cómo interactúa con el sistema en general?**: Se renderiza en `FriendSearch` cuando hay un parámetro `query` presente.
+ * - **¿Cuál es su importancia?**: Centraliza la visualización de resultados de búsqueda de usuarios con feedback inmediato y claro.
+ */
 export async function FriendSearchResults({ query }: { query: string }) {
   let search: FriendCandidateSearch;
   try {

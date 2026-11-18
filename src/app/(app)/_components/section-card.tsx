@@ -2,7 +2,16 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Card } from "@/shared/presentation/components";
 
-/** Tarjeta de acceso a una sección de la app, para la página de inicio. */
+/**
+ * Componente SectionCard: Tarjeta interactiva de acceso a secciones en el home.
+ *
+ * - **¿Qué hace?**: Renderiza un enlace `next/link` estilizado como una tarjeta `Card` que reacciona al hover
+ *   cambiando el color del borde y del título hacia los colores primarios de la marca. Admite un `badge` opcional.
+ * - **¿Cómo interactúa con el sistema en general?**: Se renderiza en la cuadrícula de inicio (`src/app/(app)/page.tsx`)
+ *   para cada elemento del arreglo `SECTIONS` y en `AdminSectionCard`.
+ * - **¿Cuál es su importancia?**: Ofrece una vía de navegación táctil y visualmente atractiva con retroalimentación inmediata,
+ *   optimizada para accesibilidad mediante foco de teclado (`focus-visible`).
+ */
 export function SectionCard({
   href,
   title,

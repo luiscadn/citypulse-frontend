@@ -13,9 +13,18 @@ import { DeleteZoneButton } from "./delete-zone-button";
 import { ZoneForm } from "./zone-form";
 
 /**
- * Detalle de una zona: dónde está, qué zonas contiene y acceso a sus lugares.
- * Al ADMIN además le muestra cómo editarla o borrarla.
- * Recibe el ID como promesa (params de la ruta) y lee la sesión: va dentro de <Suspense>.
+ * Componente Server Component ZoneDetail: Ficha técnica y edición de una zona urbana.
+ *
+ * - **¿Qué hace?**: Resuelve el `zoneId` asíncrono, consulta en paralelo la zona actual y la lista completa de zonas
+ *   (`Promise.all`), determina la jerarquía territorial (zona padre y zonas hijas contenidas), construye las migas de pan
+ *   y renderiza:
+ *   1. Encabezado con nombre, descripción y botón para ver lugares de la zona.
+ *   2. Listado navegable de subzonas hijas si las contiene.
+ *   3. Panel administrativo de edición (`ZoneForm`) y eliminación (`DeleteZoneButton`) si el usuario es `ADMIN`.
+ * - **¿Cómo interactúa con el sistema en general?**: Se renderiza en `src/app/(app)/zones/[id]/page.tsx` dentro de `<Suspense>`.
+ *   Si la zona no existe en la base de datos, arroja `ZoneNotFoundError` que activa `notFound()`.
+ * - **¿Cuál es su importancia?**: Centraliza la visualización de la estructura territorial y la gestión de permisos administrativos
+ *   en una sola vista eficiente procesada en el servidor.
  */
 export async function ZoneDetail({ zoneId }: { zoneId: Promise<string> }) {
   const id = Number(await zoneId);

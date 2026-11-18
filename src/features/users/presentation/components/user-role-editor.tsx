@@ -1,3 +1,9 @@
+/**
+ * @file user-role-editor.tsx
+ * @description Client Component interactivo para la asignación granular de Roles de Usuario.
+ * Permite marcar/desmarcar casillas de roles y guardar cambios con retroalimentación inline accesible.
+ */
+
 "use client";
 
 import { useState, useTransition } from "react";
@@ -7,12 +13,25 @@ import { ALL_ROLES } from "../../domain/rules/roles";
 import { assignRolesAction } from "../actions/admin-users.actions";
 import { ROLE_LABEL } from "../role-labels";
 
+/** Comprueba si dos listas de roles contienen exactamente los mismos elementos. */
 const sameRoles = (a: readonly RoleName[], b: readonly RoleName[]) =>
   a.length === b.length && a.every((role) => b.includes(role));
 
 /**
- * Casillas de roles de un usuario + botón para guardarlos.
- * El resultado se muestra en línea; no hay alert() ni confirm().
+ * Editor interactivo de roles para un usuario en el panel administrativo.
+ *
+ * - **¿Qué hace?**:
+ *   Muestra casillas de verificación para cada rol del sistema (`USER`, `OWNER`, `ADMIN`).
+ *   Si el usuario que se edita es el propio administrador en sesión (`isSelf`), bloquea la casilla ADMIN
+ *   para evitar la auto-democión accidental. Al guardar, invoca `assignRolesAction` en una transición React y
+ *   despliega el resultado (éxito o error) en un `Alert` en línea sin diálogos emergentes.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Incrustado en cada fila de usuario dentro de `UserRolesAdmin`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Brinda una experiencia de usuario segura y libre de alertas bloqueantes (`window.alert`),
+ *   impidiendo guardar estados vacíos o que el administrador pierda sus propios privilegios.
  */
 export function UserRoleEditor({
   userId,
@@ -23,7 +42,7 @@ export function UserRoleEditor({
   userId: number;
   userName: string;
   initialRoles: readonly RoleName[];
-  /** Es la cuenta de quien administra: no puede quitarse a sí mismo el rol ADMIN */
+  /** Indica si la cuenta administrada corresponde a quien está en la sesión actual */
   isSelf: boolean;
 }) {
   const [pending, startTransition] = useTransition();

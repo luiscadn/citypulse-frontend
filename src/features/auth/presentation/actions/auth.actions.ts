@@ -1,3 +1,9 @@
+/**
+ * @file auth.actions.ts
+ * @description Server Actions para el inicio de sesión, registro comunitario y cierre de sesión en Next.js App Router.
+ * Ejecutadas en el servidor (`use server`), manejan redirecciones seguras y flujos multifactor.
+ */
+
 "use server";
 
 import { redirect } from "next/navigation";
@@ -14,12 +20,30 @@ import { validateRegistration } from "../../domain/rules/registration";
 import type { LoginFormState } from "./login-form-state";
 import type { RegisterFormState } from "./register-form-state";
 
-/** Solo se permite volver a rutas internas (evita redirecciones abiertas a otro sitio) */
+/**
+ * Sanea y valida que la ruta de retorno sea una ruta interna de la aplicación.
+ *
+ * - **¿Qué hace?**: Comprueba que la cadena comience con `/` y no con `//` para prevenir ataques de Redirección Abierta (Open Redirect).
+ */
 function safeRedirectPath(value: FormDataEntryValue | null): string {
   const path = typeof value === "string" ? value : "";
   return path.startsWith("/") && !path.startsWith("//") ? path : "/";
 }
 
+/**
+ * Server Action para iniciar sesión con soporte para 2FA.
+ *
+ * - **¿Qué hace?**:
+ *   Extrae credenciales del `FormData`, valida formato preliminar, ejecuta `loginUseCase`,
+ *   y si el backend responde `two-factor-required`, actualiza el estado para solicitar el código TOTP.
+ *   Si la autenticación culmina exitosamente, redirige a la ruta original solicitada (`from`) o a `/`.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Invocada por `LoginForm` mediante `useActionState`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Controla el flujo de autenticación primario y secundario en una única acción unificada y segura.
+ */
 export async function loginAction(
   _prev: LoginFormState,
   formData: FormData,
@@ -47,17 +71,28 @@ export async function loginAction(
     if (error instanceof DomainError) {
       return { step, email, error: error.message };
     }
-    // 400 de validación del backend: se muestra su mensaje
     if (error instanceof HttpError && error.status === 400) {
       return { step, email, error: backendMessage(error.body) };
     }
     return { step, email, error: "No se pudo conectar con el servidor. Intenta de nuevo." };
   }
 
-  // redirect() lanza una excepción especial: debe ir fuera del try/catch
   redirect(safeRedirectPath(formData.get("from")));
 }
 
+/**
+ * Server Action para el registro comunitario de nuevas cuentas.
+ *
+ * - **¿Qué hace?**:
+ *   Valida los campos y la concordancia de contraseñas, invoca `registerUseCase` para dar de alta la cuenta
+ *   e iniciar sesión automáticamente, y redirige a la página principal (`/`) o al login (`/login`).
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Conectada a `RegisterForm` mediante `useActionState`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Mapea los errores de validación y de conflicto directamente sobre los campos visuales correspondientes.
+ */
 export async function registerAction(
   _prev: RegisterFormState,
   formData: FormData,
@@ -94,10 +129,16 @@ export async function registerAction(
     return { values, errors: {}, error: "No se pudo conectar con el servidor. Intenta de nuevo." };
   }
 
-  // Cuenta creada. Si el inicio de sesión automático falló, que entre desde /login.
   redirect(signedIn ? "/" : "/login");
 }
 
+/**
+ * Server Action para cerrar la sesión del usuario actual.
+ *
+ * - **¿Qué hace?**: Invoca `logoutUseCase` para destruir la cookie segura y redirige a `/login`.
+ * - **¿Cómo interactúa con el sistema en general?**: Invocada por `LogoutButton` en el menú de navegación.
+ * - **¿Cuál es su importancia?**: Asegura la terminación inmediata del estado de autenticación.
+ */
 export async function logoutAction(): Promise<void> {
   await authContainer.logoutUseCase.execute();
   redirect("/login");

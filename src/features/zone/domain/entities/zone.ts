@@ -1,4 +1,15 @@
-/** Zona de la ciudad (barrio, comuna...). Los lugares y los eventos pertenecen a una. */
+/**
+ * Entidad de Dominio Zone
+ *
+ * - **¿Qué hace?**: Modela una división territorial de la ciudad (comuna, barrio, corregimiento o sector).
+ *   Posee un identificador único numérico (`id`), nombre (`name`), descripción opcional (`description`),
+ *   el identificador opcional de su zona jerárquica contenedora (`parentId`) y su fecha ISO de registro (`createdAt`).
+ * - **¿Cómo interactúa con el sistema en general?**: Es la entidad principal del bounded context de Zonas.
+ *   Los lugares (`Venue`) y eventos (`Event`) mantienen referencias obligatorias a una `Zone`.
+ *   Se transforma desde `ZoneDto` mediante el mapper `toZone`.
+ * - **¿Cuál es su importancia?**: Proporciona el modelo inmutable (`readonly`) que encapsula la identidad y estructura
+ *   de las zonas geográficas en el dominio, asegurando consistencia en toda la aplicación.
+ */
 export interface Zone {
   readonly id: number;
   readonly name: string;
@@ -9,14 +20,30 @@ export interface Zone {
   readonly createdAt: string;
 }
 
-/** Datos ya validados para crear o editar una zona. */
+/**
+ * Value Object / Contrato ZoneInput
+ *
+ * - **¿Qué hace?**: Estructura inmutable con los datos estrictamente validados y saneados necesarios para crear o actualizar una zona:
+ *   nombre normalizado sin espacios redundantes (`name`), descripción depurada (`description`) y ID de zona padre validado (`parentZoneId`).
+ * - **¿Cómo interactúa con el sistema en general?**: Es producido por la regla de validación de dominio `normalizeZoneInput`
+ *   y requerido por los métodos `create` y `update` de la interfaz `ZoneRepository`.
+ * - **¿Cuál es su importancia?**: Asegura que la capa de infraestructura y el backend solo reciban datos que cumplen
+ *   con todos los invariantes de negocio del sistema, evitando peticiones con datos incompletos o malformados.
+ */
 export interface ZoneInput {
   readonly name: string;
   readonly description: string | null;
   readonly parentZoneId: number | null;
 }
 
-/** Lo que llega del formulario, antes de validarlo. */
+/**
+ * Tipo ZoneDraft: Borrador de entrada previo a la validación de dominio.
+ *
+ * - **¿Qué hace?**: Representa la estructura preliminar de datos proveniente de un formulario web o Server Action antes de ser sanitizada.
+ * - **¿Cómo interactúa con el sistema en general?**: Es el argumento de entrada que reciben los casos de uso (`CreateZoneUseCase`, `UpdateZoneUseCase`)
+ *   y que se somete a `normalizeZoneInput`.
+ * - **¿Cuál es su importancia?**: Desacopla la forma cruda en que la UI recolecta datos del contrato estricto `ZoneInput` que exige el dominio.
+ */
 export interface ZoneDraft {
   name: string;
   description?: string | null;

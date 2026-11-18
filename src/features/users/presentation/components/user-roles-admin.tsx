@@ -1,3 +1,9 @@
+/**
+ * @file user-roles-admin.tsx
+ * @description Server Component para la pantalla de Administración de Usuarios y Roles.
+ * Carga los usuarios directamente desde el backend y delega la gestión interactiva a `UserRoleEditor`.
+ */
+
 import { notFound } from "next/navigation";
 import { Badge, Card, EmptyState } from "@/shared/presentation/components";
 import { usersContainer } from "../../di/users.container";
@@ -5,11 +11,21 @@ import { canAssignRoles } from "../../domain/rules/permissions";
 import { UserRoleEditor } from "./user-role-editor";
 
 /**
- * Listado de usuarios con su editor de roles. Solo para ADMIN: para cualquier otra
- * persona la ruta responde "no encontrada" (el backend también lo rechaza con 403).
+ * Componente de servidor que muestra el listado completo de usuarios y sus controles de roles.
+ *
+ * - **¿Qué hace?**:
+ *   Consulta al usuario solicitante directamente desde la base de datos para asegurar que los roles
+ *   estén actualizados en tiempo real; si no cuenta con rol ADMIN (`canAssignRoles`), interrumpe respondiendo
+ *   `notFound()`. Luego obtiene todos los usuarios (`listUsers`) y renderiza la lista con avatares iniciales,
+ *   insignias de estado ("Tú", "Inactivo") y el editor interactivo `UserRoleEditor`.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Es el componente principal de la ruta protegida `/admin/users`. Conecta los casos de uso de usuarios con la vista de administración.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Proporciona el panel de gobierno y autorización central de la plataforma, impidiendo que usuarios no autorizados sospechen la existencia del panel al devolver 404.
  */
 export async function UserRolesAdmin({ requesterId }: { requesterId: number }) {
-  // Se lee de la base (no del JWT) para que un cambio de rol aplique de inmediato
   const me = await usersContainer.getUser(requesterId);
   if (!canAssignRoles({ id: me.id, email: me.email, username: me.username, roles: me.roles })) notFound();
 

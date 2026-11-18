@@ -9,8 +9,13 @@ import { canManageZones } from "../../domain/rules/zone-permissions";
 import { ZoneForm } from "./zone-form";
 
 /**
- * Ordena las zonas como árbol: cada zona padre seguida de sus zonas hijas, con su nivel.
- * Una zona cuyo padre no está en la lista se trata como raíz.
+ * Función utilitaria asTree
+ *
+ * - **¿Qué hace?**: Transforma una lista plana de zonas en un árbol jerárquico donde cada zona padre va inmediatamente
+ *   seguida de sus subzonas directas, calculando su nivel de profundidad (`depth`).
+ * - **¿Cómo interactúa con el sistema en general?**: Usada en `ZoneList` para iterar y renderizar las filas.
+ * - **¿Cuál es su importancia?**: Permite proyectar estructuras de datos padre-hijo relacionales en una lista HTML
+ *   con indentación visual intuitiva.
  */
 function asTree(zones: readonly Zone[]): { zone: Zone; depth: number }[] {
   const ids = new Set(zones.map((zone) => zone.id));
@@ -28,6 +33,14 @@ function asTree(zones: readonly Zone[]): { zone: Zone; depth: number }[] {
   return result;
 }
 
+/**
+ * Componente interno ZoneRow
+ *
+ * - **¿Qué hace?**: Renderiza una fila interactiva de zona aplicando margen izquierdo proporcional a su profundidad (`depth`)
+ *   y borde lateral que evidencia la pertenencia jerárquica a la zona superior.
+ * - **¿Cómo interactúa con el sistema en general?**: Conduce a la ruta `/zones/${zone.id}`.
+ * - **¿Cuál es su importancia?**: Aporta claridad visual sobre qué barrios pertenecen a qué comunas o sectores.
+ */
 function ZoneRow({ zone, depth }: { zone: Zone; depth: number }) {
   return (
     <li>
@@ -50,9 +63,14 @@ function ZoneRow({ zone, depth }: { zone: Zone; depth: number }) {
 }
 
 /**
- * Listado de zonas como árbol (zona padre y sus zonas hijas). Al ADMIN además le
- * muestra el formulario para crear una.
- * Lee la cookie de sesión: con Cache Components debe ir dentro de <Suspense>.
+ * Componente Server Component ZoneList: Catálogo jerárquico de zonas urbanas.
+ *
+ * - **¿Qué hace?**: Consulta en paralelo la sesión y el listado ordenado de zonas, las organiza en árbol jerárquico con `asTree`,
+ *   y renderiza la lista interactiva. Si el usuario tiene rol `ADMIN`, añade un panel lateral fijo (`sticky`)
+ *   con el formulario `ZoneForm` para dar de alta nuevas zonas rápidamente.
+ * - **¿Cómo interactúa con el sistema en general?**: Se monta en `src/app/(app)/zones/page.tsx` dentro de `<Suspense>`.
+ * - **¿Cuál es su importancia?**: Es la pantalla central para explorar y administrar la división urbana de la ciudad,
+ *   brindando a los administradores una herramienta ágil para alimentar el mapa territorial.
  */
 export async function ZoneList() {
   const [user, zones] = await Promise.all([

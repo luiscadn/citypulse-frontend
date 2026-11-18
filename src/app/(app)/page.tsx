@@ -4,9 +4,17 @@ import { Container } from "@/shared/presentation/components";
 import { AdminSectionCard } from "./_components/admin-section-card";
 import { SectionCard } from "./_components/section-card";
 
+/** Metadata para la pantalla de inicio del dashboard */
 export const metadata: Metadata = { title: "Inicio" };
 
-/** Secciones de la app (las mismas del encabezado) con una línea de qué hay en cada una. */
+/**
+ * Arreglo inmutable SECTIONS
+ *
+ * - **¿Qué hace?**: Define las secciones públicas/estándar de la aplicación con su ruta de navegación (`href`),
+ *   título (`title`) y descripción sintética (`description`).
+ * - **¿Cómo interactúa con el sistema en general?**: Es iterado en `HomePage` para generar las tarjetas de acceso rápido.
+ * - **¿Cuál es su importancia?**: Centraliza la configuración de módulos principales, facilitando la adición o edición de secciones desde un único punto.
+ */
 const SECTIONS = [
   { href: "/events", title: "Eventos", description: "Mira lo que pasa en Cali, reporta un evento o publica el tuyo." },
   { href: "/zones", title: "Zonas", description: "Barrios y sectores de la ciudad donde ocurren los eventos." },
@@ -16,6 +24,18 @@ const SECTIONS = [
   { href: "/profile", title: "Mi perfil", description: "Edita tus datos y activa la verificación en dos pasos." },
 ] as const;
 
+/**
+ * Componente HomePage: Página de inicio del panel de CityPulse.
+ *
+ * - **¿Qué hace?**: Renderiza el banner hero de bienvenida a la plataforma ("El pulso de tu ciudad, verificado por su gente"),
+ *   la cuadrícula de tarjetas de navegación por sección (`SectionCard`), y la tarjeta condicional de administración (`AdminSectionCard`)
+ *   aislada en un límite de `<Suspense>`.
+ * - **¿Cómo interactúa con el sistema en general?**: Es el punto de llegada tras autenticarse con éxito.
+ *   Utiliza streaming para que las secciones generales se muestren instantáneamente mientras que la tarjeta de administración
+ *   determina si se muestra o se oculta consultando de forma asíncrona la sesión del usuario.
+ * - **¿Cuál es su importancia?**: Proporciona el centro de mandos (dashboard) de la experiencia de usuario.
+ *   Aplica el principio de autorización basada en roles (RBAC) en la presentación mediante Server Components sin comprometer el tiempo de carga general.
+ */
 export default function HomePage() {
   return (
     <Container className="flex flex-col gap-10 pb-12">

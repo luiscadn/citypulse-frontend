@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "../cn";
 
+/** Tonos semánticos disponibles para retroalimentación visual */
 export type Tone = "neutral" | "primary" | "success" | "danger" | "warning" | "info";
 
 const badgeTones: Record<Tone, string> = {
@@ -21,7 +22,16 @@ const dotTones: Record<Tone, string> = {
   info: "bg-info",
 };
 
-/** Etiqueta corta de estado o categoría. */
+/**
+ * Componente Badge (Insignia o Etiqueta)
+ *
+ * - **¿Qué hace?**: Muestra una cápsula de texto compacta para comunicar estados, categorías o roles
+ *   (ej. "ADMIN", "CONFIRMADO", "OFICIAL"), con opción de incluir un punto de estado de color (`dot`).
+ * - **¿Cómo interactúa con el sistema en general?**: Se utiliza en tablas, listas y cabeceras de detalle
+ *   (`venue-status-badge.tsx`, estados de eventos, roles en administración de usuarios).
+ * - **¿Cuál es su importancia?**: Sintetiza información crítica del estado de un recurso en un elemento visualmente
+ *   rápido de escanear y estandarizado semánticamente por colores.
+ */
 export function Badge({
   tone = "neutral",
   dot = false,
@@ -55,7 +65,16 @@ const alertTones: Record<Exclude<Tone, "neutral" | "primary">, string> = {
   info: "border-info/40 bg-info-soft text-info-strong",
 };
 
-/** Mensaje destacado (resultado de una acción, error, aviso). */
+/**
+ * Componente Alert (Mensaje de retroalimentación o banner de notificación)
+ *
+ * - **¿Qué hace?**: Renderiza un contenedor destacado con borde coloreado para presentar avisos, errores de validación,
+ *   o confirmaciones de éxito resultantes de una Server Action.
+ * - **¿Cómo interactúa con el sistema en general?**: Se monta condicionalmente en formularios (`login-form.tsx`, `register-form.tsx`,
+ *   `event-form.tsx`, `venue-form.tsx`) cuando el estado de la acción (`state.message` o `state.error`) contiene un mensaje.
+ * - **¿Cuál es su importancia?**: Asigna automáticamente roles de accesibilidad (`role="alert"` para peligro y `role="status"` para otros),
+ *   asegurando que los lectores de pantalla anuncien inmediatamente el resultado de la acción al usuario.
+ */
 export function Alert({
   tone = "info",
   title,
@@ -78,7 +97,16 @@ export function Alert({
   );
 }
 
-/** Estado vacío de un listado: qué pasa y qué puede hacer el usuario. */
+/**
+ * Componente EmptyState (Estado vacío)
+ *
+ * - **¿Qué hace?**: Renderiza una interfaz explicativa cuando una consulta o listado no contiene registros
+ *   (ej. "No hay eventos en esta fecha", "No tienes solicitudes pendientes").
+ * - **¿Cómo interactúa con el sistema en general?**: Se muestra en las pantallas de listados (`event-list.tsx`, `venue-list.tsx`,
+ *   `invitation-inbox.tsx`, `friend-search-results.tsx`) cuando el arreglo de datos está vacío.
+ * - **¿Cuál es su importancia?**: Evita pantallas en blanco desorientadoras ("white screen of silence"), orientando al usuario
+ *   sobre por qué no hay datos y qué acción puede tomar para continuar (ej. cambiar filtros o crear el primer recurso).
+ */
 export function EmptyState({
   title,
   description,

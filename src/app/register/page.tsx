@@ -3,8 +3,19 @@ import { AuthShell } from "@/features/auth/presentation/components/auth-shell";
 import { RegisterForm } from "@/features/auth/presentation/components/register-form";
 import { ButtonLink } from "@/shared/presentation/components";
 
+/** Metadata para la pantalla de registro */
 export const metadata: Metadata = { title: "Crear cuenta" };
 
+/**
+ * Componente RegisterPage: Página de autoregistro de nuevos usuarios.
+ *
+ * - **¿Qué hace?**: Renderiza el contenedor estilizado `AuthShell` junto al formulario interactivo `RegisterForm`,
+ *   y un botón secundario que permite alternar hacia el formulario de inicio de sesión (`/login`).
+ * - **¿Cómo interactúa con el sistema en general?**: Conecta con el flujo de registro de la capa de autenticación
+ *   (`RegisterUseCase` / `registerAction`) para permitir que nuevos visitantes creen una cuenta con rol base `USER`.
+ * - **¿Cuál es su importancia?**: Facilita la incorporación ("onboarding") de nuevos miembros a la comunidad
+ *   de CityPulse mediante un formulario accesible con validación en servidor y cliente.
+ */
 export default function RegisterPage() {
   return (
     <AuthShell

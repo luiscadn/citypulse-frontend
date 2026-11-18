@@ -1,3 +1,9 @@
+/**
+ * @file event-form.tsx
+ * @description Client Component para el formulario unificado de reporte y edición de Eventos.
+ * Maneja entradas de fecha y hora local de Colombia, validación por campos y feedback inmediato.
+ */
+
 "use client";
 
 import { useActionState } from "react";
@@ -10,8 +16,18 @@ import { reportEventAction, updateEventAction } from "../actions/event.actions";
 import { initialEventFormState } from "../actions/event-form-state";
 
 /**
- * Formulario para reportar un evento (cualquier usuario) o editar un reporte (su autor o un ADMIN).
- * Sin `event` reporta; con `event` edita ese reporte.
+ * Formulario interactivo para reportar un evento comunitario o editar un reporte en revisión.
+ *
+ * - **¿Qué hace?**:
+ *   Renderiza inputs controlados y no controlados para: título, descripción opcional, selector de zona,
+ *   dirección libre opcional y rango temporal de inicio y fin en formato de hora local colombiana (`datetime-local`).
+ *   Si recibe un `event` existente, entra en modo edición enlazando a `updateEventAction`; en caso contrario, se enlaza a `reportEventAction`.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Utiliza `useActionState` con las Server Actions correspondientes. Se utiliza en la página `/events/new` y en `EventDetail`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Reutiliza la lógica de presentación y captura de datos (DRY), gestionando conversiones horarias y errores de validación sin recargar.
  */
 export function EventForm({ event, zones }: { event?: Event; zones: readonly Pick<Zone, "id" | "name">[] }) {
   const editing = event !== undefined;

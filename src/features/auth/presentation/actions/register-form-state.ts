@@ -1,15 +1,30 @@
+/**
+ * @file register-form-state.ts
+ * @description Tipos y estados auxiliares para el formulario de registro comunitario (useActionState).
+ */
+
 import type { RegistrationErrors } from "../../domain/rules/registration";
 
-/** Estado del formulario de registro que devuelve registerAction (useActionState). */
+/**
+ * Estado del formulario de registro devuelto por `registerAction`.
+ *
+ * - **¿Qué hace?**:
+ *   Preserva los valores no confidenciales ingresados (`fullName`, `username`, `email`),
+ *   los errores específicos por campo (`errors`) y posibles errores generales (`error`).
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Retornado por `registerAction` y consumido por `useActionState` en `RegisterForm`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Evita que el usuario deba reescribir toda su información si una validación falla, excluyendo contraseñas por seguridad.
+ */
 export interface RegisterFormState {
-  /** Lo que escribió el usuario (menos las contraseñas), para no perderlo al fallar */
   values: { fullName: string; username: string; email: string };
-  /** Errores por campo */
   errors: RegistrationErrors;
-  /** Error general (no ligado a un campo) */
   error?: string;
 }
 
+/** Estado inicial limpio para el formulario de registro. */
 export const initialRegisterState: RegisterFormState = {
   values: { fullName: "", username: "", email: "" },
   errors: {},

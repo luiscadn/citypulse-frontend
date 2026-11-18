@@ -1,3 +1,10 @@
+/**
+ * @file venue-detail.tsx
+ * @description Server Component que renderiza la vista de detalle de un Lugar (Venue),
+ * integrando metadatos, enlace externo a Google Maps, controles de administración,
+ * formulario de edición y flujo de verificación para administradores.
+ */
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
@@ -19,9 +26,21 @@ const linkClass =
   "rounded-sm font-semibold text-primary-strong hover:underline focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring";
 
 /**
- * Detalle de un lugar. A su dueño y al ADMIN les muestra cómo editarlo o borrarlo;
- * al ADMIN, además, cómo verificarlo si está pendiente.
- * Recibe el ID como promesa (params de la ruta) y lee la sesión: va dentro de <Suspense>.
+ * Componente de servidor que muestra el detalle integral de un lugar.
+ *
+ * - **¿Qué hace?**:
+ *   Resuelve la promesa de parámetros `venueId`, consulta el venue con `getVenueUseCase` (manejando 404 si no existe),
+ *   recupera la sesión actual para calcular permisos con `canManageVenue` y `canVerifyVenues`, y renderiza:
+ *   migas de pan, encabezado con badge de estado, alerta con botón de verificación si el usuario es ADMIN y está pendiente,
+ *   lista de descripción con dirección y enlace de búsqueda en Google Maps, zona y propietario,
+ *   y la tarjeta de edición y eliminación si el usuario es dueño o admin.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Renderizado en la ruta dinámica `/venues/[id]` dentro de un `<Suspense>`. Conecta los módulos de `venue`, `zone`, `maps` y `auth`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Es el punto de encuentro definitivo para la visualización pública y la administración de un local,
+ *   agrupando permisos contextuales, integración cartográfica y mantenimiento de datos en una sola pantalla cohesiva.
  */
 export async function VenueDetail({ venueId }: { venueId: Promise<string> }) {
   const id = Number(await venueId);
@@ -31,14 +50,12 @@ export async function VenueDetail({ venueId }: { venueId: Promise<string> }) {
     venue = await venueContainer.getVenueUseCase.execute(id);
   } catch (error) {
     if (error instanceof VenueNotFoundError) notFound();
-    // Cualquier otro fallo lo muestra error.tsx
     throw error;
   }
 
   const user = await getCurrentUser();
   const canManage = canManageVenue(user, venue);
   const isAdmin = canVerifyVenues(user);
-  // Las zonas solo hacen falta para el formulario de edición
   const zones = canManage ? await zoneContainer.listZonesUseCase.execute().catch(() => []) : [];
 
   return (
@@ -51,7 +68,6 @@ export async function VenueDetail({ venueId }: { venueId: Promise<string> }) {
         className="pt-2 pb-0"
       />
 
-      {/* El ADMIN ve primero lo que tiene pendiente por hacer */}
       {isAdmin && !venue.isVerified && (
         <Alert tone="warning" title="Pendiente de verificación">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -101,7 +117,6 @@ export async function VenueDetail({ venueId }: { venueId: Promise<string> }) {
           <CardBody>
             <VenueForm venue={venue} zones={zones} warnVerification={venue.isVerified && !isAdmin} />
           </CardBody>
-          {/* Lo destructivo va aparte y al final, para no confundirlo con guardar */}
           <CardFooter className="flex-wrap justify-between gap-4">
             <p className="max-w-sm text-sm text-ink-muted">
               Eliminar el lugar no se puede deshacer. Sus eventos se conservan, pero quedan sin lugar.

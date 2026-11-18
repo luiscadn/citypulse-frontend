@@ -19,14 +19,16 @@ import {
   type Tone,
 } from "@/shared/presentation/components";
 
+/** Metadata para el catálogo de componentes de interfaz */
 export const metadata: Metadata = { title: "Guía de UI" };
 
-/*
- * Catálogo del sistema de diseño. Sirve de referencia para el equipo:
- * si necesitas algo que no está aquí, agrégalo a shared/presentation/components
- * en un PR aparte y muéstralo en esta página.
+/**
+ * Catálogo de Tokens de Color de CityPulse
+ *
+ * - **¿Qué hace?**: Mapea los nombres de tokens semánticos (primario, tinta, fondo, estados) con sus clases Tailwind y notas hex.
+ * - **¿Cómo interactúa con el sistema en general?**: Se sincroniza con las variables CSS de `src/app/globals.css`.
+ * - **¿Cuál es su importancia?**: Sirve de guía de estilo viva (living style guide) para mantener consistencia cromática y contraste accesible.
  */
-
 const palette: Array<{ name: string; token: string; className: string; note: string }> = [
   { name: "Primario", token: "primary", className: "bg-primary", note: "#5454E9 · acciones principales, enlaces, foco" },
   { name: "Primario hover", token: "primary-hover", className: "bg-primary-hover", note: "#4141C9" },
@@ -40,7 +42,13 @@ const palette: Array<{ name: string; token: string; className: string; note: str
   { name: "Info", token: "info", className: "bg-info", note: "#9954BB" },
 ];
 
-/** Tono recomendado para cada estado del backend (EventStatus, InvitationStatus...) */
+/**
+ * Matriz statusTones: Asignación semántica de tonos de color según enums del backend.
+ *
+ * - **¿Qué hace?**: Relaciona cada estado de evento, invitación, amistad o visibilidad con su tono visual (`Tone`).
+ * - **¿Cómo interactúa con el sistema en general?**: Es la convención de diseño utilizada en `Badge` y `Alert` en todas las páginas.
+ * - **¿Cuál es su importancia?**: Evita discrepancias de color entre diferentes vistas al representar el mismo estado de negocio.
+ */
 const statusTones: Array<{ group: string; items: Array<[string, Tone]> }> = [
   {
     group: "Eventos",
@@ -78,6 +86,13 @@ const statusTones: Array<{ group: string; items: Array<[string, Tone]> }> = [
   },
 ];
 
+/**
+ * Componente interno Section
+ *
+ * - **¿Qué hace?**: Estructura un bloque visual del catálogo con título, descripción y separador superior.
+ * - **¿Cómo interactúa con el sistema en general?**: Organiza las secciones de la página `/ui`.
+ * - **¿Cuál es su importancia?**: Facilita la legibilidad y segmentación del muestrario de componentes.
+ */
 function Section({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-4 border-t border-line py-10">
@@ -96,6 +111,17 @@ const plusIcon = (
   </svg>
 );
 
+/**
+ * Componente UiGuidePage: Catálogo interactivo de componentes y tokens del sistema de diseño.
+ *
+ * - **¿Qué hace?**: Muestra una galería completa de todos los componentes base del sistema: paleta de colores,
+ *   escalas tipográficas, variantes de botones y enlaces, controles de formulario accesibles, insignias de estado,
+ *   mensajes de alerta, tarjetas compuestas, indicadores de carga y estados vacíos.
+ * - **¿Cómo interactúa con el sistema en general?**: Es accesible en la ruta pública `/ui`. Permite a diseñadores
+ *   y desarrolladores verificar visualmente el comportamiento de los componentes compartidos y el modo claro/oscuro.
+ * - **¿Cuál es su importancia?**: Garantiza la fidelidad del Design System, previene la proliferación de componentes ad-hoc
+ *   o inconsistencias de diseño, y sirve como suite de pruebas visuales para el frontend.
+ */
 export default function UiGuidePage() {
   return (
     <Container className="pb-20">

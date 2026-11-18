@@ -5,7 +5,7 @@ import type {
 } from "../../domain/entities/friendship";
 import type { FriendshipSummaryDto, FriendUserDto, UserSearchPageDto } from "../dtos/friendship.dto";
 
-/** Solo copia los campos de FriendUser: lo demás que mande el backend no llega a la UI. */
+/** Transforma `FriendUserDto` en la entidad inmutable `FriendUser`. */
 export function toFriendUser(dto: FriendUserDto): FriendUser {
   return {
     id: dto.id,
@@ -14,6 +14,7 @@ export function toFriendUser(dto: FriendUserDto): FriendUser {
   };
 }
 
+/** Transforma `FriendshipSummaryDto` en la entidad compuesta `FriendshipOverview`. */
 export function toFriendshipOverview(dto: FriendshipSummaryDto): FriendshipOverview {
   return {
     friends: dto.friends.map(toFriendUser),
@@ -22,6 +23,7 @@ export function toFriendshipOverview(dto: FriendshipSummaryDto): FriendshipOverv
   };
 }
 
+/** Transforma `UserSearchPageDto` en el resultado de dominio `FriendCandidateSearch`. */
 export function toFriendCandidateSearch(dto: UserSearchPageDto): FriendCandidateSearch {
   return { candidates: dto.data.map(toFriendUser), total: dto.total };
 }

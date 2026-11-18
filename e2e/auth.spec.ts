@@ -1,7 +1,27 @@
+/**
+ * @file auth.spec.ts
+ * @description Suite de pruebas End-to-End (E2E) para verificar los flujos de autenticación y protección de rutas.
+ */
+
 import { expect, test } from "@playwright/test";
 import { login, users } from "./fixtures";
 
-// Sin sesión guardada: cada prueba arranca como visitante
+/**
+ * Pruebas de autenticación y control perimetral de acceso.
+ *
+ * - **¿Qué hace?**:
+ *   Verifica que:
+ *   1. Un usuario sin sesión sea redirigido a `/login?from=...` al intentar acceder a una ruta protegida y regrese a ella tras autenticarse.
+ *   2. Credenciales erróneas muestren una alerta visual accesible sin expedir la cookie `cp_session`.
+ *   3. El cierre de sesión elimine la cookie `cp_session` y bloquee nuevamente el acceso a rutas protegidas.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Evalúa de extremo a extremo la integración entre el middleware (`proxy.ts`), las Server Actions (`auth.actions.ts`),
+ *   el almacenamiento de cookies y los componentes de React.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Asegura que las barreras de autenticación y redirección funcionen en navegadores reales garantizando la privacidad del sistema.
+ */
 test.describe("autenticación", () => {
   test("sin sesión, una ruta protegida lleva al login y luego vuelve a ella", async ({ page }) => {
     await page.goto("/zones");

@@ -4,11 +4,20 @@ import { getCurrentUser } from "@/features/auth/infrastructure/session/get-curre
 import { UserRolesAdmin } from "@/features/users/presentation/components/user-roles-admin";
 import { Container, PageHeader } from "@/shared/presentation/components";
 
+/** Metadata para el panel de administración de usuarios */
 export const metadata: Metadata = { title: "Usuarios y roles" };
 
 /**
- * Administración de roles (solo ADMIN). Lee la sesión y llama al backend: mientras
- * carga se muestra loading.tsx, si falla error.tsx y si no eres ADMIN, not-found.
+ * Componente AdminUsersPage: Vista de administración de roles de usuario.
+ *
+ * - **¿Qué hace?**: Verifica en el servidor la existencia de sesión mediante `getCurrentUser()`.
+ *   Si no hay sesión redirige al login con parámetro de retorno (`/login?from=/admin/users`).
+ *   Renderiza el encabezado institucional y el componente administrativo `UserRolesAdmin`, pasando el ID del solicitante.
+ * - **¿Cómo interactúa con el sistema en general?**: Interactúa con la infraestructura de sesión de Auth
+ *   y monta `UserRolesAdmin` del feature de usuarios, el cual a su vez consulta `usersContainer.listUsersUseCase`
+ *   y ejecuta el control de acceso en el backend (solo administradores).
+ * - **¿Cuál es su importancia?**: Punto central de gobierno de identidades del sistema. Protege la vista desde el servidor
+ *   y orquesta la administración de permisos (USER, OWNER, ADMIN).
  */
 export default async function AdminUsersPage() {
   const session = await getCurrentUser();

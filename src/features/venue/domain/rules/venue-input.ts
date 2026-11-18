@@ -1,3 +1,9 @@
+/**
+ * @file venue-input.ts
+ * @description Reglas de Dominio y saneamiento para la entrada de datos de Lugares (Venues).
+ * Valida los borradores de formulario y parsea parámetros de filtrado desde las URLs.
+ */
+
 import type { VenueDraft, VenueFilters, VenueInput } from "../entities/venue";
 import {
   InvalidVenueError,
@@ -14,22 +20,53 @@ import {
   VENUE_NAME_MAX_LENGTH,
 } from "./venue-limits";
 
+/**
+ * Función auxiliar para verificar si un valor es un entero estrictamente positivo.
+ *
+ * - **¿Qué hace?**: Evalúa que el número recibido sea entero y mayor que cero.
+ * - **¿Cómo interactúa con el sistema en general?**: Usada en validaciones de identificadores y números de página.
+ * - **¿Cuál es su importancia?**: Previene identificadores nulos, negativos o decimales.
+ */
 function isPositiveInteger(value: number): boolean {
   return Number.isInteger(value) && value > 0;
 }
 
+/**
+ * Valida si un identificador numérico de lugar es válido.
+ *
+ * - **¿Qué hace?**: Comprueba que el ID sea un entero positivo.
+ * - **¿Cómo interactúa con el sistema en general?**: Usada en casos de uso y aserciones previas a peticiones de red.
+ * - **¿Cuál es su importancia?**: Asegura que las rutas dinámicas `/venues/[id]` manejen números válidos.
+ */
 export function isValidVenueId(id: number): boolean {
   return isPositiveInteger(id);
 }
 
-/** Lanza si el ID no puede ser el de un lugar: evita pedirle al backend algo que no existe. */
+/**
+ * Aserción que lanza un error de dominio si el ID de un lugar no es válido.
+ *
+ * - **¿Qué hace?**: Verifica la validez del ID y lanza `InvalidVenueError` en caso contrario.
+ * - **¿Cómo interactúa con el sistema en general?**: Llamada al inicio de use cases como `DeleteVenueUseCase` y `UpdateVenueUseCase`.
+ * - **¿Cuál es su importancia?**: Falla tempranamente evitando emitir peticiones a URLs inválidas del backend.
+ */
 export function assertValidVenueId(id: number): void {
   if (!isValidVenueId(id)) throw new InvalidVenueError();
 }
 
 /**
- * Réplica UX de CreateVenueDto: limpia el formulario y rechaza lo que ya se sabe
- * que va a fallar. Si difieren, el backend gana.
+ * Normaliza y valida el borrador de un lugar (VenueDraft) produciendo un VenueInput inmutable.
+ *
+ * - **¿Qué hace?**:
+ *   Aplica `trim()` a textos, verifica obligatoriedad de nombre y dirección, comprueba longitudes
+ *   máximas y valida que la zona sea un entero positivo.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Es el punto de entrada de validación en `CreateVenueUseCase` y `UpdateVenueUseCase`.
+ *   Lanza errores específicos del dominio que son capturados y convertidos en feedback de UI.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Actúa como la barrera de pureza de datos en el cliente ("Parse, Don't Validate"),
+ *   impidiendo que lleguen payloads corruptos al backend y asegurando consistencia con los DTOs de NestJS.
  */
 export function normalizeVenueInput(draft: VenueDraft): VenueInput {
   const name = draft.name.trim();
@@ -51,8 +88,18 @@ export function normalizeVenueInput(draft: VenueDraft): VenueInput {
 }
 
 /**
- * Filtros a partir de lo que venga en la URL. Lo que no tenga sentido se ignora
- * (se muestra todo) en vez de fallar: la URL la puede escribir cualquiera.
+ * Extrae y sanea los filtros de búsqueda a partir de los query parameters de la URL.
+ *
+ * - **¿Qué hace?**:
+ *   Convierte strings de la query (`zoneId`, `isVerified`, `page`) en tipos seguros (`number | null`, `boolean | null`, `number`).
+ *   Si algún parámetro contiene valores absurdos o maliciosos, lo ignora tolerando el error.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Invocado en el Server Component `VenueList` al recibir `searchParams` para pasárselos al caso de uso.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Robustez frente a manipulación de URLs: como la barra de direcciones del navegador es pública y editable
+ *   por el usuario, la aplicación nunca debe colapsar por parámetros inválidos; en su lugar, se recurre a valores por defecto seguros.
  */
 export function parseVenueFilters(raw: {
   zoneId?: string;

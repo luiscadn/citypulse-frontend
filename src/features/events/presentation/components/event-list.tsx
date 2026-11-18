@@ -1,3 +1,9 @@
+/**
+ * @file event-list.tsx
+ * @description Server Component para la cartelera general de Eventos.
+ * Conecta los filtros de la URL, efectúa consultas paralelas en el servidor y renderiza la cuadrícula de eventos.
+ */
+
 import Link from "next/link";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { zoneContainer } from "@/features/zone/di/zone.container";
@@ -9,11 +15,25 @@ import { EventCard } from "./event-card";
 import { EventFilters } from "./event-filters";
 import { EventPagination } from "./event-pagination";
 
+/** Función auxiliar para extraer el primer valor en parámetros de consulta. */
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
 /**
- * Listado de eventos con filtros y paginación. El backend decide cuáles ve cada persona.
- * Lee searchParams y la sesión: con Cache Components debe ir dentro de <Suspense>.
+ * Componente de servidor para el listado general de eventos.
+ *
+ * - **¿Qué hace?**:
+ *   Parsea los parámetros de búsqueda de la URL (`searchParams`), consulta en paralelo (`Promise.all`) la sesión
+ *   del usuario, el catálogo de zonas y la página de eventos correspondiente (`listEventsUseCase`), y renderiza:
+ *   el botón de acción "Reportar un evento" si el usuario está autenticado, la tarjeta con el formulario de filtros,
+ *   el conteo total de eventos encontrados, la cuadrícula de tarjetas (`EventCard`) o el estado vacío contextual,
+ *   y la paginación (`EventPagination`).
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Es el componente principal de la ruta `/events`. Comunica los módulos de `events`, `zone` y `auth`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Provee el punto de encuentro principal para descubrir la agenda cultural de la ciudad,
+ *   optimizando el rendimiento y SEO mediante Server Components.
  */
 export async function EventList({ searchParams }: { searchParams: PageProps<"/events">["searchParams"] }) {
   const params = await searchParams;
@@ -30,7 +50,6 @@ export async function EventList({ searchParams }: { searchParams: PageProps<"/ev
   const [user, zones, page] = await Promise.all([
     getCurrentUser(),
     zoneContainer.listZonesUseCase.execute().catch(() => []),
-    // Si falla, lo muestra error.tsx
     eventContainer.listEventsUseCase.execute(filters),
   ]);
 

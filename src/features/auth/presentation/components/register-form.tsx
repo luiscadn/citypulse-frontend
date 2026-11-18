@@ -1,3 +1,8 @@
+/**
+ * @file register-form.tsx
+ * @description Client Component para el formulario interactivo de registro de nuevos usuarios.
+ */
+
 "use client";
 
 import { useActionState } from "react";
@@ -6,12 +11,24 @@ import { PASSWORD_MIN } from "@/features/users/domain/rules/user-fields";
 import { registerAction } from "../actions/auth.actions";
 import { initialRegisterState } from "../actions/register-form-state";
 
+/**
+ * Formulario interactivo para la creación comunitaria de una nueva cuenta.
+ *
+ * - **¿Qué hace?**:
+ *   Permite ingresar nombre completo, nombre de usuario, correo electrónico, contraseña y confirmación de contraseña.
+ *   Preserva los valores textuales si la validación falla (mediante `defaultValue` desde el estado)
+ *   y mapea los errores de validación a cada campo individual.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Conectado a `registerAction` mediante `useActionState`. Renderizado en `/register`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Facilita un registro accesible e intuitivo, impidiendo el envío de contraseñas discordantes antes de llegar al backend.
+ */
 export function RegisterForm() {
   const [state, formAction, pending] = useActionState(registerAction, initialRegisterState);
   const { values, errors } = state;
 
-  // React reinicia el formulario tras cada acción: los valores vuelven a escribirse
-  // desde el estado (defaultValue). Las contraseñas no se conservan, a propósito.
   return (
     <form action={formAction} className="flex w-full flex-col gap-5" noValidate>
       {state.error && <Alert tone="danger">{state.error}</Alert>}

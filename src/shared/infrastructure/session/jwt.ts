@@ -1,10 +1,14 @@
 /**
- * Lee el payload de un JWT SIN verificar la firma.
+ * Interfaz JwtPayload
  *
- * El frontend no tiene el JWT_SECRET del backend, así que no puede verificar
- * el token: esto solo sirve para chequeos optimistas (¿hay sesión?, ¿expiró?)
- * en proxy.ts y en la UI. Quien decide de verdad es el backend, que valida
- * la firma en cada petición y responde 401 si el token no sirve.
+ * - **¿Qué hace?**: Modela la carga útil (claims) esperada dentro del token JWT emitido por el backend NestJS:
+ *   identificador de usuario (`sub`), correo (`email`), arreglo de roles (`roles`), fecha de expiración (`exp`)
+ *   y fecha de emisión (`iat`).
+ * - **¿Cómo interactúa con el sistema en general?**: Es el tipo devuelto por las funciones de decodificación de tokens (`decodeJwt`),
+ *   utilizado en el proxy de Next.js (`proxy.ts`), en el almacenamiento de cookies (`session-cookie.ts`) y en la extracción
+ *   del usuario de sesión (`get-current-user.ts`).
+ * - **¿Cuál es su importancia?**: Brinda tipado fuerte a la información de identidad extraída del JWT, evitando errores de tipeo
+ *   al inspeccionar los claims del usuario autenticado.
  */
 export interface JwtPayload {
   sub: number;
@@ -15,6 +19,16 @@ export interface JwtPayload {
   iat?: number;
 }
 
+/**
+ * Función base64UrlDecode
+ *
+ * - **¿Qué hace?**: Decodifica una cadena en formato Base64URL a texto UTF-8 estándar, reemplazando caracteres seguros
+ *   para URLs (`-` y `_` por `+` y `/`), aplicando el relleno necesario (`=`) y decodificando los bytes con `TextDecoder`.
+ * - **¿Cómo interactúa con el sistema en general?**: Función auxiliar interna de `decodeJwt` para extraer y parsear
+ *   el segmento de carga útil (payload) del JWT en cualquier entorno (Node.js, Edge Runtime, Navegador).
+ * - **¿Cuál es su importancia?**: Permite decodificar tokens JWT de forma compatible con estándares web sin depender de librerías
+ *   pesadas de Node.js (como `Buffer`), haciéndola apta para Edge Middleware y funciones serverless livianas.
+ */
 function base64UrlDecode(segment: string): string {
   const base64 = segment.replace(/-/g, "+").replace(/_/g, "/");
   const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
@@ -23,6 +37,16 @@ function base64UrlDecode(segment: string): string {
   return new TextDecoder().decode(bytes);
 }
 
+/**
+ * Función decodeJwt
+ *
+ * - **¿Qué hace?**: Recibe un token JWT en texto plano, valida que tenga las 3 partes estándar separadas por puntos (`header.payload.signature`),
+ *   decodifica la sección central (payload) y valida que contenga los tipos mínimos requeridos (`sub: number`, `email: string`).
+ * - **¿Cómo interactúa con el sistema en general?**: Es utilizada por `readValidJwt` y `setSessionToken` para inspeccionar la sesión
+ *   sin necesidad de verificar la firma criptográfica (dado que el frontend no posee el secreto del backend).
+ * - **¿Cuál es su importancia?**: Proporciona una forma no bloqueante y ligera de leer los datos de la sesión del usuario.
+ *   Si el token está corrupto o mal formado, falla de forma segura retornando `null` en lugar de lanzar excepciones que rompan el renderizado.
+ */
 export function decodeJwt(token: string | undefined | null): JwtPayload | null {
   if (!token) return null;
   const parts = token.split(".");
@@ -39,13 +63,31 @@ export function decodeJwt(token: string | undefined | null): JwtPayload | null {
   }
 }
 
-/** true si el token tiene "exp" y ya pasó (con un margen de 5 s) */
+/**
+ * Función isJwtExpired
+ *
+ * - **¿Qué hace?**: Determina si el timestamp de expiración (`exp`) del payload ya ha pasado respecto a un timestamp de referencia (`nowMs`),
+ *   incorporando un margen de tolerancia defensivo de 5 segundos (clock skew).
+ * - **¿Cómo interactúa con el sistema en general?**: Es utilizada en `readValidJwt` y en el middleware/proxy (`proxy.ts`) para decidir
+ *   si la sesión aún es válida antes de permitir el acceso a rutas protegidas.
+ * - **¿Cuál es su importancia?**: Evita enviar peticiones con tokens caducados que irremediablemente fallarían con HTTP 401 en el backend,
+ *   mejorando la experiencia de usuario y reduciendo tráfico innecesario en la red.
+ */
 export function isJwtExpired(payload: JwtPayload, nowMs: number = Date.now()): boolean {
   if (payload.exp === undefined) return false;
   return payload.exp * 1000 <= nowMs + 5_000;
 }
 
-/** Payload solo si el token es legible y no ha expirado */
+/**
+ * Función readValidJwt
+ *
+ * - **¿Qué hace?**: Combina la decodificación (`decodeJwt`) y la comprobación de expiración (`isJwtExpired`) para retornar
+ *   el payload del token únicamente si el token es estructuralmente válido y no ha expirado.
+ * - **¿Cómo interactúa con el sistema en general?**: Es la función clave consumida por el middleware de Next.js (`proxy.ts`)
+ *   para verificaciones optimistas de autenticación al navegar entre páginas.
+ * - **¿Cuál es su importancia?**: Actúa como compuerta de acceso rápido a nivel de enrutamiento: permite redirigir de inmediato al
+ *   login a usuarios con tokens ausentes, corruptos o expirados sin esperar a que el backend responda un 401.
+ */
 export function readValidJwt(token: string | undefined | null, nowMs?: number): JwtPayload | null {
   const payload = decodeJwt(token);
   if (!payload || isJwtExpired(payload, nowMs)) return null;

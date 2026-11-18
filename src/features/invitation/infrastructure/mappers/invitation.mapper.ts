@@ -1,7 +1,14 @@
 import type { PendingInvitation } from "../../domain/entities/invitation";
 import type { PendingInvitationDto } from "../dtos/invitation.dto";
 
-/** Solo copia los campos de la entidad: lo demás que mande el backend no llega a la UI. */
+/**
+ * Función toPendingInvitation (Mapper DTO -> Entidad de Dominio)
+ *
+ * - **¿Qué hace?**: Mapea un `PendingInvitationDto` a la entidad `PendingInvitation`, renombrando `fromUser` a `from`
+ *   y estructurando los datos del evento asociado.
+ * - **¿Cómo interactúa con el sistema en general?**: Usada en `HttpInvitationRepository.getPending`.
+ * - **¿Cuál es su importancia?**: Asegura que la capa de aplicación reciba entidades de dominio inmutables y consistentes.
+ */
 export function toPendingInvitation(dto: PendingInvitationDto): PendingInvitation {
   return {
     id: dto.id,

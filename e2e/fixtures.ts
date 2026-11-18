@@ -1,8 +1,22 @@
+/**
+ * @file fixtures.ts
+ * @description Constantes, tipos y helpers compartidos para la suite de pruebas End-to-End (E2E) con Playwright.
+ */
+
 import { expect, type Page } from "@playwright/test";
 
 /**
- * Usuarios de prueba que crea db/init.sql en el backend (datos públicos de prueba).
- * Se pueden cambiar con variables de entorno si la base tiene otros.
+ * Usuarios de prueba sembrados en la base de datos de desarrollo/test (db/init.sql).
+ *
+ * - **¿Qué hace?**:
+ *   Expone las credenciales para los 3 roles del sistema (`admin`, `owner`, `user`),
+ *   permitiendo sobreescribirlas mediante variables de entorno si el entorno CI/CD lo requiere.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Consumido por `auth.setup.ts` y las suites de prueba para autenticar cada contexto de navegación.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Estandariza los actores de prueba para validar flujos de autorización y control de acceso RBAC.
  */
 export const users = {
   admin: {
@@ -21,10 +35,24 @@ export const users = {
 
 export type Role = keyof typeof users;
 
-/** Archivo donde auth.setup.ts guarda la sesión de cada rol */
+/**
+ * Retorna la ruta al archivo JSON donde se almacena el estado de almacenamiento (`storageState`) de la sesión de un rol.
+ */
 export const sessionFile = (role: Role) => `e2e/.auth/${role}.json`;
 
-/** Inicia sesión desde el formulario, como lo haría una persona */
+/**
+ * Helper de automatización que ejecuta el flujo visual de login a través del formulario de la interfaz.
+ *
+ * - **¿Qué hace?**:
+ *   Navega a `/login`, llena los campos de correo y contraseña del rol correspondiente, hace clic en "Iniciar sesión",
+ *   y espera hasta que la URL abandone la pantalla de login.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Emula el comportamiento real de un usuario humano interactuando con el DOM del cliente Next.js.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Permite generar sesiones persistidas reutilizables en los archivos `.auth/*.json` para acelerar la ejecución de las demás pruebas.
+ */
 export async function login(page: Page, role: Role) {
   await page.goto("/login");
   await page.getByLabel("Correo electrónico").fill(users[role].email);

@@ -1,11 +1,22 @@
 // src/app/api/backend/[...path]/route.ts
-// Puente navegador → backend (patrón "backend for frontend").
-// El navegador llama a /api/backend/<ruta>; aquí se lee el JWT de la cookie
-// httpOnly y se reenvía a {API_URL}/<ruta> con "Authorization: Bearer".
 import type { NextRequest } from 'next/server';
 import { getBackendUrl } from '@/shared/infrastructure/backend-proxy';
 import { SESSION_COOKIE } from '@/shared/infrastructure/session/session-constants';
 
+/**
+ * Función forward (Proxy Inverso / BFF - Backend For Frontend)
+ *
+ * - **¿Qué hace?**: Recibe peticiones HTTP del navegador hacia `/api/backend/<subruta>`, reconstruye la URL destino
+ *   hacia el backend NestJS (`API_URL/<subruta>`), lee la cookie `SESSION_COOKIE` (inaccesible desde JS del navegador por ser httpOnly),
+ *   la inyecta en la cabecera `Authorization: Bearer <token>`, reenvía el cuerpo (body) y parámetros de consulta, y retorna
+ *   la respuesta exacta del backend al cliente.
+ * - **¿Cómo interactúa con el sistema en general?**: Actúa como puente seguro entre componentes del cliente (o hooks que hacen fetch)
+ *   y el backend. Si el backend no responde o se produce un error de conexión, captura la excepción y retorna un JSON con estado HTTP 502 (Bad Gateway).
+ * - **¿Cuál es su importancia?**: Implementa el patrón Backend For Frontend (BFF) y Reverse Proxy:
+ *   1. Permite mantener la cookie del JWT estrictamente como `httpOnly`, blindando al sistema contra ataques de robo de sesión por XSS.
+ *   2. Elimina cualquier problema de CORS (Cross-Origin Resource Sharing) en el navegador, ya que el navegador solo habla con su propio host Next.js.
+ *   3. Oculta la topología de red real y puertos del backend.
+ */
 async function forward(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },

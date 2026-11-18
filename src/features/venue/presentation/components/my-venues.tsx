@@ -1,3 +1,9 @@
+/**
+ * @file my-venues.tsx
+ * @description Server Component que muestra la lista de lugares gestionados por el usuario autenticado (OWNER)
+ * y el formulario lateral para registrar nuevos establecimientos.
+ */
+
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
 import { zoneContainer } from "@/features/zone/di/zone.container";
 import { Alert, Card, CardBody, CardHeader, EmptyState } from "@/shared/presentation/components";
@@ -7,8 +13,20 @@ import { VenueRow, VenueRows } from "./venue-row";
 import { VenueForm } from "./venue-form";
 
 /**
- * Lugares del OWNER de la sesión (incluidos los pendientes) y el formulario para registrar uno.
- * Lee la cookie de sesión: con Cache Components debe ir dentro de <Suspense>.
+ * Componente de servidor para la gestión de "Mis Lugares".
+ *
+ * - **¿Qué hace?**:
+ *   Evalúa si el usuario en sesión tiene permisos de OWNER; si no, muestra una alerta informativa.
+ *   Si tiene permiso, consulta concurrentemente en paralelo (`Promise.all`) sus propios lugares
+ *   (`listMyVenuesUseCase`) y las zonas disponibles (`listZonesUseCase`), renderizando la lista de lugares
+ *   a la izquierda y el formulario de alta fijado a la derecha en pantallas grandes.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Renderizado en la ruta `/venues/mine` dentro de un `<Suspense>` debido al acceso a cookies de sesión.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Centraliza el panel de control del propietario de recintos culturales/deportivos, combinando
+ *   la visualización del inventario propio con la acción inmediata de creación en un diseño ergonómico.
  */
 export async function MyVenues() {
   if (!canRegisterVenues(await getCurrentUser())) {

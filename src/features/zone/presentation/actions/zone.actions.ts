@@ -25,6 +25,13 @@ import {
 
 const NOT_ADMIN = "Solo un administrador puede gestionar zonas.";
 
+/**
+ * Función auxiliar readValues
+ *
+ * - **¿Qué hace?**: Extrae las cadenas de texto correspondientes a `name`, `description` y `parentZoneId` desde `FormData`.
+ * - **¿Cómo interactúa con el sistema en general?**: Utilizada al inicio de `createZoneAction` y `updateZoneAction`.
+ * - **¿Cuál es su importancia?**: Centraliza la extracción de campos del formulario con valores por defecto seguros (`""`).
+ */
 function readValues(formData: FormData): ZoneFormValues {
   return {
     name: String(formData.get("name") ?? ""),
@@ -33,6 +40,13 @@ function readValues(formData: FormData): ZoneFormValues {
   };
 }
 
+/**
+ * Función auxiliar toDraft
+ *
+ * - **¿Qué hace?**: Convierte los `ZoneFormValues` en un `ZoneDraft`, transformando `parentZoneId` a número o `null`.
+ * - **¿Cómo interactúa con el sistema en general?**: Es el puente entre los valores del formulario y los casos de uso.
+ * - **¿Cuál es su importancia?**: Prepara la estructura requerida por las reglas de dominio.
+ */
 function toDraft(values: ZoneFormValues): ZoneDraft {
   return {
     name: values.name,
@@ -41,7 +55,16 @@ function toDraft(values: ZoneFormValues): ZoneDraft {
   };
 }
 
-/** Ubica el error en el campo que lo causó; si no es de un campo, va como error general. */
+/**
+ * Función auxiliar toErrorState
+ *
+ * - **¿Qué hace?**: Inspecciona el tipo de error capturado y lo mapea al campo específico del formulario que lo originó
+ *   (ej. `ZoneNameTakenError` a `errors.name`, `ZoneSelfParentError` a `errors.parentZoneId`). Si no es de un campo específico,
+ *   lo asigna como error general (`error`).
+ * - **¿Cómo interactúa con el sistema en general?**: Alimenta el retorno de error de las Server Actions de zonas.
+ * - **¿Cuál es su importancia?**: Proporciona retroalimentación contextual precisa en la UI, marcando en rojo exactamente
+ *   el input causante del problema.
+ */
 function toErrorState(values: ZoneFormValues, error: unknown): ZoneFormState {
   const field = (errors: ZoneFieldErrors): ZoneFormState => ({ values, errors });
   const message = actionErrorMessage(error);
@@ -60,13 +83,30 @@ function toErrorState(values: ZoneFormValues, error: unknown): ZoneFormState {
   return { values, errors: {}, error: message };
 }
 
-/** Una acción se puede invocar con un POST directo: no basta con ocultar el formulario. */
+/**
+ * Función auxiliar requireAdmin
+ *
+ * - **¿Qué hace?**: Verifica que exista una sesión activa y que el usuario cuente con rol `ADMIN`.
+ *   Si no hay sesión, redirige a `/login`; si no es admin, retorna `false`.
+ * - **¿Cómo interactúa con el sistema en general?**: Se ejecuta al inicio de cada Server Action de zonas.
+ * - **¿Cuál es su importancia?**: Garantiza seguridad en el servidor: aunque un atacante eluda la UI y envíe
+ *   un POST directo a la Server Action, la mutación es rechazada categóricamente.
+ */
 async function requireAdmin(): Promise<boolean> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   return canManageZones(user);
 }
 
+/**
+ * Server Action: createZoneAction
+ *
+ * - **¿Qué hace?**: Procesa el envío del formulario de creación de zonas. Valida permisos de administrador,
+ *   ejecuta `createZoneUseCase`, purga y revalida la caché de la página con `refresh()`, y retorna un estado
+ *   con el formulario limpio y mensaje de éxito.
+ * - **¿Cómo interactúa con el sistema en general?**: Se enlaza a `ZoneForm` mediante `useActionState`.
+ * - **¿Cuál es su importancia?**: Punto de entrada de mutación para la creación de zonas en Next.js App Router.
+ */
 export async function createZoneAction(_prev: ZoneFormState, formData: FormData): Promise<ZoneFormState> {
   const values = readValues(formData);
   if (!(await requireAdmin())) return { values, errors: {}, error: NOT_ADMIN };
@@ -83,6 +123,14 @@ export async function createZoneAction(_prev: ZoneFormState, formData: FormData)
   return { values: emptyZoneFormValues, errors: {}, success: `Zona "${name}" creada.` };
 }
 
+/**
+ * Server Action: updateZoneAction
+ *
+ * - **¿Qué hace?**: Procesa la edición de una zona existente. Verifica rol de administrador, ejecuta `updateZoneUseCase`,
+ *   revalida la caché con `refresh()`, y devuelve el estado actualizado con mensaje de éxito.
+ * - **¿Cómo interactúa con el sistema en general?**: Se enlaza a `ZoneForm` en modo edición desde la vista `ZoneDetail`.
+ * - **¿Cuál es su importancia?**: Permite modificar metadatos y jerarquías territoriales con retroalimentación instantánea.
+ */
 export async function updateZoneAction(_prev: ZoneFormState, formData: FormData): Promise<ZoneFormState> {
   const values = readValues(formData);
   if (!(await requireAdmin())) return { values, errors: {}, error: NOT_ADMIN };
@@ -99,6 +147,15 @@ export async function updateZoneAction(_prev: ZoneFormState, formData: FormData)
   return { values: { ...values, parentZoneId: "" }, errors: {}, success: "Cambios guardados." };
 }
 
+/**
+ * Server Action: deleteZoneAction
+ *
+ * - **¿Qué hace?**: Procesa la eliminación permanente de una zona. Verifica rol de administrador, invoca `deleteZoneUseCase`,
+ *   y tras el éxito redirige al listado `/zones`.
+ * - **¿Cómo interactúa con el sistema en general?**: Se ejecuta desde el formulario interactivo `DeleteZoneButton`.
+ * - **¿Cuál es su importancia?**: Asegura que `redirect("/zones")` se ejecute fuera del bloque `try/catch`
+ *   (para no interceptar la excepción interna que Next.js utiliza para redirigir) y entrega errores legibles si la zona está en uso.
+ */
 export async function deleteZoneAction(_prev: DeleteZoneState, formData: FormData): Promise<DeleteZoneState> {
   if (!(await requireAdmin())) return { error: NOT_ADMIN };
 

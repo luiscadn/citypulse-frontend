@@ -1,3 +1,9 @@
+/**
+ * @file event-filters.tsx
+ * @description Componente de filtrado para la cartelera de Eventos.
+ * Vincula los filtros con los query parameters de la URL a través del componente `<Form>` de Next.js.
+ */
+
 import Form from "next/form";
 import type { Zone } from "@/features/zone/domain/entities/zone";
 import { EventOrigin, EventStatus } from "@/shared/domain/enums";
@@ -7,12 +13,23 @@ import { EVENT_SEARCH_MAX_LENGTH } from "../../domain/rules/event-limits";
 import { EVENT_STATUS_LABELS } from "./event-status-badge";
 
 /**
- * Filtros del listado. Viven en la URL (/events?zoneId=2&status=CONFIRMADO):
- * se pueden compartir y el botón atrás funciona.
+ * Formulario de filtros para el catálogo de eventos.
+ *
+ * - **¿Qué hace?**:
+ *   Muestra campos interactivos para: búsqueda por texto libre, selector de zona geográfica,
+ *   selector de estado de moderación, selector de origen (Oficial vs. Reporte ciudadano) y rango de fechas ("Desde" y "Hasta").
+ *   Al usar `next/form`, realiza navegación GET actualizando la URL sin recargar completamente la página.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Incrustado en `EventList`. Su atributo `key` compuesto fuerza la actualización de los valores de los controles
+ *   cuando el usuario navega hacia atrás o adelante en el historial del navegador.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Permite una navegación bookmarkable y compartible: cualquier usuario puede copiar la URL resultante
+ *   y compartir una búsqueda específica con otra persona.
  */
 export function EventFilters({ filters, zones }: { filters: Filters; zones: readonly Zone[] }) {
   return (
-    // key: al navegar a otros filtros, los campos deben mostrar los de la URL
     <Form
       key={`${filters.zoneId}-${filters.status}-${filters.origin}-${filters.search}-${filters.from}-${filters.to}`}
       action="/events"

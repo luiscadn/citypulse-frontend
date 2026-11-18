@@ -8,10 +8,12 @@ import { friendshipContainer } from "../../di/friendship.container";
 import type { FriendRequestAnswer } from "../../domain/entities/friendship";
 import type { FriendshipActionState } from "./friendship-action-state";
 
+/** Función guardián para validar si un valor de formulario es FriendRequestAnswer válido */
 function isAnswer(value: FormDataEntryValue | null): value is FriendRequestAnswer {
   return value === "ACEPTADA" || value === "RECHAZADA";
 }
 
+/** Transforma cualquier error en una estructura `FriendshipActionState` */
 function toErrorState(error: unknown): FriendshipActionState {
   if (error instanceof DomainError) {
     return { error: error.message };
@@ -19,11 +21,18 @@ function toErrorState(error: unknown): FriendshipActionState {
   return { error: "No se pudo conectar con el servidor. Intenta de nuevo." };
 }
 
+/**
+ * Server Action: respondFriendRequestAction
+ *
+ * - **¿Qué hace?**: Procesa la decisión (`"ACEPTADA"` o `"RECHAZADA"`) sobre una solicitud de amistad.
+ *   Verifica sesión, valida el ID y la respuesta, ejecuta `respondFriendRequestUseCase` y refresca la caché de la página con `refresh()`.
+ * - **¿Cómo interactúa con el sistema en general?**: Se enlaza a `FriendRequestActions`.
+ * - **¿Cuál es su importancia?**: Gestiona la formalización de relaciones sociales en el servidor.
+ */
 export async function respondFriendRequestAction(
   _prev: FriendshipActionState,
   formData: FormData,
 ): Promise<FriendshipActionState> {
-  // Una acción se puede invocar con un POST directo: no basta con que la página esté protegida
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
@@ -43,6 +52,14 @@ export async function respondFriendRequestAction(
   return {};
 }
 
+/**
+ * Server Action: sendFriendRequestAction
+ *
+ * - **¿Qué hace?**: Envía una solicitud de amistad al usuario objetivo especificado en `targetUserId`.
+ *   Verifica sesión, ejecuta `sendFriendRequestUseCase` y refresca la vista con `refresh()`.
+ * - **¿Cómo interactúa con el sistema en general?**: Se enlaza al botón `SendFriendRequestButton` en los resultados de búsqueda.
+ * - **¿Cuál es su importancia?**: Inicia el flujo de conexión entre usuarios garantizando la identidad del solicitante.
+ */
 export async function sendFriendRequestAction(
   _prev: FriendshipActionState,
   formData: FormData,

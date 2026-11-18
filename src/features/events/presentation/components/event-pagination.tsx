@@ -1,7 +1,16 @@
+/**
+ * @file event-pagination.tsx
+ * @description Componente de paginación accesible para la cartelera de Eventos.
+ * Preserva intactos los filtros de búsqueda y fechas al navegar entre páginas.
+ */
+
 import Link from "next/link";
 import { buttonClasses } from "@/shared/presentation/components";
 import type { EventFilters } from "../../domain/entities/event";
 
+/**
+ * Construye la URL de destino preservando todos los filtros activos (búsqueda, zona, estado, origen, fechas).
+ */
 function pageHref(filters: EventFilters, page: number): string {
   const params = new URLSearchParams();
   if (filters.search !== null) params.set("search", filters.search);
@@ -15,7 +24,19 @@ function pageHref(filters: EventFilters, page: number): string {
   return query ? `/events?${query}` : "/events";
 }
 
-/** Anterior / siguiente conservando los filtros. No se muestra si hay una sola página. */
+/**
+ * Controles de paginación para el listado de eventos.
+ *
+ * - **¿Qué hace?**:
+ *   Muestra botones de "← Anterior" y "Siguiente →" y la leyenda "Página X de Y".
+ *   Se oculta automáticamente si el total de páginas es menor o igual a 1.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Utilizado en la parte inferior de `EventList`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Garantiza la navegación fluida a través de catálogos extensos respetando la accesibilidad web.
+ */
 export function EventPagination({ filters, lastPage }: { filters: EventFilters; lastPage: number }) {
   if (lastPage <= 1) return null;
   const { page } = filters;

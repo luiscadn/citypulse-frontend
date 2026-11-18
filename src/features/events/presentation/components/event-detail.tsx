@@ -1,3 +1,10 @@
+/**
+ * @file event-detail.tsx
+ * @description Server Component para la vista de detalle de un Evento.
+ * Integra metadatos, evidencias de respaldo, estado de moderación,
+ * controles de edición para reportes en revisión y opción de cancelación.
+ */
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/infrastructure/session/get-current-user";
@@ -16,7 +23,9 @@ import { EventStatusBadge } from "./event-status-badge";
 
 const EVIDENCE_LABELS = { FOTO: "Foto", ENLACE: "Enlace", DOCUMENTO: "Documento" } as const;
 
-/** Solo se enlazan direcciones web: la URL de una evidencia la escribe cualquier usuario. */
+/**
+ * Verifica si una URL tiene un protocolo seguro web (`http:` o `https:`).
+ */
 function isWebUrl(url: string): boolean {
   try {
     const { protocol } = new URL(url);
@@ -26,11 +35,24 @@ function isWebUrl(url: string): boolean {
   }
 }
 
+/** Formateador de moneda en pesos colombianos (COP). */
 const priceFormat = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
 
 /**
- * Detalle de un evento. A su autor y al ADMIN les muestra cómo editarlo (mientras esté en revisión)
- * o cancelarlo. Recibe el ID como promesa (params de la ruta) y lee la sesión: va dentro de <Suspense>.
+ * Componente de servidor para la ficha completa de un evento.
+ *
+ * - **¿Qué hace?**:
+ *   Resuelve la promesa de ID de la ruta, consulta los datos con `getEventUseCase` (manejando 404 o restricción por evento privado),
+ *   obtiene la sesión y determina permisos (`canEditEvent`, `canCancelEvent`), y renderiza:
+ *   migas de pan, encabezado con insignias de estado y origen, banners informativos según el estado (cancelado, rechazado o en revisión),
+ *   resumen estructurado de fechas, ubicación (enlazando a venue si existe), autor, aforo y costo de entrada,
+ *   sección de evidencias adjuntas con enlaces seguros, y tarjetas de edición y cancelación si el usuario cuenta con los permisos requeridos.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Es el componente central de la ruta dinámica `/events/[id]`. Conecta con los contenedores de `events`, `zone` y `auth`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Ofrece la visión completa y transparente del evento para la ciudadanía, manteniendo la seguridad al restringir eventos privados y acciones administrativas.
  */
 export async function EventDetail({ eventId }: { eventId: Promise<string> }) {
   const id = await eventId;
@@ -41,14 +63,12 @@ export async function EventDetail({ eventId }: { eventId: Promise<string> }) {
   } catch (error) {
     if (error instanceof EventNotFoundError) notFound();
     if (error instanceof EventPrivateError) return <Alert tone="warning">{error.message}</Alert>;
-    // Cualquier otro fallo lo muestra error.tsx
     throw error;
   }
 
   const user = await getCurrentUser();
   const canEdit = canEditEvent(user, event);
   const canCancel = canCancelEvent(user, event);
-  // Las zonas solo hacen falta para el formulario de edición
   const zones = canEdit ? await zoneContainer.listZonesUseCase.execute().catch(() => []) : [];
   const official = event.origin === EventOrigin.OFICIAL;
 

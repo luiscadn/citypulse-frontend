@@ -1,3 +1,8 @@
+/**
+ * @file admin-users.actions.ts
+ * @description Server Actions para la administración de roles de usuario por parte de Administradores.
+ */
+
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -10,8 +15,19 @@ import { usersContainer } from "../../di/users.container";
 import { parseRoles } from "../../domain/rules/roles";
 
 /**
- * Reemplaza los roles de un usuario (solo ADMIN). Los argumentos vienen del navegador,
- * así que se validan aquí; quien pide el cambio sale del JWT de la sesión, no de un argumento.
+ * Server Action que reemplaza los roles de un usuario específico (restringido a ADMIN).
+ *
+ * - **¿Qué hace?**:
+ *   Parsea y sanea los roles entrantes (`parseRoles`), verifica la sesión del administrador desde el JWT,
+ *   obtiene la identidad del solicitante y ejecuta `assignRoles` en el contenedor, finalizando con la revalidación
+ *   de `/admin/users`.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Invocada desde el Client Component `UserRoleEditor` en el panel de administración.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Garantiza que la modificación de privilegios esté rigurosamente autenticada y autorizada en el servidor,
+ *   retornando una estructura `ActionResult` tipada para feedback en tiempo real sin recargar la página.
  */
 export async function assignRolesAction(userId: number, roles: string[]): Promise<ActionResult> {
   const parsed = parseRoles(roles);

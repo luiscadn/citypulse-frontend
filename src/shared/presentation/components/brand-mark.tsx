@@ -1,8 +1,14 @@
 import { cn } from "../cn";
 
 /**
- * Símbolo de CityPulse: un pin de mapa (la ciudad) con una línea de pulso.
- * `inverse` lo pinta en blanco para usarlo sobre fondos de color primario.
+ * Componente LogoSymbol
+ *
+ * - **¿Qué hace?**: Renderiza el isotipo gráfico vectorial (SVG) de CityPulse: una combinación de un pin de localización
+ *   urbana con una onda o latido cardíaco de pulso. Soporta modo `inverse` para contraste sobre fondos coloreados.
+ * - **¿Cómo interactúa con el sistema en general?**: Se utiliza en la barra de navegación (`AppNav`), páginas de autenticación (`AuthShell`),
+ *   pantalla de catálogo de diseño (`/ui`) y como parte de `BrandMark`.
+ * - **¿Cuál es su importancia?**: Refuerza la identidad visual y temática de la plataforma ("el pulso de la ciudad")
+ *   mediante gráficos vectoriales ligeros sin requerir la descarga de imágenes pesadas tipo PNG o WebP.
  */
 export function LogoSymbol({ className, inverse = false }: { className?: string; inverse?: boolean }) {
   return (
@@ -24,7 +30,16 @@ export function LogoSymbol({ className, inverse = false }: { className?: string;
   );
 }
 
-/** Logo completo: símbolo + "CityPulse" (con "Pulse" en el color primario). */
+/**
+ * Componente BrandMark
+ *
+ * - **¿Qué hace?**: Renderiza el imagotipo completo de la marca: el símbolo `LogoSymbol` acompañado del texto tipográfico "CityPulse",
+ *   donde la palabra "Pulse" adopta el color primario o contraste inverso.
+ * - **¿Cómo interactúa con el sistema en general?**: Se sitúa en la cabecera del layout general, enlaces hacia la página de inicio,
+ *   y paneles de bienvenida de login y registro.
+ * - **¿Cuál es su importancia?**: Centraliza la presentación corporativa de la aplicación asegurando coherencia gráfica
+ *   y tipográfica en todos los puntos de entrada del usuario.
+ */
 export function BrandMark({
   className,
   withText = true,

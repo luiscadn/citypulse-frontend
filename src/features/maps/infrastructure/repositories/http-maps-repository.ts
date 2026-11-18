@@ -5,9 +5,26 @@ import { MapsUnavailableError, MapsUpstreamError } from "../../domain/errors/map
 import type { PlaceDto } from "../dtos/place.dto";
 import { toPlace } from "../mappers/place.mapper";
 
+/**
+ * Adaptador HttpMapsRepository (Infraestructura en Arquitectura Hexagonal)
+ *
+ * - **¿Qué hace?**: Implementa el puerto `MapsRepository` realizando una petición `GET /maps/search` a través
+ *   de `HttpClient`. Captura excepciones HTTP 503 y las mapea a `MapsUnavailableError`, y códigos 502/504 a `MapsUpstreamError`.
+ * - **¿Cómo interactúa con el sistema en general?**: Se instancia en `maps.container.ts` y sirve como el canal
+ *   de comunicación con el backend para la integración con Google Maps.
+ * - **¿Cuál es su importancia?**: Centraliza la comunicación de red para geocodificación y mapea fallos de red externos
+ *   a excepciones de dominio explicativas para el usuario.
+ */
 export class HttpMapsRepository implements MapsRepository {
   constructor(private readonly http: HttpClient) {}
 
+  /**
+   * Ejecuta la consulta remota de lugares hacia `/maps/search`.
+   *
+   * @param query - Término de búsqueda normalizado.
+   * @param limit - Cantidad máxima de resultados solicitados.
+   * @returns Lista de entidades `Place` adaptadas.
+   */
   async searchPlaces(query: string, limit: number): Promise<Place[]> {
     const params = new URLSearchParams({ query, limit: String(limit) });
     try {

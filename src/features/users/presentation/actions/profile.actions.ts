@@ -1,3 +1,9 @@
+/**
+ * @file profile.actions.ts
+ * @description Server Actions para la actualización del perfil del usuario autenticado en Next.js App Router.
+ * Ejecutada en el entorno seguro del servidor (`use server`), maneja validación, autorización y revalidación de caché.
+ */
+
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -12,6 +18,21 @@ import type { UpdateUserParams } from "../../domain/entities/user";
 import { EmailAlreadyInUseError, UsernameAlreadyInUseError } from "../../domain/errors/user-errors";
 import type { ProfileFormState } from "./profile-form-state";
 
+/**
+ * Server Action para actualizar los datos personales (nombre completo y username) del usuario actual.
+ *
+ * - **¿Qué hace?**:
+ *   Extrae los valores de `FormData`, valida mediante `validateProfile`, obtiene el token JWT de la sesión
+ *   para garantizar la identidad del usuario solicitante, compara contra los datos actuales para evitar mutaciones redundantes,
+ *   invoca `updateUser` en el contenedor, maneja colisiones de username y finalmente revalida la ruta `/profile`.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Conectada directamente al formulario `ProfileForm` en la pantalla `/profile`.
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Seguridad: el ID del usuario modificado proviene estrictamente del JWT de la cookie HTTP-only y nunca
+ *   de un campo manipulable por el cliente en el formulario.
+ */
 export async function updateProfileAction(
   _prev: ProfileFormState,
   formData: FormData,
@@ -30,7 +51,6 @@ export async function updateProfileAction(
   }
 
   try {
-    // El perfil siempre es el del usuario con sesión: el id sale del JWT, no del formulario
     const me = await usersContainer.getUser(session.sub);
     const requester: AuthUser = { id: me.id, email: me.email, username: me.username, roles: me.roles };
 
@@ -46,8 +66,6 @@ export async function updateProfileAction(
     if (error instanceof UsernameAlreadyInUseError || error instanceof EmailAlreadyInUseError) {
       return { values, errors: { username: "Este nombre de usuario ya está en uso" } };
     }
-    // El backend no comprueba la unicidad al actualizar: si el usuario ya existe,
-    // la base de datos rechaza el cambio y llega un 500.
     if (error instanceof HttpError && error.status >= 500) {
       return {
         values,
