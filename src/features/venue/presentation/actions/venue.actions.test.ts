@@ -40,12 +40,14 @@ const venue = {
   name: "Teatro",
   description: null,
   address: "Cra 5",
+  latitude: null,
+  longitude: null,
   isVerified: true,
   zone: { id: 2, name: "Centro" },
   owner: { id: 2, username: "teatro", fullName: "Teatro" },
   createdAt: "",
 };
-const fields = { name: "Teatro", address: "Cra 5", description: "", zoneId: "2" };
+const fields = { name: "Teatro", address: "Cra 5", description: "", zoneId: "2", latitude: "", longitude: "" };
 
 function form(values: Record<string, string>): FormData {
   const data = new FormData();
@@ -63,7 +65,7 @@ describe("createVenueAction", () => {
     create.mockResolvedValue(venue);
 
     await expect(createVenueAction(initialVenueFormState(), form(fields))).rejects.toThrow("REDIRECT /venues/7");
-    expect(create).toHaveBeenCalledWith({ name: "Teatro", address: "Cra 5", description: "", zoneId: 2 });
+    expect(create).toHaveBeenCalledWith({ name: "Teatro", address: "Cra 5", description: "", zoneId: 2, latitude: null, longitude: null });
   });
 
   // Un ADMIN tampoco registra lugares: el dueño del lugar es siempre quien lo registra (RF-2.3)
@@ -93,7 +95,7 @@ describe("updateVenueAction", () => {
 
     const state = await updateVenueAction(initialVenueFormState(), form({ ...fields, venueId: "7" }));
 
-    expect(update).toHaveBeenCalledWith(7, { name: "Teatro", address: "Cra 5", description: "", zoneId: 2 });
+    expect(update).toHaveBeenCalledWith(7, { name: "Teatro", address: "Cra 5", description: "", zoneId: 2, latitude: null, longitude: null });
     expect(state.success).toBe(
       "Cambios guardados. El lugar queda pendiente de que un administrador lo verifique.",
     );

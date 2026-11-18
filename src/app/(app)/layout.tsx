@@ -25,7 +25,11 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
 
   return (
     <SessionProvider sessionPromise={sessionPromise}>
-      <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur">
+      {/* viewTransitionName: el encabezado no se mueve cuando cambia la página (globals.css) */}
+      <header
+        className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur"
+        style={{ viewTransitionName: "site-header" }}
+      >
         <Container className="flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-6">
             <Link
@@ -54,6 +58,10 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             <AppNav />
           </Suspense>
         </Container>
+        {/* Línea de "pulso": un brillo verde recorre el borde inferior del encabezado */}
+        <div aria-hidden className="h-px overflow-hidden">
+          <div className="h-full w-[200%] animate-pan bg-linear-to-r from-transparent via-accent to-transparent will-change-transform" />
+        </div>
       </header>
       <div className="flex flex-1 flex-col">{children}</div>
     </SessionProvider>

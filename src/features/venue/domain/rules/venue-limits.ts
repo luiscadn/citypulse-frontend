@@ -39,3 +39,6 @@ export const VENUE_DESCRIPTION_MAX_LENGTH = 255;
  * - **¿Cuál es su importancia?**: Establece un número óptimo para layouts en cuadrícula responsiva (múltiplo de 1, 2, 3 y 4 columnas).
  */
 export const VENUES_PAGE_SIZE = 12;
+
+/** Lugares que se piden para el mapa (el máximo por página del backend). */
+export const MAP_VENUES_LIMIT = 100;

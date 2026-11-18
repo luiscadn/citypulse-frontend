@@ -4,6 +4,7 @@
  */
 
 import Link from "next/link";
+import { ViewTransition } from "react";
 import { EventOrigin } from "@/shared/domain/enums";
 import { Badge } from "@/shared/presentation/components";
 import { formatDateTime } from "@/shared/presentation/formatters/date";
@@ -31,10 +32,13 @@ export function EventCard({ event }: { event: Event }) {
     <li>
       <Link
         href={`/events/${event.id}`}
-        className="flex h-full flex-col gap-2 rounded-lg border border-line bg-surface px-5 py-4 transition-colors hover:border-primary hover:bg-primary-soft/40 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring"
+        className="flex h-full flex-col gap-2 rounded-lg border border-line bg-surface px-5 py-4 transition-[border-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-1 hover:border-accent hover:shadow-[0_14px_30px_-14px_var(--accent)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus-ring"
       >
         <div className="flex items-start justify-between gap-3">
-          <span className="text-base font-semibold text-ink">{event.title}</span>
+          {/* El mismo nombre que el título del detalle: al abrirlo, el título "viaja" hasta allá */}
+          <ViewTransition name={`event-title-${event.id}`} share="morph" default="none">
+            <span className="block text-base font-semibold text-ink">{event.title}</span>
+          </ViewTransition>
           <EventStatusBadge status={event.status} />
         </div>
         <span className="text-sm text-ink-muted">{formatDateTime(event.startDate)}</span>

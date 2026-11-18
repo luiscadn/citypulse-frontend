@@ -1,10 +1,3 @@
-/**
- * @file venue.actions.ts
- * @description Server Actions para la gestión de Lugares (Venues) en Next.js App Router.
- * Ejecutadas exclusivamente en el servidor (`use server`), manejan autenticación,
- * autorización previa, invocación de casos de uso y revalidación de caché.
- */
-
 "use server";
 
 import { refresh } from "next/cache";
@@ -41,7 +34,14 @@ function readValues(formData: FormData): VenueFormValues {
     address: String(formData.get("address") ?? ""),
     description: String(formData.get("description") ?? ""),
     zoneId: String(formData.get("zoneId") ?? ""),
+    latitude: String(formData.get("latitude") ?? ""),
+    longitude: String(formData.get("longitude") ?? ""),
   };
+}
+
+// Number("") es 0: un campo vacío tiene que quedar como "sin ubicación"
+function toCoordinate(value: string): number | null {
+  return value.trim() === "" ? null : Number(value);
 }
 
 /**
@@ -53,6 +53,8 @@ function toDraft(values: VenueFormValues): VenueDraft {
     address: values.address,
     description: values.description,
     zoneId: Number(values.zoneId),
+    latitude: toCoordinate(values.latitude),
+    longitude: toCoordinate(values.longitude),
   };
 }
 
@@ -142,6 +144,7 @@ export async function createVenueAction(_prev: VenueFormState, formData: FormDat
  */
 export async function updateVenueAction(_prev: VenueFormState, formData: FormData): Promise<VenueFormState> {
   const values = readValues(formData);
+  // El backend decide si el usuario es el dueño o un ADMIN (403 si no)
   await requireUser();
 
   let stillVerified: boolean;
@@ -184,6 +187,7 @@ export async function deleteVenueAction(_prev: VenueActionState, formData: FormD
     return { error: actionErrorMessage(error) };
   }
 
+  // El OWNER vuelve a sus lugares; el ADMIN, al listado general
   redirect(canRegisterVenues(user) ? "/venues/mine" : "/venues");
 }
 

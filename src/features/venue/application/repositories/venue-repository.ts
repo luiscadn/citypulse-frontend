@@ -1,11 +1,4 @@
-/**
- * @file venue-repository.ts
- * @description Puerto secundario (interfaz) para el repositorio de Lugares (Venues).
- * En Arquitectura Hexagonal / Clean Architecture, define las operaciones de persistencia y consulta
- * que la capa de aplicación necesita, sin acoplarse a ninguna tecnología concreta de transporte o base de datos.
- */
-
-import type { Venue, VenueFilters, VenueInput, VenuePage } from "../../domain/entities/venue";
+import type { MappedVenue, Venue, VenueFilters, VenueInput, VenuePage } from "../../domain/entities/venue";
 
 /**
  * Contrato de repositorio para el manejo de Lugares.
@@ -25,22 +18,18 @@ import type { Venue, VenueFilters, VenueInput, VenuePage } from "../../domain/en
 export interface VenueRepository {
   /** Obtiene un listado paginado y filtrado de lugares públicos. */
   list(filters: VenueFilters): Promise<VenuePage>;
-
   /** Obtiene todos los lugares creados por el OWNER autenticado, incluyendo los pendientes de verificación. */
   listMine(): Promise<Venue[]>;
-
+  /** Lugares verificados con ubicación, para el mapa de la ciudad. */
+  listMapped(): Promise<MappedVenue[]>;
   /** Obtiene los datos detallados de un lugar a partir de su ID. */
   findById(id: number): Promise<Venue>;
-
   /** Registra un nuevo lugar en el sistema asociado al usuario de la sesión. */
   create(input: VenueInput): Promise<Venue>;
-
   /** Actualiza la información de un lugar existente. */
   update(id: number, input: VenueInput): Promise<Venue>;
-
   /** Elimina un lugar del catálogo. */
   remove(id: number): Promise<void>;
-
   /** Certifica y verifica administrativamente un lugar previamente pendiente. */
   verify(id: number): Promise<Venue>;
 }

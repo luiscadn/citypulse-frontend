@@ -68,3 +68,56 @@ export function initialEventFormState(values: EventFormValues = emptyEventFormVa
 export interface EventActionState {
   error?: string;
 }
+
+/** Formulario de evento oficial: lo del reporte (sin zona, que sale del lugar) más estos campos. */
+export interface OfficialEventFormValues extends Omit<EventFormValues, "zoneId"> {
+  /** "" = sin elegir */
+  venueId: string;
+  visibility: string;
+  /** "" = sin límite */
+  capacity: string;
+  /** "" = sin precio definido */
+  ticketPrice: string;
+}
+
+export type OfficialEventFieldErrors = Partial<Record<keyof OfficialEventFormValues, string>>;
+
+export interface OfficialEventFormState {
+  values: OfficialEventFormValues;
+  errors: OfficialEventFieldErrors;
+  error?: string;
+}
+
+export const emptyOfficialEventFormValues: OfficialEventFormValues = {
+  title: "",
+  description: "",
+  addressText: "",
+  startDate: "",
+  endDate: "",
+  venueId: "",
+  visibility: "PUBLICO",
+  capacity: "",
+  ticketPrice: "",
+};
+
+/** Formulario para adjuntar una evidencia. */
+export interface EvidenceFormValues {
+  type: string;
+  url: string;
+  caption: string;
+}
+
+export interface EvidenceFormState {
+  values: EvidenceFormValues;
+  errors: Partial<Record<keyof EvidenceFormValues, string>>;
+  error?: string;
+  success?: string;
+}
+
+export const emptyEvidenceFormValues: EvidenceFormValues = { type: "FOTO", url: "", caption: "" };
+
+/** Formulario para rechazar un reporte. */
+export interface RejectReportState {
+  reason: string;
+  error?: string;
+}

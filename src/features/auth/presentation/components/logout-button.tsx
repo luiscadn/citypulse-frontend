@@ -1,10 +1,7 @@
-/**
- * @file logout-button.tsx
- * @description Componente para el botón de cierre de sesión seguro.
- */
+"use client";
 
 import { Button } from "@/shared/presentation/components";
-import { logoutAction } from "../actions/auth.actions";
+import { useLogout } from "../hooks/use-logout";
 
 /**
  * Botón semántico dentro de un formulario para invocar el cierre de sesión.
@@ -14,8 +11,9 @@ import { logoutAction } from "../actions/auth.actions";
  * - **¿Cuál es su importancia?**: Proporciona una forma estándar y segura de desautenticarse, funcionando incluso si JavaScript estuviera deshabilitado.
  */
 export function LogoutButton() {
+  const { logout } = useLogout();
   return (
-    <form action={logoutAction}>
+    <form action={logout}>
       <Button type="submit" variant="secondary" size="sm">
         Cerrar sesión
       </Button>

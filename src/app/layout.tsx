@@ -41,6 +41,7 @@ export const metadata: Metadata = {
  */
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    // suppressHydrationWarning: el script de tema pone data-theme antes de hidratar
     <html
       lang="es"
       suppressHydrationWarning

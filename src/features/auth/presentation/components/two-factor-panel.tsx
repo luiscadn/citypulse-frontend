@@ -6,14 +6,8 @@
 
 "use client";
 
-import { useState, useTransition } from "react";
 import { Alert, Badge, Button, TextField } from "@/shared/presentation/components";
-import {
-  disableTwoFactorAction,
-  enableTwoFactorAction,
-  startTwoFactorAction,
-} from "../actions/two-factor.actions";
-import type { TwoFactorSetup } from "../../domain/entities/two-factor-setup";
+import { useTwoFactor } from "../hooks/use-two-factor";
 
 /**
  * Panel de administración de la verificación en dos pasos en el perfil del usuario.
@@ -31,53 +25,20 @@ import type { TwoFactorSetup } from "../../domain/entities/two-factor-setup";
  *   Empodera al usuario para elevar la seguridad de su cuenta mediante TOTP con una experiencia paso a paso clara y asistida.
  */
 export function TwoFactorPanel({ enabled }: { enabled: boolean }) {
-  const [pending, startTransition] = useTransition();
-  const [setup, setSetup] = useState<TwoFactorSetup | null>(null);
-  const [code, setCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [confirmingDisable, setConfirmingDisable] = useState(false);
-
-  function start() {
-    setError(null);
-    setNotice(null);
-    startTransition(async () => {
-      const result = await startTwoFactorAction();
-      if (result.ok) {
-        setSetup(result.data);
-        setCode("");
-      } else {
-        setError(result.error);
-      }
-    });
-  }
-
-  function confirmEnable() {
-    setError(null);
-    startTransition(async () => {
-      const result = await enableTwoFactorAction(code);
-      if (result.ok) {
-        setSetup(null);
-        setCode("");
-        setNotice("Verificación en dos pasos activada. Te pediremos un código al iniciar sesión.");
-      } else {
-        setError(result.error);
-      }
-    });
-  }
-
-  function disable() {
-    setError(null);
-    startTransition(async () => {
-      const result = await disableTwoFactorAction();
-      if (result.ok) {
-        setConfirmingDisable(false);
-        setNotice("Verificación en dos pasos desactivada.");
-      } else {
-        setError(result.error);
-      }
-    });
-  }
+  const {
+    pending,
+    setup,
+    code,
+    setCode,
+    error,
+    notice,
+    confirmingDisable,
+    setConfirmingDisable,
+    start,
+    confirmEnable,
+    disable,
+    cancelSetup,
+  } = useTwoFactor();
 
   return (
     <div className="flex flex-col gap-4">
@@ -154,10 +115,7 @@ export function TwoFactorPanel({ enabled }: { enabled: boolean }) {
               <Button
                 variant="ghost"
                 disabled={pending}
-                onClick={() => {
-                  setSetup(null);
-                  setError(null);
-                }}
+                onClick={cancelSetup}
               >
                 Cancelar
               </Button>

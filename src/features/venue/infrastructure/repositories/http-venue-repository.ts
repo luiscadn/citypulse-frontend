@@ -1,20 +1,13 @@
-/**
- * @file http-venue-repository.ts
- * @description Adaptador de Infraestructura que implementa el puerto `VenueRepository`.
- * Realiza las operaciones CRUD sobre la API REST externa mediante el cliente HTTP compartido,
- * traduciendo respuestas y códigos de estado en entidades y errores puros de Dominio.
- */
-
 import { HttpError, type HttpClient } from "@/shared/infrastructure/http-client";
 import type { VenueRepository } from "../../application/repositories/venue-repository";
-import type { Venue, VenueFilters, VenueInput, VenuePage } from "../../domain/entities/venue";
+import { hasLocation, type MappedVenue, type Venue, type VenueFilters, type VenueInput, type VenuePage } from "../../domain/entities/venue";
 import {
   VenueForbiddenError,
   VenueNameTakenError,
   VenueNotFoundError,
   VenueZoneNotFoundError,
 } from "../../domain/errors/venue-errors";
-import { VENUES_PAGE_SIZE } from "../../domain/rules/venue-limits";
+import { MAP_VENUES_LIMIT, VENUES_PAGE_SIZE } from "../../domain/rules/venue-limits";
 import type { VenueDto, VenuePageDto } from "../dtos/venue.dto";
 import { toCreateVenueBody, toUpdateVenueBody, toVenue, toVenuePage } from "../mappers/venue.mapper";
 
@@ -70,6 +63,12 @@ export class HttpVenueRepository implements VenueRepository {
     return dtos.map(toVenue);
   }
 
+  async listMapped(): Promise<MappedVenue[]> {
+    const params = new URLSearchParams({ page: "1", limit: String(MAP_VENUES_LIMIT), isVerified: "true" });
+    const page = toVenuePage(await this.http.get<VenuePageDto>(`/venues?${params}`));
+    return page.venues.filter(hasLocation);
+  }
+
   /**
    * Busca un lugar por su identificador.
    *
@@ -97,6 +96,7 @@ export class HttpVenueRepository implements VenueRepository {
     try {
       return toVenue(await this.http.post<VenueDto>("/venues", toCreateVenueBody(input)));
     } catch (error) {
+      // Al registrar, el único 404 posible es el de la zona
       if (isStatus(error, 404)) throw new VenueZoneNotFoundError();
       if (isStatus(error, 409)) throw new VenueNameTakenError();
       throw error;

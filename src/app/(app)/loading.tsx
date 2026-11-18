@@ -1,4 +1,4 @@
-import { Container, Spinner } from "@/shared/presentation/components";
+import { Container, PageSkeleton } from "@/shared/presentation/components";
 
 /**
  * Componente Loading: Fallback de carga para el grupo de rutas `(app)`.
@@ -11,8 +11,8 @@ import { Container, Spinner } from "@/shared/presentation/components";
  */
 export default function Loading() {
   return (
-    <Container className="grid h-48 place-items-center text-primary">
-      <Spinner size="lg" />
+    <Container>
+      <PageSkeleton />
     </Container>
   );
 }

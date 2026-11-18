@@ -1,15 +1,10 @@
-/**
- * @file venue-input.ts
- * @description Reglas de Dominio y saneamiento para la entrada de datos de Lugares (Venues).
- * Valida los borradores de formulario y parsea parámetros de filtrado desde las URLs.
- */
-
-import type { VenueDraft, VenueFilters, VenueInput } from "../entities/venue";
+import { isValidLocation, type VenueDraft, type VenueFilters, type VenueInput } from "../entities/venue";
 import {
   InvalidVenueError,
   VenueAddressRequiredError,
   VenueAddressTooLongError,
   VenueDescriptionTooLongError,
+  VenueLocationError,
   VenueNameRequiredError,
   VenueNameTooLongError,
   VenueZoneRequiredError,
@@ -53,6 +48,11 @@ export function assertValidVenueId(id: number): void {
   if (!isValidVenueId(id)) throw new InvalidVenueError();
 }
 
+// Campo vacío (NaN, null o undefined) = sin ubicación
+function toCoordinate(value: number | null | undefined): number | null {
+  return value === null || value === undefined || Number.isNaN(value) ? null : value;
+}
+
 /**
  * Normaliza y valida el borrador de un lugar (VenueDraft) produciendo un VenueInput inmutable.
  *
@@ -84,7 +84,11 @@ export function normalizeVenueInput(draft: VenueDraft): VenueInput {
 
   if (!isPositiveInteger(draft.zoneId)) throw new VenueZoneRequiredError();
 
-  return { name, address, description, zoneId: draft.zoneId };
+  const latitude = toCoordinate(draft.latitude);
+  const longitude = toCoordinate(draft.longitude);
+  if (!isValidLocation(latitude, longitude)) throw new VenueLocationError();
+
+  return { name, address, description, zoneId: draft.zoneId, latitude, longitude };
 }
 
 /**

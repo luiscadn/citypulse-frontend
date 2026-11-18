@@ -5,10 +5,8 @@
 
 "use client";
 
-import { useActionState } from "react";
 import { Alert, Button, TextField } from "@/shared/presentation/components";
-import { updateProfileAction } from "../actions/profile.actions";
-import type { ProfileFormState } from "../actions/profile-form-state";
+import { useProfileForm } from "../hooks/use-profile-form";
 
 /**
  * Formulario interactivo para visualizar y editar la información personal del usuario.
@@ -33,10 +31,7 @@ export function ProfileForm({
   /** Correo de la cuenta: funciona como identidad y no es modificable desde este formulario */
   email: string;
 }) {
-  const [state, formAction, pending] = useActionState<ProfileFormState, FormData>(updateProfileAction, {
-    values: initial,
-    errors: {},
-  });
+  const { state, formAction, pending } = useProfileForm(initial);
 
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>

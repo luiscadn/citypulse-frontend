@@ -5,15 +5,30 @@
  */
 
 import type { EventOrigin, EventStatus, EventVisibility } from "@/shared/domain/enums";
-import type {
-  Event,
-  EventDetail,
-  EventEvidence,
-  EventInput,
-  EventPage,
-  EvidenceType,
+import {
+  createEvent,
+  createEventDetail,
+  createPendingReport,
+  type Event,
+  type EventDetail,
+  type EventEvidence,
+  type EventInput,
+  type EventPage,
+  type EvidenceInput,
+  type EvidenceType,
+  type OfficialEventInput,
+  type PendingReport,
 } from "../../domain/entities/event";
-import type { EventBodyDto, EventDetailDto, EventDto, EventPageDto, EvidenceDto } from "../dtos/event.dto";
+import type {
+  EventBodyDto,
+  EventDetailDto,
+  EventDto,
+  EventPageDto,
+  EvidenceBodyDto,
+  EvidenceDto,
+  OfficialEventBodyDto,
+  PendingReportDto,
+} from "../dtos/event.dto";
 
 /**
  * Transforma un DTO `EventDto` en una entidad inmutable de dominio `Event`.
@@ -30,7 +45,7 @@ import type { EventBodyDto, EventDetailDto, EventDto, EventPageDto, EvidenceDto 
  *   Aísla al dominio de tipos crudos de transporte (evitando por ejemplo que `ticketPrice` string contamine el dominio numérico).
  */
 export function toEvent(dto: EventDto): Event {
-  return {
+  return createEvent({
     id: dto.id,
     title: dto.title,
     description: dto.description ?? null,
@@ -45,7 +60,7 @@ export function toEvent(dto: EventDto): Event {
     capacity: dto.capacity ?? null,
     ticketPrice: dto.ticketPrice === null || dto.ticketPrice === undefined ? null : Number(dto.ticketPrice),
     createdBy: { id: dto.createdBy.id, username: dto.createdBy.username, fullName: dto.createdBy.fullName },
-  };
+  });
 }
 
 /**
@@ -63,12 +78,12 @@ function toEvidence(dto: EvidenceDto): EventEvidence {
  * - **¿Cuál es su importancia?**: Conforma la entidad completa requerida por la vista de detalle del evento.
  */
 export function toEventDetail(dto: EventDetailDto): EventDetail {
-  return {
+  return createEventDetail({
     ...toEvent(dto),
     attendeeCount: dto.attendeeCount,
     evidences: (dto.evidences ?? []).map(toEvidence),
     rejectionReason: dto.rejectionReason ?? null,
-  };
+  });
 }
 
 /**
@@ -121,4 +136,23 @@ export function toUpdateEventBody(input: EventInput): EventBodyDto {
     description: input.description ?? "",
     addressText: input.addressText ?? "",
   };
+}
+
+export function toPendingReport(dto: PendingReportDto): PendingReport {
+  return createPendingReport({ ...toEvent(dto), evidences: dto.evidences.map(toEvidence) });
+}
+
+/** Al publicar, lo opcional vacío no se envía. */
+export function toOfficialEventBody(input: OfficialEventInput): OfficialEventBodyDto {
+  return {
+    ...toReportEventBody(input),
+    venueId: input.venueId,
+    visibility: input.visibility,
+    ...(input.capacity !== null && { capacity: input.capacity }),
+    ...(input.ticketPrice !== null && { ticketPrice: input.ticketPrice }),
+  };
+}
+
+export function toEvidenceBody(input: EvidenceInput): EvidenceBodyDto {
+  return { type: input.type, url: input.url, ...(input.caption && { caption: input.caption }) };
 }

@@ -1,9 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
 import { Alert } from "@/shared/presentation/components";
 import { ConfirmSubmit } from "@/shared/presentation/components/confirm-submit";
-import { deleteZoneAction } from "../actions/zone.actions";
+import { useDeleteZone } from "../hooks/use-delete-zone";
 
 /**
  * Componente DeleteZoneButton: Botón destructivo para eliminar una zona urbana.
@@ -18,7 +17,7 @@ import { deleteZoneAction } from "../actions/zone.actions";
  *   segura y amigable para operaciones irreversibles.
  */
 export function DeleteZoneButton({ zoneId, zoneName }: { zoneId: number; zoneName: string }) {
-  const [state, formAction, pending] = useActionState(deleteZoneAction, {});
+  const { state, formAction, pending } = useDeleteZone();
 
   return (
     <form action={formAction} className="flex flex-col gap-3">

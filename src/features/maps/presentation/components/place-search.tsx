@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition, type KeyboardEvent } from "react";
+import type { KeyboardEvent } from "react";
 import { Alert, Button, Input } from "@/shared/presentation/components";
 import { MapPinIcon } from "@/shared/presentation/components/icons";
 import type { Place } from "../../domain/entities/place";
-import { searchPlacesAction } from "../actions/maps.actions";
+import { usePlaceSearch } from "../hooks/use-place-search";
 
 /**
  * Componente PlaceSearch: Buscador interactivo de lugares conectado a Google Maps.
@@ -19,19 +19,7 @@ import { searchPlacesAction } from "../actions/maps.actions";
  *   evitando errores tipográficos manuales y asegurando que las coordenadas correspondan a ubicaciones reales en Google Maps.
  */
 export function PlaceSearch({ onPick }: { onPick: (place: Place) => void }) {
-  const [query, setQuery] = useState("");
-  const [places, setPlaces] = useState<Place[] | null>(null);
-  const [error, setError] = useState<string>();
-  const [pending, startTransition] = useTransition();
-
-  /** Dispara la búsqueda asíncrona dentro de una transición de React */
-  function search() {
-    startTransition(async () => {
-      const result = await searchPlacesAction(query);
-      setPlaces(result.places);
-      setError(result.error);
-    });
-  }
+  const { query, setQuery, places, error, pending, search, reset } = usePlaceSearch();
 
   /** Captura la tecla Enter para ejecutar la búsqueda sin enviar el formulario contenedor */
   function searchOnEnter(event: KeyboardEvent<HTMLInputElement>) {
@@ -44,8 +32,7 @@ export function PlaceSearch({ onPick }: { onPick: (place: Place) => void }) {
   /** Selecciona el lugar y notifica al componente padre */
   function pick(place: Place) {
     onPick(place);
-    setPlaces(null);
-    setQuery("");
+    reset();
   }
 
   return (

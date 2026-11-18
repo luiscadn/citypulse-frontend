@@ -1,10 +1,4 @@
 /**
- * @file venue-form-state.ts
- * @description Tipos y estados auxiliares para los formularios y acciones de Lugares (Venues).
- * Diseñados para integrarse fluidamente con el hook `useActionState` de React 19.
- */
-
-/**
  * Representa los valores textuales ingresados por el usuario en el formulario de Lugar.
  *
  * - **¿Qué hace?**: Estructura como strings los campos del formulario: nombre, dirección, descripción y zona seleccionada.
@@ -17,6 +11,9 @@ export interface VenueFormValues {
   description: string;
   /** Identificador de zona en formato string ("" = sin selección). */
   zoneId: string;
+  /** Las llena la búsqueda de Google Maps (campos ocultos). "" = sin ubicación */
+  latitude: string;
+  longitude: string;
 }
 
 /**
@@ -34,16 +31,20 @@ export type VenueFieldErrors = Partial<Record<keyof VenueFormValues, string>>;
 export interface VenueFormState {
   values: VenueFormValues;
   errors: VenueFieldErrors;
-  /** Mensaje de error global no asociado a un campo específico. */
+  /** Error general, no ligado a un campo */
   error?: string;
   /** Mensaje de éxito tras una operación completada. */
   success?: string;
 }
 
-/**
- * Valores iniciales vacíos para el formulario de alta de un lugar.
- */
-export const emptyVenueFormValues: VenueFormValues = { name: "", address: "", description: "", zoneId: "" };
+export const emptyVenueFormValues: VenueFormValues = {
+  name: "",
+  address: "",
+  description: "",
+  zoneId: "",
+  latitude: "",
+  longitude: "",
+};
 
 /**
  * Genera el estado inicial para el formulario de lugar.

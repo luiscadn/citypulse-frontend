@@ -1,4 +1,4 @@
-import type { Zone, ZoneInput } from "../../domain/entities/zone";
+import { createZone, type Zone, type ZoneInput } from "../../domain/entities/zone";
 import type { ZoneBodyDto, ZoneDto } from "../dtos/zone.dto";
 
 /**
@@ -12,13 +12,13 @@ import type { ZoneBodyDto, ZoneDto } from "../dtos/zone.dto";
  *   garantizando que el resto de la aplicación trabaje con tipos estables e inmutables.
  */
 export function toZone(dto: ZoneDto): Zone {
-  return {
+  return createZone({
     id: dto.id,
     name: dto.name,
     description: dto.description ?? null,
     parentId: dto.parent?.id ?? null,
     createdAt: dto.createdAt,
-  };
+  });
 }
 
 /**

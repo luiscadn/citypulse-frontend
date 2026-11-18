@@ -39,9 +39,14 @@ export function SessionMenu() {
   return (
     <div className="flex items-center gap-3">
       {user.roles.includes(RoleName.ADMIN) && (
-        <ButtonLink href="/admin/users" variant="ghost" size="sm">
-          Roles
-        </ButtonLink>
+        <>
+          <ButtonLink href="/admin/moderation" variant="ghost" size="sm" className="hidden md:inline-flex">
+            Moderación
+          </ButtonLink>
+          <ButtonLink href="/admin/users" variant="ghost" size="sm">
+            Roles
+          </ButtonLink>
+        </>
       )}
       <Link
         href="/profile"

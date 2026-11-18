@@ -8,6 +8,7 @@
  */
 export interface InvitationActionState {
   error?: string;
+  success?: string;
 }
 
 /** Estado inicial limpio para acciones de invitaciones */

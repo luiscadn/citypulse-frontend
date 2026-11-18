@@ -1,10 +1,4 @@
-/**
- * @file venue.mapper.ts
- * @description Mapeadores de Infraestructura para transformar entre DTOs de red y Entidades de Dominio de Venues.
- * Implementa el patrón Anti-Corruption Layer (ACL) aislando el dominio de cambios en la API externa.
- */
-
-import type { Venue, VenueInput, VenuePage } from "../../domain/entities/venue";
+import { createVenue, type Venue, type VenueInput, type VenuePage } from "../../domain/entities/venue";
 import type { VenueBodyDto, VenueDto, VenuePageDto } from "../dtos/venue.dto";
 
 /**
@@ -21,16 +15,18 @@ import type { VenueBodyDto, VenueDto, VenuePageDto } from "../dtos/venue.dto";
  *   Protege al dominio de cambios en el esquema del backend (por ejemplo si el backend renombra columnas o añade campos sensibles).
  */
 export function toVenue(dto: VenueDto): Venue {
-  return {
+  return createVenue({
     id: dto.id,
     name: dto.name,
     description: dto.description ?? null,
     address: dto.address ?? null,
+    latitude: dto.latitude ?? null,
+    longitude: dto.longitude ?? null,
     isVerified: dto.isVerified,
     zone: { id: dto.zone.id, name: dto.zone.name },
     owner: { id: dto.owner.id, username: dto.owner.username, fullName: dto.owner.fullName },
     createdAt: dto.createdAt,
-  };
+  });
 }
 
 /**
@@ -51,6 +47,7 @@ export function toVenuePage(dto: VenuePageDto): VenuePage {
     venues: dto.data.map(toVenue),
     total: dto.total,
     page: dto.page,
+    // Sin resultados el backend responde lastPage 0: siempre hay al menos una página
     lastPage: Math.max(dto.lastPage, 1),
   };
 }
@@ -73,6 +70,7 @@ export function toCreateVenueBody(input: VenueInput): VenueBodyDto {
     address: input.address,
     zoneId: input.zoneId,
     ...(input.description && { description: input.description }),
+    ...(input.latitude !== null && { latitude: input.latitude, longitude: input.longitude }),
   };
 }
 
@@ -94,5 +92,7 @@ export function toUpdateVenueBody(input: VenueInput): VenueBodyDto {
     address: input.address,
     zoneId: input.zoneId,
     description: input.description,
+    latitude: input.latitude,
+    longitude: input.longitude,
   };
 }

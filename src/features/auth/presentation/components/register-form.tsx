@@ -5,11 +5,9 @@
 
 "use client";
 
-import { useActionState } from "react";
 import { Alert, Button, TextField } from "@/shared/presentation/components";
 import { PASSWORD_MIN } from "@/features/users/domain/rules/user-fields";
-import { registerAction } from "../actions/auth.actions";
-import { initialRegisterState } from "../actions/register-form-state";
+import { useRegister } from "../hooks/use-register";
 
 /**
  * Formulario interactivo para la creación comunitaria de una nueva cuenta.
@@ -26,7 +24,7 @@ import { initialRegisterState } from "../actions/register-form-state";
  *   Facilita un registro accesible e intuitivo, impidiendo el envío de contraseñas discordantes antes de llegar al backend.
  */
 export function RegisterForm() {
-  const [state, formAction, pending] = useActionState(registerAction, initialRegisterState);
+  const { state, formAction, pending } = useRegister();
   const { values, errors } = state;
 
   return (

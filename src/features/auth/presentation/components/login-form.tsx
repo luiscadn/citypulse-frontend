@@ -1,15 +1,9 @@
-/**
- * @file login-form.tsx
- * @description Client Component para el formulario interactivo de Inicio de Sesión con soporte TOTP 2FA.
- */
-
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Alert, Button, TextField } from "@/shared/presentation/components";
-import { loginAction } from "../actions/auth.actions";
-import { initialLoginState } from "../actions/login-form-state";
+import { useLogin } from "../hooks/use-login";
 
 /**
  * Formulario interactivo de inicio de sesión que gestiona la transición entre credenciales y código 2FA.
@@ -26,9 +20,10 @@ import { initialLoginState } from "../actions/login-form-state";
  *   Ofrece un flujo de autenticación seguro de dos pasos sin requerir recargas de página completas ni bifurcaciones de URL.
  */
 export function LoginForm() {
-  const [state, formAction, pending] = useActionState(loginAction, initialLoginState);
+  const { state, formAction, pending, askCode } = useLogin();
   const from = useSearchParams().get("from") ?? "/";
-  const askCode = state.step === "two-factor";
+  // Campos controlados: React reinicia los no controlados después de cada acción,
+  // y en el paso 2FA hay que reenviar el mismo correo y contraseña.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -58,6 +53,7 @@ export function LoginForm() {
       />
 
       {askCode ? (
+        // En el paso 2FA la contraseña ya se escribió: viaja oculta con el formulario
         <input type="hidden" name="password" value={password} />
       ) : (
         <TextField

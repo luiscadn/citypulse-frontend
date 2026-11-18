@@ -1,11 +1,5 @@
-/**
- * @file user-errors.ts
- * @description Jerarquía de errores de Dominio asociados a la gestión de Usuarios y Roles.
- * Extienden de `DomainError` para proveer mensajes claros y distinguibles tanto en la consola
- * como en la interfaz de usuario.
- */
-
-import { DomainError } from "@/shared/domain/errors/domain-error";
+// src/features/users/domain/errors/user-errors.ts
+import { DomainError } from '@/shared/domain/errors/domain-error';
 
 /**
  * Error lanzado cuando se intenta registrar o actualizar una cuenta con un correo ya existente.
@@ -54,7 +48,7 @@ export class UserNotFoundError extends DomainError {
  * - **¿Cuál es su importancia?**: Hace cumplir las restricciones de seguridad y control de acceso basado en roles (RBAC).
  */
 export class ForbiddenActionError extends DomainError {
-  constructor(message = "No tienes permiso para realizar esta acción") {
+  constructor(message = 'No tienes permiso para realizar esta acción') {
     super(message);
   }
 }
@@ -68,6 +62,11 @@ export class ForbiddenActionError extends DomainError {
  */
 export class SelfDemotionError extends DomainError {
   constructor() {
-    super("No puedes quitarte tu propio rol ADMIN");
+    super('No puedes quitarte tu propio rol ADMIN');
+  }
+}
+export class InvalidUserError extends DomainError {
+  constructor(message = "El usuario no es válido") {
+    super(message);
   }
 }

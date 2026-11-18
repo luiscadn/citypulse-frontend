@@ -52,7 +52,12 @@ export function Badge({
         className,
       )}
     >
-      {dot && <span className={cn("size-1.5 rounded-full", dotTones[tone])} aria-hidden />}
+      {dot &&
+        (tone === "success" ? (
+          <span className="pulse-dot size-1.5!" aria-hidden />
+        ) : (
+          <span className={cn("size-1.5 rounded-full", dotTones[tone])} aria-hidden />
+        ))}
       {children}
     </span>
   );
@@ -89,7 +94,7 @@ export function Alert({
   return (
     <div
       role={tone === "danger" ? "alert" : "status"}
-      className={cn("rounded-md border px-4 py-3 text-sm", alertTones[tone], className)}
+      className={cn("animate-pop rounded-md border px-4 py-3 text-sm", alertTones[tone], className)}
     >
       {title && <p className="font-semibold">{title}</p>}
       {children && <div className={cn(title ? "mt-0.5" : undefined, "opacity-95")}>{children}</div>}
@@ -124,7 +129,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center gap-3 rounded-lg border border-dashed border-line-strong px-6 py-12 text-center",
+        "flex animate-rise flex-col items-center gap-3 rounded-lg border border-dashed border-line-strong px-6 py-12 text-center",
         className,
       )}
     >

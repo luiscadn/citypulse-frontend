@@ -1,10 +1,3 @@
-/**
- * @file venue-permissions.ts
- * @description Reglas de Dominio que calculan permisos y autorizaciones para la gestión de Lugares.
- * Actúan como una réplica orientada a la experiencia de usuario (UX) de las políticas de seguridad del backend;
- * no son autoritativas (el backend siempre tiene la última palabra).
- */
-
 import { RoleName } from "@/shared/domain/enums";
 import type { Venue, VenueInput } from "../entities/venue";
 
@@ -94,9 +87,15 @@ export function canVerifyVenues(user: Requester): boolean {
  */
 export function editLosesVerification(
   user: Requester,
-  venue: Pick<Venue, "name" | "address" | "zone" | "isVerified">,
-  input: Pick<VenueInput, "name" | "address" | "zoneId">,
+  venue: Pick<Venue, "name" | "address" | "zone" | "isVerified" | "latitude" | "longitude">,
+  input: Pick<VenueInput, "name" | "address" | "zoneId" | "latitude" | "longitude">,
 ): boolean {
   if (!venue.isVerified || isAdmin(user)) return false;
-  return input.name !== venue.name || input.address !== venue.address || input.zoneId !== venue.zone.id;
+  return (
+    input.name !== venue.name ||
+    input.address !== venue.address ||
+    input.zoneId !== venue.zone.id ||
+    input.latitude !== venue.latitude ||
+    input.longitude !== venue.longitude
+  );
 }

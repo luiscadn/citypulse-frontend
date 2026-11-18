@@ -1,11 +1,13 @@
-/**
- * @file event-repository.ts
- * @description Puerto secundario (interfaz) para el repositorio de Eventos.
- * En Arquitectura Hexagonal / Clean Architecture, define las operaciones de persistencia y consulta
- * que la capa de aplicación necesita para la gestión integral de eventos y reportes ciudadanos.
- */
-
-import type { Event, EventDetail, EventFilters, EventInput, EventPage } from "../../domain/entities/event";
+import type {
+  Event,
+  EventDetail,
+  EventFilters,
+  EventInput,
+  EventPage,
+  EvidenceInput,
+  OfficialEventInput,
+  PendingReport,
+} from "../../domain/entities/event";
 
 /**
  * Contrato de repositorio para el manejo de Eventos.
@@ -25,16 +27,19 @@ import type { Event, EventDetail, EventFilters, EventInput, EventPage } from "..
 export interface EventRepository {
   /** Obtiene una página filtrada de eventos públicos o accesibles para el usuario en sesión. */
   list(filters: EventFilters): Promise<EventPage>;
-
   /** Obtiene la información detallada de un evento por su UUID, incluyendo evidencias y conteo de asistentes. */
   findById(id: string): Promise<EventDetail>;
-
   /** Registra un reporte ciudadano a nombre del usuario en sesión, naciendo con estado REPORTADO. */
   report(input: EventInput): Promise<Event>;
-
   /** Modifica los datos de un evento existente. */
   update(id: string, input: EventInput): Promise<Event>;
-
   /** Cancela un evento previamente publicado o reportado. */
   cancel(id: string): Promise<void>;
+  /** Evento oficial en un lugar del usuario de la sesión. Nace CONFIRMADO. */
+  publishOfficial(input: OfficialEventInput): Promise<Event>;
+  addEvidence(eventId: string, input: EvidenceInput): Promise<void>;
+  /** Cola de moderación: reportes en revisión que ya tienen evidencias (solo ADMIN). */
+  listPendingReports(): Promise<readonly PendingReport[]>;
+  confirmReport(id: string): Promise<void>;
+  rejectReport(id: string, reason: string): Promise<void>;
 }

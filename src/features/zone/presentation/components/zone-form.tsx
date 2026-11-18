@@ -1,11 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
 import { Alert, Button, SelectField, TextareaField, TextField } from "@/shared/presentation/components";
 import type { Zone } from "../../domain/entities/zone";
 import { ZONE_DESCRIPTION_MAX_LENGTH, ZONE_NAME_MAX_LENGTH } from "../../domain/rules/zone-limits";
-import { createZoneAction, updateZoneAction } from "../actions/zone.actions";
-import { initialZoneFormState } from "../actions/zone-form-state";
+import { useZoneForm } from "../hooks/use-zone-form";
 
 type ZoneOption = Pick<Zone, "id" | "name">;
 
@@ -21,15 +19,7 @@ type ZoneOption = Pick<Zone, "id" | "name">;
  *   garantizando coherencia visual y evitando la duplicación de controles de formulario.
  */
 export function ZoneForm({ zone, parentOptions }: { zone?: Zone; parentOptions: readonly ZoneOption[] }) {
-  const editing = zone !== undefined;
-  const [state, formAction, pending] = useActionState(
-    editing ? updateZoneAction : createZoneAction,
-    initialZoneFormState(
-      editing
-        ? { name: zone.name, description: zone.description ?? "", parentZoneId: "" }
-        : undefined,
-    ),
-  );
+  const { editing, state, formAction, pending } = useZoneForm(zone);
 
   // Una zona no puede ser su propia zona padre: ni siquiera se ofrece
   const options = parentOptions.filter((option) => option.id !== zone?.id);
@@ -38,7 +28,7 @@ export function ZoneForm({ zone, parentOptions }: { zone?: Zone; parentOptions: 
     <form action={formAction} className="flex flex-col gap-5" noValidate>
       {state.error && <Alert tone="danger">{state.error}</Alert>}
       {state.success && <Alert tone="success">{state.success}</Alert>}
-      {editing && <input type="hidden" name="zoneId" value={zone.id} />}
+      {zone && <input type="hidden" name="zoneId" value={zone.id} />}
 
       <TextField
         label="Nombre"

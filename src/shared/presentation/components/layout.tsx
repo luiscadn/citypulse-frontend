@@ -36,12 +36,15 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col gap-4 py-8 sm:flex-row sm:items-end sm:justify-between", className)}>
+    <div
+      className={cn("animate-rise flex flex-col gap-4 py-8 sm:flex-row sm:items-end sm:justify-between", className)}
+    >
       <div className="flex flex-col gap-1.5">
         {eyebrow && (
           <p className="text-xs font-semibold tracking-wider text-primary-strong uppercase">{eyebrow}</p>
         )}
         <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">{title}</h1>
+        <span aria-hidden className="mt-1 h-1 w-12 origin-left animate-rise rounded-full bg-linear-to-r from-primary to-accent" />
         {description && <p className="max-w-2xl text-sm text-ink-muted sm:text-base">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}
@@ -59,7 +62,11 @@ export function PageHeader({
 export function Card({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
-      className={cn("rounded-lg border border-line bg-surface shadow-[0_1px_2px_rgb(30_31_38/0.04)]", className)}
+      className={cn(
+        "animate-rise rounded-lg border border-line bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.04)]",
+        "transition-[border-color,box-shadow,transform] duration-300 ease-out",
+        className,
+      )}
       {...props}
     />
   );

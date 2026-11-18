@@ -7,7 +7,16 @@
 
 import { HttpError, type HttpClient } from "@/shared/infrastructure/http-client";
 import type { EventRepository } from "../../application/repositories/event-repository";
-import type { Event, EventDetail, EventFilters, EventInput, EventPage } from "../../domain/entities/event";
+import type {
+  Event,
+  EventDetail,
+  EventFilters,
+  EventInput,
+  EventPage,
+  EvidenceInput,
+  OfficialEventInput,
+  PendingReport,
+} from "../../domain/entities/event";
 import {
   EventAlreadyCancelledError,
   EventForbiddenError,
@@ -15,14 +24,20 @@ import {
   EventNotFoundError,
   EventPrivateError,
   EventZoneNotFoundError,
+  OfficialVenueForbiddenError,
+  ReportAlreadyReviewedError,
+  ReportWithoutEvidenceError,
 } from "../../domain/errors/event-errors";
 import { colombiaDayEndIso, colombiaDayStartIso } from "../../domain/rules/event-input";
 import { EVENTS_PAGE_SIZE } from "../../domain/rules/event-limits";
-import type { EventDetailDto, EventDto, EventPageDto } from "../dtos/event.dto";
+import type { EventDetailDto, EventDto, EventPageDto, PendingReportDto } from "../dtos/event.dto";
 import {
   toEvent,
   toEventDetail,
   toEventPage,
+  toEvidenceBody,
+  toOfficialEventBody,
+  toPendingReport,
   toReportEventBody,
   toUpdateEventBody,
 } from "../mappers/event.mapper";
@@ -141,6 +156,56 @@ export class HttpEventRepository implements EventRepository {
       throw error;
     }
   }
+
+  async publishOfficial(input: OfficialEventInput): Promise<Event> {
+    try {
+      return toEvent(await this.http.post<EventDto>("/events/official", toOfficialEventBody(input)));
+    } catch (error) {
+      if (isStatus(error, 403)) throw new OfficialVenueForbiddenError();
+      if (isStatus(error, 404)) throw new EventZoneNotFoundError("El lugar o la zona elegida ya no existe");
+      throw error;
+    }
+  }
+
+  async addEvidence(eventId: string, input: EvidenceInput): Promise<void> {
+    try {
+      await this.http.post(`/evidence/event/${eventId}`, toEvidenceBody(input));
+    } catch (error) {
+      if (isStatus(error, 403)) throw new EventForbiddenError("Solo el autor puede adjuntar evidencias");
+      if (isStatus(error, 404)) throw new EventNotFoundError();
+      throw error;
+    }
+  }
+
+  async listPendingReports(): Promise<readonly PendingReport[]> {
+    const dtos = await this.http.get<PendingReportDto[]>("/moderation/pending");
+    return dtos.map(toPendingReport);
+  }
+
+  async confirmReport(id: string): Promise<void> {
+    try {
+      await this.http.patch(`/moderation/${id}/confirm`, {});
+    } catch (error) {
+      throw toReviewError(error);
+    }
+  }
+
+  async rejectReport(id: string, reason: string): Promise<void> {
+    try {
+      await this.http.patch(`/moderation/${id}/reject`, { reason });
+    } catch (error) {
+      throw toReviewError(error);
+    }
+  }
+}
+
+/** Errores de confirmar o rechazar: los dos 400 se distinguen por el texto del backend. */
+function toReviewError(error: unknown): unknown {
+  if (isStatus(error, 404)) return new EventNotFoundError();
+  if (error instanceof HttpError && error.status === 400) {
+    return /evidencia/i.test(bodyMessage(error)) ? new ReportWithoutEvidenceError() : new ReportAlreadyReviewedError();
+  }
+  return error;
 }
 
 /**

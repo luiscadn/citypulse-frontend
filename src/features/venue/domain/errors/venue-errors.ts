@@ -1,10 +1,3 @@
-/**
- * @file venue-errors.ts
- * @description Jerarquía de errores de Dominio asociados a la gestión de Lugares (Venues).
- * Extienden de `DomainError` para permitir una discriminación precisa de causas de fallo
- * tanto en casos de uso como en Server Actions y componentes de presentación.
- */
-
 import { DomainError } from "@/shared/domain/errors/domain-error";
 import {
   VENUE_ADDRESS_MAX_LENGTH,
@@ -86,6 +79,12 @@ export class VenueDescriptionTooLongError extends DomainError {
  */
 export class VenueZoneRequiredError extends DomainError {
   constructor(message = "Elige la zona donde está el lugar") {
+    super(message);
+  }
+}
+
+export class VenueLocationError extends DomainError {
+  constructor(message = "La ubicación no es válida: búscala de nuevo en Google Maps") {
     super(message);
   }
 }

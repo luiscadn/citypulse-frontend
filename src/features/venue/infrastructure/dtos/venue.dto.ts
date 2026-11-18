@@ -25,6 +25,9 @@ export interface VenueDto {
   name: string;
   description: string | null;
   address: string | null;
+  /** Opcionales: un backend sin la migración de coordenadas no los envía */
+  latitude?: number | null;
+  longitude?: number | null;
   isVerified: boolean;
   zone: { id: number; name: string };
   owner: { id: number; username: string; fullName: string };
@@ -71,4 +74,6 @@ export interface VenueBodyDto {
   address: string;
   description?: string | null;
   zoneId: number;
+  latitude?: number | null;
+  longitude?: number | null;
 }

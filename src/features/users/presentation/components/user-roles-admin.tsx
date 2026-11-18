@@ -37,7 +37,7 @@ export async function UserRolesAdmin({ requesterId }: { requesterId: number }) {
 
   return (
     <Card>
-      <ul className="divide-y divide-line">
+      <ul className="stagger divide-y divide-line">
         {users.map((user) => (
           <li key={user.id} className="flex flex-col gap-4 px-5 py-4 md:flex-row md:items-start md:justify-between">
             <div className="flex min-w-0 items-center gap-3">

@@ -7,7 +7,8 @@ import {
 } from "../errors/invitation-errors";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const MESSAGE_MAX_LENGTH = 255;
+/** Mismo límite que el mensaje de CreateInvitationDto del backend. */
+export const INVITATION_MESSAGE_MAX_LENGTH = 255;
 
 /**
  * Función prepareNewInvitation: Validación y saneamiento de invitaciones a eventos.
@@ -31,7 +32,7 @@ export function prepareNewInvitation(currentUserId: number, invitation: NewInvit
   }
 
   const message = invitation.message?.trim();
-  if (message && message.length > MESSAGE_MAX_LENGTH) {
+  if (message && message.length > INVITATION_MESSAGE_MAX_LENGTH) {
     throw new InvitationMessageTooLongError();
   }
   return message ? { eventId, toUserId, message } : { eventId, toUserId };

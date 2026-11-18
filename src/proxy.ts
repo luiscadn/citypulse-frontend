@@ -3,15 +3,17 @@ import { readValidJwt } from "@/shared/infrastructure/session/jwt";
 import { SESSION_COOKIE } from "@/shared/infrastructure/session/session-constants";
 
 /**
- * Rutas públicas (PUBLIC_ROUTES): Rutas accesibles sin contar con una sesión activa.
- *
- * - **¿Qué hace?**: Enumera los paths del frontend donde un visitante no autenticado puede entrar libremente (`/login`, `/register`, `/ui`).
- *   La ruta raíz `"/"` requiere autenticación; de lo contrario, redirige al login.
- * - **¿Cómo interactúa con el sistema en general?**: Es consultada por la función `proxy` en cada petición entrante.
- * - **¿Cuál es su importancia?**: Define la lista blanca de acceso público para evitar que usuarios no autenticados naveguen en áreas privadas.
+ * Chequeo OPTIMISTA de sesión antes de cada página (Next 16: antes "middleware").
+ * Solo mira si la cookie tiene un JWT legible y sin expirar; no verifica la firma
+ * (eso lo hace el backend en cada petición). Sirve para redirigir rápido, no
+ * como única protección de los datos.
  */
-const PUBLIC_ROUTES = ["/login", "/register", "/ui"];
 
+/**
+ * Rutas que se ven sin iniciar sesión. "/" NO está: sin sesión, la raíz lleva
+ * al login. Si el listado público de eventos termina en "/", hay que agregarla.
+ */
+const PUBLIC_ROUTES = ["/login", "/register"];
 /**
  * Rutas exclusivas para invitados (GUEST_ONLY_ROUTES)
  *

@@ -1,10 +1,4 @@
 /**
- * @file user.dto.ts
- * @description Data Transfer Object (DTO) para la comunicación HTTP con la API de Usuarios.
- * Modela con fidelidad la respuesta JSON emitida por los endpoints de salida `GET /users` y `GET /users/:id` del backend.
- */
-
-/**
  * DTO que representa un usuario tal como lo entrega la API REST externa de NestJS.
  *
  * - **¿Qué hace?**:
@@ -27,9 +21,7 @@ export interface UserDto {
   fullName: string;
   isActive: boolean;
   twoFactorEnabled: boolean;
-  zoneId: number | null;
-  /** Marca de tiempo de creación en formato ISO 8601. */
-  createdAt: string;
-  /** Estructura anidada devuelta por la relación de roles en TypeORM. */
-  userRoles?: { role: { name: string } }[];
+  zoneId?: number | null;
+  createdAt: string;            // ISO
+  userRoles?: { role: { name: string } }[];  // ← nested, snake/camel según backend
 }

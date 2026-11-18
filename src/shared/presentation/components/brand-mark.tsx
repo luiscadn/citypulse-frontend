@@ -10,10 +10,16 @@ import { cn } from "../cn";
  * - **¿Cuál es su importancia?**: Refuerza la identidad visual y temática de la plataforma ("el pulso de la ciudad")
  *   mediante gráficos vectoriales ligeros sin requerir la descarga de imágenes pesadas tipo PNG o WebP.
  */
-export function LogoSymbol({ className, inverse = false }: { className?: string; inverse?: boolean }) {
+function LogoSymbol({ className, inverse = false }: { className?: string; inverse?: boolean }) {
   return (
     <svg viewBox="0 0 32 32" className={cn("size-8 shrink-0", className)} aria-hidden>
-      <rect width="32" height="32" rx="9" className={inverse ? "fill-white" : "fill-primary"} />
+      <defs>
+        <linearGradient id="citypulse-logo" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="var(--primary)" />
+          <stop offset="1" stopColor="var(--accent)" />
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="9" className={inverse ? "fill-white" : undefined} fill={inverse ? undefined : "url(#citypulse-logo)"} />
       <path
         d="M16 5.5c-4.7 0-8.5 3.6-8.5 8.2 0 6 8.5 12.8 8.5 12.8s8.5-6.8 8.5-12.8c0-4.6-3.8-8.2-8.5-8.2z"
         className={inverse ? "fill-brand" : "fill-white"}
@@ -24,7 +30,8 @@ export function LogoSymbol({ className, inverse = false }: { className?: string;
         strokeWidth="1.9"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={inverse ? "stroke-white" : "stroke-primary"}
+        strokeDasharray="24"
+        className={cn("animate-draw", inverse ? "stroke-white" : "stroke-primary")}
       />
     </svg>
   );
