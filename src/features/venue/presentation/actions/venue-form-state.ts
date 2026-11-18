@@ -31,12 +31,19 @@ export type VenueFieldErrors = Partial<Record<keyof VenueFormValues, string>>;
 export interface VenueFormState {
   values: VenueFormValues;
   errors: VenueFieldErrors;
-  /** Error general, no ligado a un campo */
+  /** Mensaje de error global no asociado a un campo específico. */
   error?: string;
   /** Mensaje de éxito tras una operación completada. */
   success?: string;
 }
 
+/**
+ * Valores iniciales vacíos para el formulario de alta de un lugar.
+ *
+ * - **¿Qué hace?**: Provee cadenas vacías para todos los campos (`name`, `address`, `description`, `zoneId`, `latitude`, `longitude`).
+ * - **¿Cómo interactúa con el sistema en general?**: Usado por `initialVenueFormState` cuando no se pasan valores predeterminados.
+ * - **¿Cuál es su importancia?**: Evita campos no controlados (`undefined`) en los inputs controlados del formulario.
+ */
 export const emptyVenueFormValues: VenueFormValues = {
   name: "",
   address: "",

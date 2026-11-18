@@ -6,7 +6,17 @@ import { EVIDENCE_CAPTION_MAX_LENGTH, EVIDENCE_URL_MAX_LENGTH } from "../../doma
 import { EVIDENCE_LABELS } from "../evidence-labels";
 import { useAddEvidence } from "../hooks/use-add-evidence";
 
-/** Adjunta una evidencia (foto, enlace o documento publicados en la web) a un reporte. */
+/**
+ * Formulario interactivo para adjuntar evidencias que respalden un reporte de evento.
+ *
+ * - **¿Qué hace?**: Renderiza controles para seleccionar el tipo de prueba (`FOTO`, `ENLACE`, `DOCUMENTO`),
+ *   el enlace web público (`url`) y una descripción explicativa (`caption`). Utiliza el hook fachada `useAddEvidence`
+ *   para gestionar el estado y la acción del servidor.
+ * - **¿Cómo interactúa con el sistema en general?**: Incrustado en la página de detalle de evento (`EventDetail`)
+ *   cuando el reporte está pendiente y el usuario en sesión es el autor o un administrador.
+ * - **¿Cuál es su importancia?**: Permite cumplir el requisito funcional RF-3.4 facilitando la carga de pruebas
+ *   sin recargas completas de página y mostrando errores inline si la URL o el tipo son incorrectos.
+ */
 export function EvidenceForm({ eventId }: { eventId: string }) {
   const { state, formAction, pending } = useAddEvidence();
 

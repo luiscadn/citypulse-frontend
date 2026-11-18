@@ -213,7 +213,16 @@ export function parseEventFilters(raw: {
   };
 }
 
-/** Solo direcciones web (http o https): descarta javascript:, data: y similares. */
+/**
+ * Verifica si una URL tiene un protocolo web seguro y válido (`http:` o `https:`).
+ *
+ * - **¿Qué hace?**: Parsea la cadena recibida mediante la API `URL` del navegador/Node.js
+ *   y confirma que el protocolo sea exclusivamente `"http:"` o `"https:"`.
+ * - **¿Cómo interactúa con el sistema en general?**: Usada en `normalizeEvidenceInput` antes de registrar
+ *   evidencias de eventos y en `EvidenceList` antes de renderizar un enlace cliqueable `<a>`.
+ * - **¿Cuál es su importancia?**: Previene vulnerabilidades críticas de Cross-Site Scripting (XSS) y ataques
+ *   de inyección de esquemas peligrosos como `javascript:`, `data:` o `file:`.
+ */
 export function isWebUrl(value: string): boolean {
   try {
     const { protocol } = new URL(value);
@@ -223,7 +232,14 @@ export function isWebUrl(value: string): boolean {
   }
 }
 
-/** Réplica UX de CreateEvidenceDto: tipo conocido, enlace web y descripción corta. */
+/**
+ * Normaliza y valida los datos de entrada para adjuntar una evidencia a un reporte.
+ *
+ * - **¿Qué hace?**: Verifica que el tipo de evidencia pertenezca a `EVIDENCE_TYPES`, que la URL sea un enlace web válido
+ *   dentro del límite de longitud, y que la descripción opcional no sobrepase el tamaño máximo permitido.
+ * - **¿Cómo interactúa con el sistema en general?**: Es la regla de dominio invocada en `AddEvidenceUseCase` previa al envío a la API REST.
+ * - **¿Cuál es su importancia?**: Filtra información inválida en el frontend antes de realizar llamadas de red innecesarias.
+ */
 export function normalizeEvidenceInput(draft: EvidenceDraft): EvidenceInput {
   if (!isOneOf(EVIDENCE_TYPES, draft.type)) throw new EvidenceTypeError();
   const url = draft.url.trim();
@@ -233,7 +249,13 @@ export function normalizeEvidenceInput(draft: EvidenceDraft): EvidenceInput {
   return { type: draft.type, url, caption };
 }
 
-/** Réplica UX de RejectEventDto: el motivo es obligatorio. */
+/**
+ * Normaliza y valida el motivo de rechazo de un reporte comunitario.
+ *
+ * - **¿Qué hace?**: Limpia espacios en blanco del texto de justificación, verifica que no esté vacío y que no exceda el límite máximo de caracteres.
+ * - **¿Cómo interactúa con el sistema en general?**: Invocada por `RejectReportUseCase` antes de registrar el rechazo administrativo.
+ * - **¿Cuál es su importancia?**: Asegura que el usuario que reportó el evento reciba una retroalimentación clara y sustanciosa sobre por qué fue declinado.
+ */
 export function normalizeRejectionReason(reason: string): string {
   const clean = reason.trim();
   if (!clean) throw new RejectionReasonRequiredError();
@@ -243,7 +265,14 @@ export function normalizeRejectionReason(reason: string): string {
 
 const PRICE = /^\d+(\.\d{1,2})?$/;
 
-/** Réplica UX de CreateOfficialDto: lo mismo que un reporte, más lugar, visibilidad, cupo y precio. */
+/**
+ * Normaliza y valida los datos para la publicación de un evento oficial institucional.
+ *
+ * - **¿Qué hace?**: Comprueba el ID del venue registrado, valida los campos base mediante `normalizeEventInput`,
+ *   valida la visibilidad (`PUBLICO` o `PRIVADO`), y comprueba que cupo y precio sean válidos (o nulos).
+ * - **¿Cómo interactúa con el sistema en general?**: Utilizada por `PublishOfficialEventUseCase` y `publishOfficialEventAction`.
+ * - **¿Cuál es su importancia?**: Garantiza consistencia estricta en eventos institucionales vinculados a recintos físicos registrados.
+ */
 export function normalizeOfficialEventInput(draft: OfficialEventDraft): OfficialEventInput {
   if (!isPositiveInteger(draft.venueId)) throw new OfficialVenueRequiredError();
   const base = normalizeEventInput(draft);

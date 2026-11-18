@@ -30,6 +30,13 @@ export function toUser(dto: UserDto): User {
   });
 }
 
+/**
+ * Función auxiliar para normalizar y validar los roles recibidos desde el DTO.
+ *
+ * - **¿Qué hace?**: Extrae el nombre de cada rol anidado y filtra solo aquellos que coincidan con los valores del enum `RoleName`.
+ * - **¿Cómo interactúa con el sistema en general?**: Usada internamente en `toUser`.
+ * - **¿Cuál es su importancia?**: Previene que valores arbitrarios o corruptos de la base de datos rompan el tipado del dominio.
+ */
 function normalizeRoles(raw: UserDto['userRoles']): RoleName[] {
   const valid = Object.values(RoleName);
   const roles = (raw ?? [])

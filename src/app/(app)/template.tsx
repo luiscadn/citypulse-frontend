@@ -1,8 +1,16 @@
 import { ViewTransition } from "react";
 
 /**
- * A diferencia del layout, el template se vuelve a montar en cada navegación: aquí el
- * contenido sale desvaneciéndose y la página nueva entra subiendo (estilos en globals.css).
+ * Plantilla de Envoltorio de Rutas de la Aplicación (Next.js App Router Template)
+ *
+ * - **¿Qué hace?**: Envuelve el contenido de cada página bajo el grupo `(app)` dentro del componente
+ *   experimental `<ViewTransition>` de React 19, configurando animaciones de entrada (`page-enter`)
+ *   y salida (`page-exit`) declaradas en `globals.css`.
+ * - **¿Cómo interactúa con el sistema en general?**: Se ubica en la jerarquía del App Router entre `layout.tsx` y `page.tsx`.
+ *   A diferencia de un `layout` (que preserva su estado e instancia entre cambios de ruta), un `template` se desmonta
+ *   y se vuelve a montar en cada navegación interna.
+ * - **¿Cuál es su importancia?**: Permite transiciones visuales fluidas (View Transitions API) al navegar entre vistas,
+ *   reiniciando estados de animación y ofreciendo una sensación nativa tipo SPA sin requerir librerías externas de animación pesadas.
  */
 export default function AppTemplate({ children }: { children: React.ReactNode }) {
   return (

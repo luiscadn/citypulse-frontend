@@ -34,15 +34,34 @@ const VIEW_CAMERA: Record<ViewMode, { pitch: number; bearing: number }> = {
   top: { pitch: 0, bearing: 0 },
 };
 
+/**
+ * Normaliza un ángulo de rotación (bearing) en grados al rango cerrado de 0° a 359°.
+ *
+ * - **¿Qué hace?**: Aplica una operación de módulo positivo redondeado a entero.
+ * - **¿Cómo interactúa con el sistema en general?**: Usada al sincronizar el slider de rotación y su etiqueta en el DOM.
+ * - **¿Cuál es su importancia?**: Evita valores negativos o ángulos superiores a 360° en la interfaz de control.
+ */
 function normalizeBearing(bearing: number): number {
   return Math.round(((bearing % 360) + 360) % 360);
 }
 
 /**
- * Mapa 3D de Cali con los lugares verificados. Empieza como portada (gira despacio
- * detrás del título) y al pulsar "Explorar" la cámara vuela hacia los lugares y el
- * mapa se vuelve interactivo. El mapa en sí vive en shared-map.ts y se conserva entre
- * navegaciones.
+ * Componente Interactivo del Mapa 3D de Santiago de Cali con Lugares Verificados.
+ *
+ * - **¿Qué hace?**:
+ *   1. Inicializa el canvas WebGL de MapLibre conectándose con el ciclo de vida singleton en `shared-map.ts`.
+ *   2. Despliega una portada panorámica cinemática donde la cámara orbita suavemente alrededor de la ciudad.
+ *   3. Al presionar "Explorar el mapa", transiciona la cámara hacia el centroide de los lugares verificados (`flyTo`),
+ *      habilita los gestos del ratón/pantalla táctil y despliega controles de rotación (360°), perspectiva ("Inclinada" vs "Desde arriba")
+ *      y modo de pantalla completa nativo o por ventana con soporte de tecla Escape.
+ *
+ * - **¿Cómo interactúa con el sistema en general?**:
+ *   Consumido por `CityMapSection` en la página de inicio. Muestra pines interactivos (`Marker`) que enlazan a las páginas
+ *   de detalle de los recintos culturales y deportivos de la ciudad (`/venues/[id]`).
+ *
+ * - **¿Cuál es su importancia?**:
+ *   Es el componente visual insignia de CityPulse, ofreciendo una experiencia inmersiva basada en WebGL con extrusiones 3D
+ *   de edificios, sincronización temática (dark/light) y optimización de rendimiento móvil mediante IntersectionObserver.
  */
 export function CityMap({ venues }: { venues: readonly MappedVenue[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -125,7 +144,13 @@ export function CityMap({ venues }: { venues: readonly MappedVenue[] }) {
     };
   }, [venues]);
 
-  /** "Girar 360°": la cámara orbita alrededor del punto que se está mirando. */
+  /**
+   * Alterna la rotación automática panorámica de 360° de la cámara.
+   *
+   * - **¿Qué hace?**: Inicia o detiene la órbita de la cámara a velocidad constante (`ORBIT_SPIN`), actualizando el estado `orbiting`.
+   * - **¿Cómo interactúa con el sistema en general?**: Ejecutada al hacer clic en el botón "Girar 360°" / "Detener giro".
+   * - **¿Cuál es su importancia?**: Ofrece una perspectiva dinámica y envolvente del relieve urbano en la vista inclinada.
+   */
   function toggleOrbit() {
     const orbit = handleRef.current?.orbit;
     if (!orbit) return;
@@ -138,13 +163,26 @@ export function CityMap({ venues }: { venues: readonly MappedVenue[] }) {
     }
   }
 
+  /**
+   * Asigna manualmente la rotación de la cámara según el deslizador.
+   *
+   * - **¿Qué hace?**: Detiene la rotación automática e invoca `setBearing(value)` en MapLibre.
+   * - **¿Cómo interactúa con el sistema en general?**: Conectada al evento `onInput` del control `<input type="range">`.
+   * - **¿Cuál es su importancia?**: Permite al usuario orientar la vista hacia cualquier punto cardinal.
+   */
   function setBearing(value: number) {
     handleRef.current?.orbit.stop();
     setOrbiting(false);
     handleRef.current?.map.setBearing(value);
   }
 
-  /** Cambia el ángulo de la cámara; el mapa sigue siendo 3D. */
+  /**
+   * Cambia el ángulo de inclinación de la cámara (perspectiva 3D vs vista cenital).
+   *
+   * - **¿Qué hace?**: Actualiza el modo visual (`tilted` a 64° de pitch o `top` a 0° cenital) aplicando una transición suave `easeTo`.
+   * - **¿Cómo interactúa con el sistema en general?**: Controlada por los botones de modo "Inclinada" y "Desde arriba".
+   * - **¿Cuál es su importancia?**: Permite alternar entre una vista arquitectónica tridimensional y una vista de plano cartográfico tradicional.
+   */
   function changeMode(next: ViewMode) {
     const map = handleRef.current?.map;
     setMode(next);
@@ -185,6 +223,14 @@ export function CityMap({ venues }: { venues: readonly MappedVenue[] }) {
     };
   }, [expanded]);
 
+  /**
+   * Alterna el modo de pantalla completa nativo o por ventana.
+   *
+   * - **¿Qué hace?**: Intenta utilizar la API `requestFullscreen()` del navegador; si es rechazada o no está disponible,
+   *   aplica un respaldo de pantalla completa con posición CSS fija (`fixed inset-0 z-50`).
+   * - **¿Cómo interactúa con el sistema en general?**: Conectada al botón de pantalla completa en la esquina superior derecha.
+   * - **¿Cuál es su importancia?**: Garantiza compatibilidad universal, incluyendo navegadores móviles restrictivos (como Safari en iOS).
+   */
   async function toggleFullscreen() {
     if (expanded === "native") return void document.exitFullscreen();
     if (expanded === "window") return setExpanded(false);
@@ -201,6 +247,14 @@ export function CityMap({ venues }: { venues: readonly MappedVenue[] }) {
     setExpanded("window");
   }
 
+  /**
+   * Transiciona la experiencia desde la portada cinematográfica hacia la exploración interactiva.
+   *
+   * - **¿Qué hace?**: Oculta el velo de portada, detiene la rotación pasiva, habilita gestos interactivos,
+   *   muestra controles de brújula y zoom, y realiza un vuelo de cámara cinemático (`flyTo`) hacia el promedio de coordenadas de los lugares.
+   * - **¿Cómo interactúa con el sistema en general?**: Disparada por el botón principal "Explorar el mapa".
+   * - **¿Cuál es su importancia?**: Brinda una bienvenida visual atractiva antes de ceder la interactividad completa al usuario.
+   */
   function explore() {
     const handle = handleRef.current;
     if (!handle) return;

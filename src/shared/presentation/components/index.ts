@@ -1,5 +1,13 @@
-// Componentes base de CityPulse. Impórtalos desde aquí:
-//   import { Button, Card, TextField } from "@/shared/presentation/components";
+/**
+ * Barril de exportación (Barrel File) de Componentes Compartidos de Presentación
+ *
+ * - **¿Qué hace?**: Reexporta de forma centralizada todos los componentes base del sistema de diseño de CityPulse:
+ *   botones, controles de formulario, insignias, tarjetas, contenedores, indicadores de carga y estados de ruta.
+ * - **¿Cómo interactúa con el sistema en general?**: Permite importar cualquier componente base desde un único módulo
+ *   (ej. `import { Button, Card, TextField } from "@/shared/presentation/components"`), evitando rutas de importación relativas largas.
+ * - **¿Cuál es su importancia?**: Simplifica las importaciones en toda la aplicación, desacopla la ubicación física interna
+ *   de los componentes individuales y ofrece una API pública limpia para el sistema de diseño.
+ */
 export { Button, ButtonLink, buttonClasses } from "./button";
 export { Spinner } from "./spinner";
 export {

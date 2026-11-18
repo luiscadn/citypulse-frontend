@@ -25,6 +25,14 @@ import type {
   OfficialEventFormValues,
 } from "./event-form-state";
 
+/**
+ * Lee y extrae los campos textuales del formulario de publicación de evento oficial.
+ *
+ * - **¿Qué hace?**: Mapea los valores recibidos en `FormData` (`title`, `description`, `addressText`,
+ *   `startDate`, `endDate`, `venueId`, `visibility`, `capacity`, `ticketPrice`) a una estructura tipada.
+ * - **¿Cómo interactúa con el sistema en general?**: Utilizada al inicio de `publishOfficialEventAction`.
+ * - **¿Cuál es su importancia?**: Centraliza la captura de inputs HTML asegurando que no existan valores `null`.
+ */
 function readValues(formData: FormData): OfficialEventFormValues {
   const text = (name: string) => String(formData.get(name) ?? "");
   return {
@@ -40,10 +48,23 @@ function readValues(formData: FormData): OfficialEventFormValues {
   };
 }
 
-/** "" es "sin dato"; cualquier otro texto se convierte y lo valida el dominio. */
+/**
+ * Parsea un número opcional ingresado en un formulario web.
+ *
+ * - **¿Qué hace?**: Devuelve `null` si el texto recortado está vacío; de lo contrario, lo castea a `Number`.
+ * - **¿Cómo interactúa con el sistema en general?**: Usado para procesar campos numéricos opcionales como `capacity` o `ticketPrice`.
+ * - **¿Cuál es su importancia?**: Evita que cadenas vacías se conviertan accidentalmente en `0` antes de pasar por las reglas de validación.
+ */
 const optionalNumber = (value: string) => (value.trim() === "" ? null : Number(value));
 
-/** Ubica el error en el campo que lo causó; si no es de un campo, va como error general. */
+/**
+ * Transforma una excepción de dominio en un estado de error granular por campo.
+ *
+ * - **¿Qué hace?**: Evalúa la clase de error lanzada durante la validación del evento oficial y asigna el mensaje
+ *   al campo del formulario correspondiente (`title`, `venueId`, `addressText`, `startDate`, `endDate`, etc.).
+ * - **¿Cómo interactúa con el sistema en general?**: Provee el estado `OfficialEventFormState` consumido por `OfficialEventForm`.
+ * - **¿Cuál es su importancia?**: Muestra los mensajes de validación justo al lado del input que causó el fallo, guiando al usuario.
+ */
 function toErrorState(values: OfficialEventFormValues, error: unknown): OfficialEventFormState {
   const field = (errors: OfficialEventFieldErrors): OfficialEventFormState => ({ values, errors });
   const message = actionErrorMessage(error);
@@ -65,6 +86,17 @@ function toErrorState(values: OfficialEventFormValues, error: unknown): Official
   return { values, errors: {}, error: message };
 }
 
+/**
+ * Server Action: Publicar Evento Oficial en un Recinto Propio
+ *
+ * - **¿Qué hace?**: Valida la sesión activa y los permisos (`canPublishOfficialEvents`), verifica que el lugar
+ *   elegido pertenezca al usuario autenticado, ejecuta `publishOfficialEventUseCase.execute` y redirige
+ *   a la página de detalle del nuevo evento (`/events/[id]`).
+ * - **¿Cómo interactúa con el sistema en general?**: Conecta el formulario `OfficialEventForm` y su hook
+ *   `useOfficialEventForm` con los casos de uso de eventos y recintos.
+ * - **¿Cuál es su importancia?**: Aplica autorización estricta en el servidor evitando que un usuario publique
+ *   eventos en recintos que no le pertenecen (Broken Object Level Authorization - BOLA).
+ */
 export async function publishOfficialEventAction(
   _prev: OfficialEventFormState,
   formData: FormData,

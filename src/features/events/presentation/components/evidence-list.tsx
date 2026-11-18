@@ -3,7 +3,15 @@ import type { EventEvidence } from "../../domain/entities/event";
 import { isWebUrl } from "../../domain/rules/event-input";
 import { EVIDENCE_LABELS } from "../evidence-labels";
 
-/** Evidencias de un reporte. Solo se enlazan direcciones web: la URL la escribe cualquier usuario. */
+/**
+ * Componente de presentación para listar las evidencias adjuntas a un evento.
+ *
+ * - **¿Qué hace?**: Renderiza una lista accesible de evidencias mostrando una insignia (`Badge`) con el tipo de evidencia,
+ *   y un enlace web seguro (`<a>` con `rel="noopener noreferrer"`) solo si la URL es un protocolo web válido (`isWebUrl`).
+ * - **¿Cómo interactúa con el sistema en general?**: Se utiliza en `EventDetail` y en cada tarjeta de reporte dentro de `ModerationQueue`.
+ * - **¿Cuál es su importancia?**: Ofrece a moderadores y asistentes acceso directo a las fuentes de verificación ciudadana,
+ *   mitigando riesgos de enlaces maliciosos mediante la validación previa con `isWebUrl`.
+ */
 export function EvidenceList({ evidences }: { evidences: readonly EventEvidence[] }) {
   return (
     <ul className="flex flex-col gap-2 text-sm">

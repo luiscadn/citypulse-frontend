@@ -26,12 +26,12 @@ export interface Event {
   readonly id: string;
   readonly title: string;
   readonly description: string | null;
-  /** Fechas ISO */
+  /** Fechas en formato ISO 8601 (UTC). */
   readonly startDate: string;
   readonly endDate: string;
   readonly zone: EventZone;
   readonly venue: EventVenue | null;
-  /** Dirección libre cuando no hay lugar registrado */
+  /** Dirección en texto libre cuando el evento no se realiza en un venue registrado. */
   readonly addressText: string | null;
   readonly origin: EventOrigin;
   readonly status: EventStatus;
@@ -78,6 +78,13 @@ export interface EventAuthor {
   readonly fullName: string;
 }
 
+/**
+ * Tipos de evidencia permitidos que pueden respaldar un reporte comunitario de evento.
+ *
+ * - **¿Qué hace?**: Define la tupla inmutable de categorías de soporte (`FOTO`, `ENLACE`, `DOCUMENTO`).
+ * - **¿Cómo interactúa con el sistema en general?**: Utilizado para validar entradas en formularios y contratos DTO.
+ * - **¿Cuál es su importancia?**: Restringe los formatos aceptables para el proceso de auditoría y moderación ciudadana.
+ */
 export const EVIDENCE_TYPES = ["FOTO", "ENLACE", "DOCUMENTO"] as const;
 
 export type EvidenceType = (typeof EVIDENCE_TYPES)[number];
@@ -206,9 +213,16 @@ export interface EventDraft {
 const isNullOr = <T>(value: T | null, check: (v: T) => boolean) => value === null || check(value);
 
 /**
- * Única forma de construir un Event: comprueba sus invariantes (las mismas que
- * la base de datos) y lo congela. Función y no clase: las entidades viajan a
- * Client Components como objetos planos.
+ * Función fábrica para construir y validar una entidad de dominio `Event`.
+ *
+ * - **¿Qué hace?**: Comprueba exhaustivamente todas las invariantes de negocio del evento (ID no vacío,
+ *   título presente, fechas ISO parseables, orden cronológico `startDate < endDate`, identificadores positivos de zona,
+ *   lugar y autor, y valores válidos de enumeraciones) y retorna un objeto inmutable sellado con `Object.freeze()`.
+ * - **¿Cómo interactúa con el sistema en general?**: Es utilizada por los mappers de infraestructura y casos de uso
+ *   al instanciar eventos. Al ser una función pura y retornar un objeto plano congelado, puede transferirse
+ *   sin problemas entre Server Components y Client Components en Next.js.
+ * - **¿Cuál es su importancia?**: Asegura que jamás exista en memoria un evento con estado inconsistente o corrupto
+ *   (Domain Driven Design - Invariants & Self-Validation), impidiendo errores en tiempo de ejecución.
  */
 export function createEvent(props: Event): Event {
   if (!isNonBlank(props.id)) throw new InvalidEventError("El evento necesita un ID");
@@ -239,7 +253,14 @@ export function createEvent(props: Event): Event {
   });
 }
 
-/** Igual que createEvent, más las invariantes del detalle (asistentes y evidencias). */
+/**
+ * Función fábrica para construir y validar una entidad `EventDetail`.
+ *
+ * - **¿Qué hace?**: Valida las invariantes base de `Event`, comprueba que el conteo de asistentes sea un entero mayor
+ *   o igual a cero, congela la lista de evidencias adjuntas y retorna el objeto congelado.
+ * - **¿Cómo interactúa con el sistema en general?**: Llamada en `GetEventUseCase` y `HttpEventRepository` al armar la vista completa.
+ * - **¿Cuál es su importancia?**: Protege la integridad de la vista detallada de un evento, evitando números negativos de asistentes o evidencias mal formadas.
+ */
 export function createEventDetail(props: EventDetail): EventDetail {
   const event = createEvent(props);
   if (!Number.isInteger(props.attendeeCount) || props.attendeeCount < 0) {
@@ -248,6 +269,13 @@ export function createEventDetail(props: EventDetail): EventDetail {
   return Object.freeze({ ...props, ...event, evidences: freezeEvidences(props.evidences) });
 }
 
+/**
+ * Función auxiliar para validar y congelar una colección de evidencias de evento.
+ *
+ * - **¿Qué hace?**: Recorre cada evidencia verificando ID positivo, URL no vacía y tipo perteneciente a `EVIDENCE_TYPES`.
+ * - **¿Cómo interactúa con el sistema en general?**: Utilizada por `createEventDetail` y `createPendingReport`.
+ * - **¿Cuál es su importancia?**: Garantiza inmutabilidad profunda (deep freeze) en colecciones de evidencias.
+ */
 function freezeEvidences(evidences: readonly EventEvidence[]): readonly EventEvidence[] {
   for (const evidence of evidences) {
     if (!isPositiveInt(evidence.id) || !isNonBlank(evidence.url) || !isOneOf(EVIDENCE_TYPES, evidence.type)) {
@@ -257,12 +285,24 @@ function freezeEvidences(evidences: readonly EventEvidence[]): readonly EventEvi
   return Object.freeze(evidences.map((evidence) => Object.freeze({ ...evidence })));
 }
 
-/** Reporte en la cola de moderación: está en revisión y trae sus evidencias. */
+/**
+ * Entidad que representa un Reporte en la cola de moderación.
+ *
+ * - **¿Qué hace?**: Extiende `Event` incluyendo obligatoriamente el arreglo de evidencias adjuntas.
+ * - **¿Cómo interactúa con el sistema en general?**: Devuelta por `ListPendingReportsUseCase` y consumida por `ModerationQueue`.
+ * - **¿Cuál es su importancia?**: Modela explícitamente el estado de revisión administrativa para que los moderadores inspeccionen pruebas antes de aprobar.
+ */
 export interface PendingReport extends Event {
   readonly evidences: readonly EventEvidence[];
 }
 
-/** Igual que createEvent, más: solo un reporte en revisión puede estar en la cola. */
+/**
+ * Función fábrica para construir y validar un `PendingReport`.
+ *
+ * - **¿Qué hace?**: Valida las invariantes del evento, comprueba que su estado sea estrictamente `REPORTADO`, y congela sus evidencias.
+ * - **¿Cómo interactúa con el sistema en general?**: Usada al mapear reportes pendientes desde la capa de infraestructura.
+ * - **¿Cuál es su importancia?**: Evita que eventos confirmados o cancelados se cuelen por error en la bandeja de moderación.
+ */
 export function createPendingReport(props: PendingReport): PendingReport {
   const event = createEvent(props);
   if (event.status !== EventStatus.REPORTADO) {
@@ -271,21 +311,39 @@ export function createPendingReport(props: PendingReport): PendingReport {
   return Object.freeze({ ...event, evidences: freezeEvidences(props.evidences) });
 }
 
-/** Evidencia ya validada, lista para adjuntar a un reporte. */
+/**
+ * Datos normalizados y validados para adjuntar una nueva evidencia.
+ *
+ * - **¿Qué hace?**: Especifica el tipo de evidencia, la URL validada y una descripción opcional.
+ * - **¿Cómo interactúa con el sistema en general?**: Contrato de entrada de `AddEvidenceUseCase` y `EventRepository.addEvidence`.
+ * - **¿Cuál es su importancia?**: Define un modelo limpio y seguro antes de enviar la petición a la API.
+ */
 export interface EvidenceInput {
   readonly type: EvidenceType;
   readonly url: string;
   readonly caption: string | null;
 }
 
-/** Lo que llega del formulario de evidencia, antes de validarlo. */
+/**
+ * Borrador crudo proveniente del formulario web de evidencias.
+ *
+ * - **¿Qué hace?**: Recibe los campos crudos en string desde el formulario HTML de adjuntar evidencia.
+ * - **¿Cómo interactúa con el sistema en general?**: Capturado por `addEvidenceAction` y enviado a `normalizeEvidenceInput`.
+ * - **¿Cuál es su importancia?**: Tolera cadenas no validadas antes de aplicar reglas estrictas de dominio.
+ */
 export interface EvidenceDraft {
   type: string;
   url: string;
   caption?: string | null;
 }
 
-/** Evento oficial ya validado: un evento en un lugar propio, con sus datos de público. */
+/**
+ * Datos normalizados para publicar un evento oficial institucional.
+ *
+ * - **¿Qué hace?**: Extiende `EventInput` agregando `venueId`, `visibility`, `capacity` y `ticketPrice`.
+ * - **¿Cómo interactúa con el sistema en general?**: Contrato para `PublishOfficialEventUseCase` y `EventRepository.publishOfficial`.
+ * - **¿Cuál es su importancia?**: Exige los campos requeridos para eventos organizados en recintos oficiales por administradores o propietarios.
+ */
 export interface OfficialEventInput extends EventInput {
   readonly venueId: number;
   readonly visibility: EventVisibility;
@@ -293,7 +351,13 @@ export interface OfficialEventInput extends EventInput {
   readonly ticketPrice: number | null;
 }
 
-/** Lo que llega del formulario de evento oficial, antes de validarlo. */
+/**
+ * Borrador crudo de evento oficial proveniente de la interfaz de usuario.
+ *
+ * - **¿Qué hace?**: Recibe los valores en string y números opcionales ingresados en el formulario de evento oficial.
+ * - **¿Cómo interactúa con el sistema en general?**: Recibido por `publishOfficialEventAction` y transformado por `normalizeOfficialEventInput`.
+ * - **¿Cuál es su importancia?**: Conecta el formulario web con la lógica de negocio asegurando tipado flexible previo a la validación.
+ */
 export interface OfficialEventDraft extends EventDraft {
   venueId: number;
   visibility: string;

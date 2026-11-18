@@ -22,6 +22,8 @@ export interface UserDto {
   isActive: boolean;
   twoFactorEnabled: boolean;
   zoneId?: number | null;
+  /** Marca de tiempo de creación en formato ISO 8601. */
   createdAt: string;            // ISO
+  /** Estructura anidada devuelta por la relación de roles en TypeORM. */
   userRoles?: { role: { name: string } }[];  // ← nested, snake/camel según backend
 }

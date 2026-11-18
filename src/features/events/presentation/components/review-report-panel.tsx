@@ -5,7 +5,18 @@ import { Alert, Button, TextareaField } from "@/shared/presentation/components";
 import { REJECTION_REASON_MAX_LENGTH } from "../../domain/rules/event-limits";
 import { useReviewReport } from "../hooks/use-review-report";
 
-/** Confirmar o rechazar un reporte (solo ADMIN). Rechazar pide un motivo, que verá su autor. */
+/**
+ * Panel interactivo para aprobar o rechazar reportes de eventos ciudadanos.
+ *
+ * - **¿Qué hace?**: Ofrece dos caminos de moderación:
+ *   1. Confirmación inmediata mediante el botón "Confirmar" (dispara `confirm`).
+ *   2. Apertura del subformulario de rechazo al pulsar "Rechazar…", solicitando un motivo obligatorio (`reason`)
+ *      que será visible para el autor del reporte.
+ * - **¿Cómo interactúa con el sistema en general?**: Utiliza el hook fachada `useReviewReport`, comunicándose
+ *   con las Server Actions `confirmReportAction` y `rejectReportAction`. Incrustado en `ModerationQueue` y `EventDetail`.
+ * - **¿Cuál es su importancia?**: Cumple con los requisitos funcionales RF-4.3 y RF-4.4, proporcionando una interfaz
+ *   intuitiva, accesible y libre de diálogos modales molestos (`alert`/`prompt`).
+ */
 export function ReviewReportPanel({ eventId }: { eventId: string }) {
   const { confirm, reject, pending, error, reason } = useReviewReport();
   const [rejecting, setRejecting] = useState(false);

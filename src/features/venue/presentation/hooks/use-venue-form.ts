@@ -6,8 +6,13 @@ import { createVenueAction, updateVenueAction } from "../actions/venue.actions";
 import { initialVenueFormState } from "../actions/venue-form-state";
 
 /**
- * Hook fachada del formulario de lugar: elige la acción (registrar o editar)
- * y expone su estado. El componente no conoce las acciones del servidor.
+ * Hook fachada polimórfico para el formulario de recintos (registro o edición).
+ *
+ * - **¿Qué hace?**: Detecta si se está editando un lugar existente (`editing = venue !== undefined`),
+ *   selecciona `updateVenueAction` o `createVenueAction` e inicializa el estado con los valores del lugar,
+ *   incluyendo latitud y longitud geográficas.
+ * - **¿Cómo interactúa con el sistema en general?**: Consumido por `VenueForm` en `/venues/mine/new` y `/venues/[id]/edit`.
+ * - **¿Cuál es su importancia?**: Centraliza la lógica de mutación de recintos físicos, abstrayendo las acciones del servidor de la vista.
  */
 export function useVenueForm(venue?: Venue) {
   const editing = venue !== undefined;

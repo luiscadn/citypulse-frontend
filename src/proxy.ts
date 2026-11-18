@@ -10,8 +10,12 @@ import { SESSION_COOKIE } from "@/shared/infrastructure/session/session-constant
  */
 
 /**
- * Rutas que se ven sin iniciar sesión. "/" NO está: sin sesión, la raíz lleva
- * al login. Si el listado público de eventos termina en "/", hay que agregarla.
+ * Rutas públicas (PUBLIC_ROUTES): Rutas accesibles sin contar con una sesión activa.
+ *
+ * - **¿Qué hace?**: Enumera los paths del frontend donde un visitante no autenticado puede entrar libremente (`/login`, `/register`).
+ *   La ruta raíz `"/"` requiere autenticación; de lo contrario, redirige al login.
+ * - **¿Cómo interactúa con el sistema en general?**: Es consultada por la función `proxy` en cada petición entrante.
+ * - **¿Cuál es su importancia?**: Define la lista blanca de acceso público para evitar que usuarios no autenticados naveguen en áreas privadas.
  */
 const PUBLIC_ROUTES = ["/login", "/register"];
 /**

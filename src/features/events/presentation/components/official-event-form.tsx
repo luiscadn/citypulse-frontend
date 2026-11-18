@@ -8,7 +8,16 @@ import { useOfficialEventForm } from "../hooks/use-official-event-form";
 
 type VenueOption = Pick<Venue, "id" | "name"> & { zone: Pick<Venue["zone"], "name"> };
 
-/** Publica un evento oficial en uno de tus lugares (OWNER o ADMIN). La zona es la del lugar. */
+/**
+ * Formulario para publicar eventos oficiales institucionales en recintos propios.
+ *
+ * - **¿Qué hace?**: Captura título, descripción, selección del recinto propio registrado (`venueId`),
+ *   indicaciones de acceso, rango de fechas en hora local, visibilidad (`Público`/`Privado`), cupo máximo y precio de entrada.
+ * - **¿Cómo interactúa con el sistema en general?**: Consume el hook fachada `useOfficialEventForm`,
+ *   invocando la Server Action `publishOfficialEventAction` con revalidación y redirección automática.
+ * - **¿Cuál es su importancia?**: Implementa el requisito RF-5.1 para gestores y administradores (`OWNER` / `ADMIN`),
+ *   vinculando de forma coherente el evento a la zona territorial del recinto elegido.
+ */
 export function OfficialEventForm({ venues }: { venues: readonly VenueOption[] }) {
   const { state, formAction, pending } = useOfficialEventForm();
 

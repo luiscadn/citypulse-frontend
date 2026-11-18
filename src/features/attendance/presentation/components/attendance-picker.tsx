@@ -5,7 +5,15 @@ import { ATTENDANCE_STATUSES, type AttendanceStatus } from "../../domain/entitie
 import { ATTENDANCE_LABEL } from "../attendance-labels";
 import { useAttendance } from "../hooks/use-attendance";
 
-/** Botones para responder si asistiré a un evento. La respuesta elegida queda resaltada. */
+/**
+ * Selector interactivo de asistencia para un evento.
+ *
+ * - **¿Qué hace?**: Renderiza un grupo de botones correspondientes a cada opción de asistencia (`Asistiré`, `Tal vez`, `No iré`).
+ *   Resalta con variante `primary` la opción seleccionada actualmente (`aria-pressed`), maneja estados de deshabilitación
+ *   durante la mutación y muestra mensajes de error si la acción falla.
+ * - **¿Cómo interactúa con el sistema en general?**: Consume el hook fachada `useAttendance` e interactúa con `respondAttendanceAction`.
+ * - **¿Cuál es su importancia?**: Brinda una experiencia de usuario rápida y sin recargas de página para interactuar con eventos.
+ */
 export function AttendancePicker({
   eventId,
   initialStatus,

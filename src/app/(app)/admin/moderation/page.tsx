@@ -8,8 +8,15 @@ import { Container, PageHeader } from "@/shared/presentation/components";
 export const metadata: Metadata = { title: "Moderación de reportes" };
 
 /**
- * Cola de reportes por revisar (solo ADMIN). Mientras carga se muestra loading.tsx,
- * si falla error.tsx y si no eres ADMIN, not-found.
+ * Página Administrativa de la Cola de Moderación de Reportes Comunitarios
+ *
+ * - **¿Qué hace?**: Verifica en el servidor la sesión del usuario (`getCurrentUser()`) y evalúa sus permisos
+ *   con `canModerateEvents(user)`. Si no hay sesión, redirige a `/login?from=...`; si no tiene rol `ADMIN`,
+ *   devuelve `notFound()` (404) para no divulgar la existencia de la ruta. Renderiza `ModerationQueue`.
+ * - **¿Cómo interactúa con el sistema en general?**: Es la vista raíz del módulo de moderación en el App Router (`/admin/moderation`).
+ *   Durante su carga asíncrona, Next.js monta automáticamente `loading.tsx`.
+ * - **¿Cuál es su importancia?**: Implementa control de acceso basado en roles (RBAC) a nivel de página (Server Component),
+ *   asegurando que únicamente los administradores autorizados puedan revisar y procesar reportes ciudadanos.
  */
 export default async function ModerationPage() {
   const user = await getCurrentUser();

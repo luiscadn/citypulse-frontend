@@ -6,8 +6,14 @@ import { EvidenceList } from "./evidence-list";
 import { ReviewReportPanel } from "./review-report-panel";
 
 /**
- * Cola de moderación: reportes en revisión que ya tienen evidencias, del más antiguo
- * al más nuevo. Solo la ve un ADMIN (la página lo comprueba antes). Si falla, error.tsx.
+ * Server Component de la Bandeja de Entrada de Moderación (Cola de Reportes)
+ *
+ * - **¿Qué hace?**: Recupera de forma asíncrona todos los reportes comunitarios en revisión a través de
+ *   `eventContainer.listPendingReportsUseCase.execute()`. Si no hay reportes pendientes, muestra un `EmptyState`.
+ *   Si existen, renderiza tarjetas estructuradas con autor, fecha, zona, evidencias y el panel de revisión (`ReviewReportPanel`).
+ * - **¿Cómo interactúa con el sistema en general?**: Consumido exclusivamente por la página administrativa `/admin/moderation`.
+ * - **¿Cuál es su importancia?**: Centraliza el flujo de auditoría administrativa (RF-4.1), permitiendo a los moderadores
+ *   evaluar las evidencias y emitir una decisión (confirmar o rechazar) en un único lugar.
  */
 export async function ModerationQueue() {
   const reports = await eventContainer.listPendingReportsUseCase.execute();

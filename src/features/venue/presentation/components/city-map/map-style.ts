@@ -3,15 +3,26 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 type PaintProperty = Parameters<MapLibreMap["setPaintProperty"]>[1];
 type PaintValue = Parameters<MapLibreMap["setPaintProperty"]>[2];
 
-/** Estilo base: OpenFreeMap (datos de OpenStreetMap, se actualiza cada semana, sin clave). */
+/**
+ * URL del estilo base vectorial servido por OpenFreeMap.
+ *
+ * - **¿Qué hace?**: Apunta al estilo base "positron" basado en datos abiertos de OpenStreetMap.
+ * - **¿Cómo interactúa con el sistema en general?**: Cargado por MapLibre GL en `shared-map.ts`.
+ * - **¿Cuál es su importancia?**: Permite renderizar cartografía completa sin costos de API key ni cuotas de proveedores comerciales.
+ */
 export const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 
-/** Centro de Cali (Plaza de Caycedo, aprox.). */
+/** Coordenadas geográficas del centro histórico de Santiago de Cali (Plaza de Caycedo aprox.). */
 export const CALI_CENTER: [number, number] = [-76.532, 3.4516];
 
-/*
- * Colores del mapa: solo la paleta del equipo o mezclas de dos de sus colores
- * (los mismos color-mix de globals.css, ya calculados porque MapLibre no los entiende).
+/**
+ * Paleta de colores para los temas visuales del mapa (claro y oscuro).
+ *
+ * - **¿Qué hace?**: Define valores hexadecimales específicos para terreno (`land`), agua (`water`),
+ *   parques (`park`), vías (`road`), contornos de vías (`roadCasing`), edificios (`building`) y texto (`label`).
+ * - **¿Cómo interactúa con el sistema en general?**: Armoniza el canvas WebGL de MapLibre con los temas `light` y `dark` de `globals.css`.
+ * - **¿Cuál es su importancia?**: Dado que MapLibre no soporta directamente variables CSS ni `color-mix()`,
+ *   esta paleta precalcula los colores exactos para una integración visual uniforme con el diseño de la aplicación.
  */
 const PALETTE = {
   light: {
@@ -38,11 +49,29 @@ const PALETTE = {
 
 export type MapTheme = keyof typeof PALETTE;
 
+/**
+ * Aplica una propiedad de pintura a una capa de MapLibre solo si dicha capa existe en el estilo actual.
+ *
+ * - **¿Qué hace?**: Verifica la existencia de `layer` mediante `map.getLayer(layer)` antes de invocar `setPaintProperty`.
+ * - **¿Cómo interactúa con el sistema en general?**: Función auxiliar interna de `applyCityTheme`.
+ * - **¿Cuál es su importancia?**: Evita excepciones en tiempo de ejecución si el estilo base no contiene alguna de las capas esperadas.
+ */
 function paintIf(map: MapLibreMap, layer: string, property: PaintProperty, value: PaintValue) {
   if (map.getLayer(layer)) map.setPaintProperty(layer, property, value);
 }
 
-/** Pinta el estilo base con la paleta y agrega los edificios en 3D. */
+/**
+ * Aplica la paleta temática sobre el mapa y genera la extrusión 3D de edificaciones.
+ *
+ * - **¿Qué hace?**:
+ *   1. Recorre y re-pinta capas de fondo, agua, parques, vías terrestres y etiquetas de texto según el tema (`light` o `dark`).
+ *   2. Agrega dinámicamente la capa de extrusión volumétrica `building-3d` con tipo `fill-extrusion`,
+ *      usando la altura real de OpenStreetMap (`render_height`) y una interpolación lineal según el nivel de zoom (13 a 15).
+ * - **¿Cómo interactúa con el sistema en general?**: Llamada al inicializar el mapa en `shared-map.ts` y cada vez que
+ *   cambia el atributo `data-theme` en el elemento `<html>` del documento.
+ * - **¿Cuál es su importancia?**: Transforma un mapa plano 2D en una experiencia tridimensional inmersiva de la ciudad,
+ *   sincronizada en tiempo real con el modo oscuro/claro del sistema.
+ */
 export function applyCityTheme(map: MapLibreMap, theme: MapTheme) {
   const c = PALETTE[theme];
   const style = map.getStyle();
@@ -91,4 +120,3 @@ export function applyCityTheme(map: MapLibreMap, theme: MapTheme) {
     map.setPaintProperty("building-3d", "fill-extrusion-color", c.building);
   }
 }
-

@@ -4,11 +4,16 @@ import type { MappedVenue } from "../../../domain/entities/venue";
 import { CameraOrbit } from "./camera-orbit";
 import { applyCityTheme, CALI_CENTER, MAP_STYLE_URL, type MapTheme } from "./map-style";
 
-/*
- * Un solo mapa para toda la sesión. Crear y destruir un mapa WebGL es caro: al salir del
- * inicio, destruirlo bloqueaba la navegación casi un segundo, y al volver había que bajar
- * otra vez estilo, mosaicos y edificios. Ahora el mapa se separa del DOM al salir y se
- * vuelve a montar al regresar, con todo ya cargado.
+/**
+ * Gestión del Ciclo de Vida Singleton de la Instancia de MapLibre GL en la Sesión
+ *
+ * - **¿Qué hace?**: Mantiene una única instancia WebGL de MapLibre activa en memoria durante toda la sesión.
+ *   Cuando el usuario navega fuera del inicio, el elemento DOM del mapa simplemente se desanexa (`detachCityMap`)
+ *   sin destruir el contexto WebGL; al volver al inicio, se reanexa inmediatamente (`attachCityMap`).
+ * - **¿Cómo interactúa con el sistema en general?**: Es el motor subyacente consumido por el componente React `CityMap`.
+ * - **¿Cuál es su importancia?**: Inicializar y destruir un contexto WebGL y parsear estilos vectoriales cuesta cerca
+ *   de 1 segundo de CPU y GPU en navegadores móviles y de escritorio. Este patrón Singleton previene bloqueos de navegación,
+ *   elimina descargas repetidas de mosaicos vectoriales y garantiza una carga instantánea al volver a la página de inicio.
  */
 
 export const INTRO_CAMERA = { center: CALI_CENTER, zoom: 13.4, pitch: 58, bearing: -20 };
@@ -16,7 +21,14 @@ export const INTRO_CAMERA = { center: CALI_CENTER, zoom: 13.4, pitch: 58, bearin
 /** Velocidad del giro de la portada (grados por segundo). */
 export const INTRO_SPIN = 2;
 
-/** Lo que el componente montado quiere saber del mapa. */
+/**
+ * Interfaz de comunicación entre el mapa compartido y el componente React CityMap.
+ *
+ * - **¿Qué hace?**: Define callbacks que notifican cuando el mapa está listo, si falló la carga,
+ *   cuando el usuario interrumpe la órbita con un gesto, y cuando cambia el bearing (rotación).
+ * - **¿Cómo interactúa con el sistema en general?**: Implementada en `CityMap` para sincronizar inputs y estados React.
+ * - **¿Cuál es su importancia?**: Desacopla la lógica imperativa del mapa WebGL de los estados declarativos de React.
+ */
 export interface CityMapView {
   /** El mapa ya tiene su primer cuadro completo. `instant`: ya lo tenía (se vuelve a la página). */
   onReady(instant: boolean): void;
@@ -52,11 +64,24 @@ function currentTheme(): MapTheme {
   return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 }
 
+/**
+ * Detecta si el usuario tiene activada la preferencia de accesibilidad de reducción de movimiento.
+ *
+ * - **¿Qué hace?**: Evalúa `prefers-reduced-motion: reduce` mediante la API `window.matchMedia`.
+ * - **¿Cómo interactúa con el sistema en general?**: Consultada antes de disparar animaciones de cámara (`flyTo`, `easeTo`, órbita).
+ * - **¿Cuál es su importancia?**: Cumple con las pautas de accesibilidad WCAG para usuarios propensos a mareo o cinetosis.
+ */
 export function prefersReducedMotion(): boolean {
   return matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** En la portada el mapa no responde a gestos: la rueda del mouse debe mover la página. */
+/**
+ * Habilita o deshabilita los gestos interactivos del usuario sobre el mapa.
+ *
+ * - **¿Qué hace?**: Activa o desactiva en lote los manejadores de gestos de MapLibre (scroll zoom, arrastre, rotación, gestos táctiles, doble clic y caja).
+ * - **¿Cómo interactúa con el sistema en general?**: Se deshabilitan en la portada para permitir scroll natural en la página, y se habilitan al pulsar "Explorar el mapa".
+ * - **¿Cuál es su importancia?**: Evita el molesto "scroll trap" (donde la rueda del ratón queda atrapada haciendo zoom en el mapa en lugar de hacer scroll en la página).
+ */
 export function setGestures(map: MapLibreMap, enabled: boolean) {
   for (const handler of [
     map.scrollZoom,
@@ -73,8 +98,13 @@ export function setGestures(map: MapLibreMap, enabled: boolean) {
 }
 
 /**
- * Tarjeta de un lugar en el mapa. Se arma con nodos del DOM y textContent, nunca con
- * innerHTML: el nombre y la dirección los escribe un usuario.
+ * Genera el nodo DOM del popup con la información del lugar verificado.
+ *
+ * - **¿Qué hace?**: Construye de forma programática con la API estándar del DOM (`document.createElement`) y `textContent`
+ *   los elementos visuales: zona, nombre, dirección y enlace a la vista de detalle (`/venues/[id]`).
+ * - **¿Cómo interactúa con el sistema en general?**: Se asigna como contenido de los popups creados en `syncMarkers`.
+ * - **¿Cuál es su importancia?**: Al usar `textContent` en lugar de `innerHTML`, previene ataques de inyección de código (XSS)
+ *   en nombres y direcciones ingresados por usuarios.
  */
 function venueCard(venue: MappedVenue): HTMLElement {
   const card = document.createElement("div");
@@ -100,7 +130,13 @@ function venueCard(venue: MappedVenue): HTMLElement {
   return card;
 }
 
-/** Pin que late (estilos .map-pin en globals.css). */
+/**
+ * Crea el botón DOM para el marcador interactivo en el mapa.
+ *
+ * - **¿Qué hace?**: Retorna un `<button type="button">` con la clase CSS `.map-pin` y atributo de accesibilidad `aria-label`.
+ * - **¿Cómo interactúa con el sistema en general?**: Se pasa como elemento de anclaje para los marcadores de MapLibre GL.
+ * - **¿Cuál es su importancia?**: Permite estilar el marcador con animaciones de pulso en Tailwind/CSS y garantiza accesibilidad con teclado.
+ */
 function pinElement(venue: MappedVenue): HTMLElement {
   const pin = document.createElement("button");
   pin.type = "button";
@@ -109,10 +145,25 @@ function pinElement(venue: MappedVenue): HTMLElement {
   return pin;
 }
 
+/**
+ * Inicia el giro suave de bienvenida en la portada si aplican las condiciones adecuadas.
+ */
 function startIntro(state: SharedMap) {
   if (view?.isIntro() && !prefersReducedMotion() && !state.orbit.running) state.orbit.start(INTRO_SPIN);
 }
 
+/**
+ * Inicializa de forma asíncrona la instancia singleton del mapa de MapLibre.
+ *
+ * - **¿Qué hace?**:
+ *   1. Importa dinámicamente MapLibre GL y configura la URL de su Web Worker.
+ *   2. Crea el contenedor DOM y la instancia `new maplibre.Map` con pixel ratio optimizado y antialiasing inteligente.
+ *   3. Configura observadores de redimensionamiento (`ResizeObserver`), observador de cambio de tema (`MutationObserver`),
+ *      manejadores de errores y eventos de gestos para detener la rotación automática al tocar el mapa.
+ * - **¿Cómo interactúa con el sistema en general?**: Llamada por `attachCityMap` la primera vez que se monta el componente.
+ * - **¿Cuál es su importancia?**: Centraliza la configuración avanzada del motor WebGL, optimizando el rendimiento
+ *   en pantallas de alta densidad (Retina) limitando el pixel ratio a máximo 2x.
+ */
 async function createMap(): Promise<SharedMap> {
   const maplibre = await import("maplibre-gl");
   // Turbopack no copia el worker de MapLibre por su cuenta: se le pasa como recurso
@@ -200,7 +251,15 @@ async function createMap(): Promise<SharedMap> {
   return state;
 }
 
-/** Pone los pines; si los lugares no cambiaron desde la última vez, no hace nada. */
+/**
+ * Sincroniza los marcadores de los lugares verificados en el mapa.
+ *
+ * - **¿Qué hace?**: Genera una firma hash en texto (`markersKey`) con los IDs y coordenadas de los lugares.
+ *   Si la firma no cambió respecto a la última sincronización, no hace nada; si cambió, remueve los marcadores viejos
+ *   y crea nuevas instancias de `Marker` con sus popups asociados.
+ * - **¿Cómo interactúa con el sistema en general?**: Llamada en `attachCityMap` al montar la vista de lugares.
+ * - **¿Cuál es su importancia?**: Implementa reconciliación eficiente evitando recrear nodos y marcadores WebGL innecesariamente.
+ */
 function syncMarkers(state: SharedMap, venues: readonly MappedVenue[]) {
   const key = venues
     .map((v) => [v.id, v.latitude, v.longitude, v.name, v.address, v.zone.name].join("~"))
@@ -219,8 +278,13 @@ function syncMarkers(state: SharedMap, venues: readonly MappedVenue[]) {
 }
 
 /**
- * Monta el mapa dentro de `host` (lo crea la primera vez). Devuelve null si el
- * componente se desmontó mientras tanto.
+ * Anexa el mapa compartido al nodo contenedor del componente React.
+ *
+ * - **¿Qué hace?**: Registra la vista actual (`next`), obtiene la instancia singleton del mapa, inserta el canvas en `host`,
+ *   redimensiona el mapa, activa la observación de tamaño con `ResizeObserver`, desactiva gestos temporales para la portada,
+ *   posiciona la cámara en `INTRO_CAMERA` y sincroniza los marcadores de los lugares.
+ * - **¿Cómo interactúa con el sistema en general?**: Invocada dentro del `useEffect` del componente `CityMap`.
+ * - **¿Cuál es su importancia?**: Es el punto de conexión principal donde la instancia persistente del mapa se asocia al DOM de React.
  */
 export async function attachCityMap(
   host: HTMLElement,
@@ -249,7 +313,15 @@ export async function attachCityMap(
   return state;
 }
 
-/** Separa el mapa del DOM sin destruirlo: queda listo para la próxima vez. */
+/**
+ * Desanexa el mapa del DOM al navegar hacia otra vista sin destruir su contexto.
+ *
+ * - **¿Qué hace?**: Desconecta el `ResizeObserver`, detiene la órbita de cámara y cualquier movimiento del mapa,
+ *   cierra popups abiertos, remueve controles de navegación y retira el elemento `<div>` del DOM.
+ * - **¿Cómo interactúa con el sistema en general?**: Ejecutada en la función de limpieza (cleanup) del `useEffect` de `CityMap`.
+ * - **¿Cuál es su importancia?**: Libera el árbol de renderizado del navegador sin perder los recursos WebGL,
+ *   garantizando que la próxima visita al mapa sea instantánea.
+ */
 export function detachCityMap(prev: CityMapView) {
   if (view !== prev) return;
   view = null;

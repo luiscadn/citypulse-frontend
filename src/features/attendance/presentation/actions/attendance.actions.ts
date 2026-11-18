@@ -7,7 +7,16 @@ import { actionErrorMessage } from "@/shared/presentation/action-error";
 import { attendanceContainer } from "../../di/attendance.container";
 import type { AttendanceActionState } from "./attendance-action-state";
 
-/** Guarda mi respuesta a un evento. El estado anterior se conserva si algo falla. */
+/**
+ * Server Action: Responder o Cambiar Asistencia a un Evento
+ *
+ * - **¿Qué hace?**: Verifica que el usuario cuente con sesión activa, extrae los parámetros `eventId` y `status` del `FormData`,
+ *   ejecuta `attendanceContainer.respondAttendanceUseCase.execute` y solicita la revalidación del árbol con `refresh()`.
+ *   Si la operación falla, preserva el estado anterior (`prev.status`) devolviendo el mensaje de error.
+ * - **¿Cómo interactúa con el sistema en general?**: Invocada por el selector de asistencia `AttendancePicker` a través de `useAttendance`.
+ * - **¿Cuál es su importancia?**: Permite a los usuarios marcar su intención de asistencia (`Asistiré`, `Tal vez`, `No iré`)
+ *   actualizando instantáneamente el conteo general de asistentes del evento en el servidor.
+ */
 export async function respondAttendanceAction(
   prev: AttendanceActionState,
   formData: FormData,
