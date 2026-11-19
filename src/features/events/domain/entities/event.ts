@@ -1,3 +1,9 @@
+/**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: ENTIDAD EVENTO, CREATEEVENT, CREATEEVENTDETAIL, CREATEPENDINGREPORT,
+ * EVENTDETAIL, PENDINGREPORT, FREEZEEVIDENCES, OBJECT.FREEZE, INMUTABILIDAD, DOMINIO EVENTO
+ * =================================================================================================
+ */
 import { EventOrigin, EventStatus, EventVisibility } from "@/shared/domain/enums";
 import { isDateString, isNonBlank, isOneOf, isPositiveInt } from "@/shared/domain/invariants";
 import { EventDatesOrderError, InvalidEventError } from "../errors/event-errors";

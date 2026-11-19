@@ -5,8 +5,15 @@ import { CameraOrbit } from "./camera-orbit";
 import { applyCityTheme, CALI_CENTER, MAP_STYLE_URL, type MapTheme } from "./map-style";
 
 /**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: MAPA 3D, WEBGL, SINGLETON MAPA, MAPLIBRE, ATTACHCITYMAP,
+ * DETACHCITYMAP, CREATEMAP, SYNCMARKERS, VENUECARD, PINELEMENT, RENDIMIENTO GPU
+ * =================================================================================================
+ *
  * Gestión del Ciclo de Vida Singleton de la Instancia de MapLibre GL en la Sesión
  *
+ * - **¿Dónde se crea y reutiliza la instancia WebGL del mapa?**:
+ *   En `createMap()` y `attachCityMap()` de este archivo (`src/features/venue/presentation/components/city-map/shared-map.ts`).
  * - **¿Qué hace?**: Mantiene una única instancia WebGL de MapLibre activa en memoria durante toda la sesión.
  *   Cuando el usuario navega fuera del inicio, el elemento DOM del mapa simplemente se desanexa (`detachCityMap`)
  *   sin destruir el contexto WebGL; al volver al inicio, se reanexa inmediatamente (`attachCityMap`).

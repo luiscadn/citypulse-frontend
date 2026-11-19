@@ -1,3 +1,10 @@
+// src/features/events/di/event.container.ts
+/**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: CONTENEDOR DE EVENTOS, EVENTCONTAINER, INYECCIÓN DE DEPENDENCIAS,
+ * DI CONTAINER EVENTOS, COMPOSITION ROOT, CASOS DE USO DE EVENTOS, REPOSITORIO DE EVENTOS
+ * =================================================================================================
+ */
 import "server-only";
 
 import { serverHttp } from "@/shared/di/http.server";

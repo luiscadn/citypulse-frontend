@@ -1,4 +1,9 @@
 /**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: DÓNDE SE GUARDA EL TOKEN, SESSION STORE, COOKIE SESSION STORE,
+ * GUARDAR TOKEN, BORRAR TOKEN, ADAPTADOR DE SESIÓN, ALMACENAMIENTO DE TOKEN
+ * =================================================================================================
+ *
  * @file cookie-session-store.ts
  * @description Adaptador de Infraestructura que implementa el puerto `SessionStore`
  * utilizando cookies HTTP-only en Next.js.

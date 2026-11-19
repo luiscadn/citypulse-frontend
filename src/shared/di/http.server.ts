@@ -1,4 +1,16 @@
 // src/shared/di/http.server.ts
+/**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: INYECCIÓN DE DEPENDENCIAS, SERVERHTTP, CLIENTE HTTP SERVIDOR,
+ * SINGLETON HTTP, INYECTOR DE TOKEN, SERVER-ONLY, DI HTTP
+ * =================================================================================================
+ *
+ * Instancia singleton serverHttp (Inyección de Dependencias para el Servidor)
+ *
+ * - **¿Dónde se inyecta el token en el cliente HTTP del servidor?**:
+ *   En la línea 22 de este archivo (`src/shared/di/http.server.ts`):
+ *   `async () => (await getSessionToken()) ?? null`
+ */
 import 'server-only';
 
 import { FetchHttpClient } from '../infrastructure/fetch-http-client';

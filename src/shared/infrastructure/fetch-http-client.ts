@@ -1,4 +1,16 @@
 // src/shared/infrastructure/fetch-http-client.ts
+/**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: INYECCIÓN DE TOKEN, DÓNDE SE INYECTA EL TOKEN, BEARER TOKEN,
+ * AUTHORIZATION HEADER, HTTP CLIENT, FETCHHTTPCLIENT, INTERCEPTOR, CABECERAS HTTP, ADAPTADOR HTTP
+ * =================================================================================================
+ *
+ * Clase FetchHttpClient (Adaptador en Arquitectura Hexagonal)
+ *
+ * - **¿Dónde se inyecta el token JWT en las peticiones HTTP?**:
+ *   En la línea 55 de este archivo (`src/shared/infrastructure/fetch-http-client.ts`), dentro del método privado `request`:
+ *   `...(token && { Authorization: 'Bearer ' + token })`
+ */
 import { HttpError, type HttpClient } from './http-client';
 
 /**

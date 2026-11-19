@@ -1,8 +1,13 @@
 /**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: SERVER ACTIONS, REPORTEVENTACTION, UPDATEEVENTACTION,
+ * CANCELEVENTACTION, REVALIDATE, REFRESH DE CACHÉ, MUTACIONES DE EVENTOS, FORMDATA
+ * =================================================================================================
+ *
  * @file event.actions.ts
  * @description Server Actions para la gestión de Eventos y reportes ciudadanos en Next.js App Router.
  * Ejecutadas en el entorno seguro del servidor (`use server`), manejan autenticación,
- * autorización, ejecución de casos de uso y refresco de caché.
+ * autorización, ejecución de casos de uso y refresco de caché con `refresh()`.
  */
 
 "use server";

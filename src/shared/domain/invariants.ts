@@ -1,15 +1,14 @@
 /**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: INVARIANTES, VALIDACIONES DE DOMINIO, DDD, TYPE GUARDS,
+ * ISPOSITIVEINT, ISNONBLANK, ISDATESTRING, ISONEOF, REGLAS DE DOMINIO, AUTO VALIDACIÓN
+ * =================================================================================================
+ *
  * Predicados e Invariantes Comunes de Dominio (Domain Invariants & Type Guards)
  *
- * - **¿Qué hace?**: Provee funciones puras de aserción y estrechamiento de tipos (TypeScript Type Guards)
- *   que evalúan si un valor primitivo desconocido (`unknown`) cumple con criterios estructurales básicos:
- *   números enteros estrictamente positivos, cadenas de texto no vacías, marcas de fecha legibles y pertenencia a listas cerradas de valores.
- * - **¿Cómo interactúa con el sistema en general?**: Es el módulo transversal de validación consumido por todas las
- *   fábricas de entidades de dominio (`createEvent`, `createUser`, `createZone`, `createVenue`, `createEventDetail`, `createPendingReport`).
- *   Desacopla la lógica de verificación booleana de los errores específicos de cada bounded context.
- * - **¿Cuál es su importancia?**: Centraliza el principio de Invariantes de Dominio de DDD (Domain-Driven Design). Cada entidad
- *   debe garantizar su propia validez al construirse; delegar las pruebas atómicas a este archivo evita duplicación de código,
- *   garantiza consistencia en las aserciones y permite a TypeScript estrechar tipos estáticamente con precisión.
+ * - **¿Dónde se validan las invariantes de las entidades?**:
+ *   En este archivo (`src/shared/domain/invariants.ts`), mediante predicados puros utilizados por
+ *   las fábricas `createEvent`, `createUser`, `createVenue`, `createZone`.
  */
 
 /**

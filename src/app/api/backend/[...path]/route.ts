@@ -1,4 +1,16 @@
 // src/app/api/backend/[...path]/route.ts
+/**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: BFF, BACKEND FOR FRONTEND, REVERSE PROXY, ROUTE HANDLER,
+ * INYECCIÓN DE TOKEN EN RUTA, CORS, MITIGAR XSS, CATCH ALL ROUTE, BAD GATEWAY 502
+ * =================================================================================================
+ *
+ * Route Handler Catch-All: Proxy Inverso BFF (`/api/backend/[...path]`)
+ *
+ * - **¿Dónde se reenvían las peticiones de cliente al backend inyectando el token?**:
+ *   En la función `forward()` de este archivo (`src/app/api/backend/[...path]/route.ts`):
+ *   Lee `request.cookies.get(SESSION_COOKIE)?.value` y le agrega `headers.set('authorization', 'Bearer ' + token)`.
+ */
 import type { NextRequest } from 'next/server';
 import { getBackendUrl } from '@/shared/infrastructure/backend-proxy';
 import { SESSION_COOKIE } from '@/shared/infrastructure/session/session-constants';

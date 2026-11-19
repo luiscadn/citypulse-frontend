@@ -1,4 +1,16 @@
 // src/shared/infrastructure/backend-proxy.ts
+/**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: URL DEL BACKEND, DÓNDE ESTÁ LA API, API_URL, GETBACKENDURL,
+ * PUERTO BACKEND, 3001, VARIABLES DE ENTORNO, BACKEND_PROXY_PATH, DÓNDE SE CONECTA AL BACKEND
+ * =================================================================================================
+ *
+ * Configuración de Conexión al Backend NestJS
+ *
+ * - **¿Dónde está configurada la URL del backend?**:
+ *   En la función `getBackendUrl()` de este archivo (`src/shared/infrastructure/backend-proxy.ts`):
+ *   Lee `process.env.API_URL` (con fallback a `http://localhost:3001`).
+ */
 
 /**
  * Constante BACKEND_PROXY_PATH

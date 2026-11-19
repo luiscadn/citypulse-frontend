@@ -1,4 +1,9 @@
 /**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: 2FA, TWO FACTOR, TOTP, CÓDIGO QR, SEGUNDO FACTOR,
+ * SETUPTWOFACTORUSECASE, ENABLETWOFACTORUSECASE, DISABLETWOFACTORUSECASE, AUTENTICADOR
+ * =================================================================================================
+ *
  * @file two-factor.use-cases.ts
  * @description Casos de uso para el flujo completo de Verificación en Dos Pasos (2FA / TOTP):
  * generación de secreto y QR, confirmación/activación, y desactivación.

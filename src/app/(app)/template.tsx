@@ -1,3 +1,15 @@
+/**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: VIEWTRANSITION, TRANSICIONES DE PÁGINA, TEMPLATE VS LAYOUT,
+ * ANIMACIONES NAVEGACIÓN, PAGE-ENTER, PAGE-EXIT, REACT 19 VIEW TRANSITIONS
+ * =================================================================================================
+ *
+ * Plantilla de Envoltorio de Rutas de la Aplicación (Next.js App Router Template)
+ *
+ * - **¿Por qué se usa template.tsx en vez de layout.tsx para las transiciones?**:
+ *   Porque en Next.js los `layout` preservan estado y NO se remontan; los `template` crean una
+ *   instancia nueva en cada cambio de ruta, disparando la animación de entrada/salida.
+ */
 import { ViewTransition } from "react";
 
 /**

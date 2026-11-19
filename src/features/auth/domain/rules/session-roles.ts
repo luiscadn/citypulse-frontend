@@ -1,4 +1,9 @@
 /**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: ROLES, HASROLE, PERMISOS, ROL DE USUARIO, RBAC,
+ * USER, OWNER, ADMIN, VERIFICAR ROL
+ * =================================================================================================
+ *
  * @file session-roles.ts
  * @description Reglas de Dominio para evaluar permisos y roles del usuario en sesión.
  */

@@ -1,4 +1,9 @@
 /**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: USUARIO ACTUAL, DÓNDE SE LEE EL USUARIO LOGUEADO, GETCURRENTUSER,
+ * QUIÉN ESTÁ LOGUEADO, LEER SESIÓN, SESSION USER, AUTENTICACIÓN EN SERVER COMPONENTS
+ * =================================================================================================
+ *
  * @file get-current-user.ts
  * @description Utilidad de Infraestructura del servidor para leer el usuario autenticado
  * a partir de la cookie de sesión actual sin invocar al backend.

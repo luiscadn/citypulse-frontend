@@ -1,3 +1,19 @@
+/**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: MIDDLEWARE, PROXY, DÓNDE SE REVISA LA SESIÓN, RUTAS PROTEGIDAS,
+ * RUTAS PÚBLICAS, PUBLIC_ROUTES, REDIRECCIÓN LOGIN, PROTECCIÓN PERIMETRAL, CHEQUEO OPTIMISTA
+ * =================================================================================================
+ *
+ * Middleware Perimetral de Next.js 16 (`src/proxy.ts`)
+ *
+ * - **¿Dónde se protegen las rutas y se verifica la sesión en el Edge?**:
+ *   En la función `proxy()` de este archivo (`src/proxy.ts`):
+ *   1. Lee `request.cookies.get(SESSION_COOKIE)`.
+ *   2. Verifica `readValidJwt(token)`.
+ *   3. Si no hay sesión y la ruta no está en `PUBLIC_ROUTES`, redirige a `/login?from=...` y borra cookies corruptas.
+ *   4. Si hay sesión e intenta ir a `/login` o `/register`, redirige a `/`.
+ */
+
 import { NextResponse, type NextRequest } from "next/server";
 import { readValidJwt } from "@/shared/infrastructure/session/jwt";
 import { SESSION_COOKIE } from "@/shared/infrastructure/session/session-constants";

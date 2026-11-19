@@ -1,3 +1,20 @@
+// src/shared/infrastructure/session/session-cookie.ts
+/**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: TOKEN, DÓNDE ESTÁ EL TOKEN, DÓNDE SE GUARDA EL TOKEN, COOKIE,
+ * HTTPONLY, JWT, SESSION_COOKIE, SETSESSIONTOKEN, GETSESSIONTOKEN, CLEARSESSIONTOKEN, SEGURIDAD, XSS, CSRF
+ * =================================================================================================
+ *
+ * Módulo de Gestión de Cookies de Sesión (Almacenamiento Seguro del Token JWT)
+ *
+ * - **¿Dónde se guarda el token JWT en el frontend?**:
+ *   Se almacena en una cookie del navegador llamada `citypulse_session` configurada con:
+ *   1. `httpOnly: true`: Inaccesible desde scripts de cliente (`document.cookie`), protegiéndolo de ataques XSS.
+ *   2. `sameSite: "lax"`: Previene ataques de falsificación de peticiones en sitios cruzados (CSRF).
+ *   3. `secure: true` (en producción): Solo viaja a través de conexiones cifradas HTTPS.
+ *   4. `maxAge`: Sincronizado dinámicamente con el tiempo de vida remanente del JWT (`payload.exp`).
+ */
+
 import "server-only";
 
 import { cookies } from "next/headers";

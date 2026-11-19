@@ -1,4 +1,9 @@
 /**
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: PERMISOS DE EVENTO, CANMODERATEEVENTS, CANPUBLISHOFFICIALEVENTS,
+ * CANCANCELEVENT, CANEDITEVENT, AUTOR O ADMIN, ISAUTHORORADMIN, REGLAS DE NEGOCIO EVENTOS
+ * =================================================================================================
+ *
  * @file event-permissions.ts
  * @description Reglas de Dominio para calcular permisos y autorizaciones sobre Eventos.
  * Actúan como una réplica de conveniencia en UI (no autoritativa) para controlar la visibilidad

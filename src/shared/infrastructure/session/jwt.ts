@@ -1,14 +1,15 @@
 /**
- * Interfaz JwtPayload
+ * =================================================================================================
+ * [PALABRAS CLAVE / COMMAND + F]: DECODIFICAR TOKEN, VALIDAR TOKEN, DECODEJWT, READVALIDJWT,
+ * EXPIRACIÓN TOKEN, CLAIMS, PAYLOAD JWT, BASE64URL, VERIFICAR JWT, SESIÓN EXPIRADA
+ * =================================================================================================
  *
- * - **¿Qué hace?**: Modela la carga útil (claims) esperada dentro del token JWT emitido por el backend NestJS:
- *   identificador de usuario (`sub`), correo (`email`), arreglo de roles (`roles`), fecha de expiración (`exp`)
- *   y fecha de emisión (`iat`).
- * - **¿Cómo interactúa con el sistema en general?**: Es el tipo devuelto por las funciones de decodificación de tokens (`decodeJwt`),
- *   utilizado en el proxy de Next.js (`proxy.ts`), en el almacenamiento de cookies (`session-cookie.ts`) y en la extracción
- *   del usuario de sesión (`get-current-user.ts`).
- * - **¿Cuál es su importancia?**: Brinda tipado fuerte a la información de identidad extraída del JWT, evitando errores de tipeo
- *   al inspeccionar los claims del usuario autenticado.
+ * Módulo de Decodificación y Validación de Tokens JWT (Sin librerías externas / Edge Compatible)
+ *
+ * - **¿Dónde se valida el token y su expiración?**:
+ *   En este archivo (`src/shared/infrastructure/session/jwt.ts`), mediante:
+ *   - `decodeJwt(token)`: Parsea el segmento de payload Base64URL sin validar la firma criptográfica (esa la valida el backend).
+ *   - `readValidJwt(token)`: Verifica que el token tenga formato válido de 3 partes y que `payload.exp * 1000 > Date.now()`.
  */
 export interface JwtPayload {
   sub: number;
